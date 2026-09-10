@@ -11,11 +11,10 @@ use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    
     public function run(): void
     {
         // 1. Crear Usuario Administrador de Prueba
-        $user = User::factory()->create([
+        User::factory()->create([
             'name' => 'Aarón Rodríguez',
             'email' => 'aaron@guateganado.cr',
             'password' => Hash::make('password123'),
@@ -35,19 +34,24 @@ class DatabaseSeeder extends Seeder
         Animal::create([
             'numero_arete' => 'CR-1020-LIB',
             'raza_id' => $raza->raza_id,
-            'sexo' => 'hembra',
+            'sexo' => 'Hembra',
             'fecha_nacimiento' => '2023-05-10',
-            'estado' => 'activo',
+            'estado' => 'Activo',
             'potrero_id' => $potrero->potrero_id,
         ]);
 
         Animal::create([
             'numero_arete' => 'CR-1021-LIB',
             'raza_id' => $raza->raza_id,
-            'sexo' => 'macho',
+            'sexo' => 'Macho',
             'fecha_nacimiento' => '2023-08-15',
-            'estado' => 'activo',
+            'estado' => 'Activo',
             'potrero_id' => $potrero->potrero_id,
+        ]);
+
+        // 4. Llamar al AnimalSeeder para generar registros adicionales
+        $this->call([
+            AnimalSeeder::class,
         ]);
     }
 }
