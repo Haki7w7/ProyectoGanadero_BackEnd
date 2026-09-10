@@ -2,24 +2,52 @@
 
 namespace Database\Seeders;
 
+use App\Models\Animal;
+use App\Models\Potrero;
+use App\Models\Raza;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
+    
     public function run(): void
     {
-        // User::factory(10)->create();
+        // 1. Crear Usuario Administrador de Prueba
+        $user = User::factory()->create([
+            'name' => 'Aarón Rodríguez',
+            'email' => 'aaron@guateganado.cr',
+            'password' => Hash::make('password123'),
+        ]);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // 2. Crear Raza y Potrero Base
+        $raza = Raza::create(['nombre' => 'Brahman']);
+        
+        $potrero = Potrero::create([
+            'nombre' => 'Potrero El Norte',
+            'hectareas_de_extension' => 50.0,
+            'capacidad_maxima' => 40,
+            'estado_pasto' => 'excelente',
+        ]);
+
+        // 3. Crear Datos Semilla Oficiales del Contrato Comparativo (Hito 0)
+        Animal::create([
+            'numero_arete' => 'CR-1020-LIB',
+            'raza_id' => $raza->raza_id,
+            'sexo' => 'hembra',
+            'fecha_nacimiento' => '2023-05-10',
+            'estado' => 'activo',
+            'potrero_id' => $potrero->potrero_id,
+        ]);
+
+        Animal::create([
+            'numero_arete' => 'CR-1021-LIB',
+            'raza_id' => $raza->raza_id,
+            'sexo' => 'macho',
+            'fecha_nacimiento' => '2023-08-15',
+            'estado' => 'activo',
+            'potrero_id' => $potrero->potrero_id,
         ]);
     }
 }
