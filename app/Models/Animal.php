@@ -14,7 +14,7 @@ class Animal extends Model
     use HasFactory;
 
     protected $table = 'animales';
-    protected $primaryKey = 'animal_id';
+    protected $primaryKey = 'id_animal';
 
     protected $fillable = [
         'numero_arete',
@@ -42,7 +42,7 @@ class Animal extends Model
 
     public function pesajes(): HasMany
     {
-        return $this->hasMany(Pesaje::class, 'animal_id');
+        return $this->hasMany(Pesaje::class, 'id_animal', 'id_animal');
     }
 
    public function tratamientos(): BelongsToMany

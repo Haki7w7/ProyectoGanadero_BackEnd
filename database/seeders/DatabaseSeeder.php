@@ -3,8 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Animal;
+use App\Models\Pesaje;
 use App\Models\Potrero;
 use App\Models\Raza;
+use App\Models\Tratamiento;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -13,45 +15,63 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Crear Usuario Administrador de Prueba
+        // 1. Crea Usuario Administrador de Prueba
         User::factory()->create([
-            'name' => 'Aarón Rodríguez',
-            'email' => 'aaron@guateganado.cr',
+            'name'     => 'Aarón Rodríguez',
+            'email'    => 'aaron@guateganado.cr',
             'password' => Hash::make('password123'),
+            'role'     => 'admin',
         ]);
 
-        // 2. Crear Raza y Potrero Base
-        $raza = Raza::create(['nombre' => 'Brahman']);
-        
-        $potrero = Potrero::create([
-            'nombre' => 'Potrero El Norte',
-            'hectareas_de_extension' => 50.0,
-            'capacidad_maxima' => 40,
-            'estado_pasto' => 'excelente',
+        // 2. Genera Razas y Potreros
+        $razas    = Raza::factory()->count(10)->create();
+        $potreros = Potrero::factory()->count(10)->create();
+
+        // 3. Crea Catálogo de Tratamientos
+        $tratamientos = collect([
+            Tratamiento::create([
+                'nombre'      => 'Vacuna Contra Aftosa',
+                'descripcion' => 'Vacunación semestral obligatoria',
+                'tipo'        => 'Vacuna',
+            ]),
+            Tratamiento::create([
+                'nombre'      => 'Desparasitante Interno Ivermectina',
+                'descripcion' => 'Control de parásitos gastrointestinales',
+                'tipo'        => 'Desparasitante',
+            ]),
+            Tratamiento::create([
+                'nombre'      => 'Complejo Vitamínico B12',
+                'descripcion' => 'Suplemento nutricional de engorde',
+                'tipo'        => 'Vitamina',
+            ]),
         ]);
 
-        // 3. Crear Datos Semilla Oficiales del Contrato Comparativo (Hito 0)
-        Animal::create([
-            'numero_arete' => 'CR-1020-LIB',
-            'raza_id' => $raza->raza_id,
-            'sexo' => 'Hembra',
-            'fecha_nacimiento' => '2023-05-10',
-            'estado' => 'Activo',
-            'potrero_id' => $potrero->potrero_id,
-        ]);
+        // 4. Crea 20 Animales reutilizando las Razas y Potreros recién creados
+        $animales = Animal::factory()
+            ->count(20)
+            ->recycle($razas)
+            ->recycle($potreros)
+            ->create();
 
-        Animal::create([
-            'numero_arete' => 'CR-1021-LIB',
-            'raza_id' => $raza->raza_id,
-            'sexo' => 'Macho',
-            'fecha_nacimiento' => '2023-08-15',
-            'estado' => 'Activo',
-            'potrero_id' => $potrero->potrero_id,
-        ]);
+        // Recargar desde BD para obtener los id_animal reales
+        $animales = Animal::all();
 
-        // 4. Llamar al AnimalSeeder para generar registros adicionales
-        $this->call([
-            AnimalSeeder::class,
-        ]);
+        // 5. Asigna historial de Pesajes y Tratamientos a cada Animal
+        foreach ($animales as $animal) {
+            // Historial de pesajes (2 a 4 por animal)
+            Pesaje::factory()->count(rand(2, 4))->create([
+                'id_animal' => $animal->id_animal,
+            ]);
+
+            // Asociación con tabla intermedia tratamiento_animal (1 a 2 tratamientos)
+            $tratamientosAleatorios = $tratamientos->random(rand(1, 2));
+            foreach ($tratamientosAleatorios as $tratamiento) {
+                $animal->tratamientos()->attach($tratamiento->tratamiento_id, [
+                    'fecha_aplicacion' => now()->subDays(rand(1, 90)),
+                    'dosis_ml'         => rand(5, 20),
+                    'observaciones'    => 'Aplicación de rutina registrada mediante Seeder.',
+                ]);
+            }
+        }
     }
 }
