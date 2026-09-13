@@ -22,6 +22,7 @@ Route::get('/user', function (Request $request) {
 
 
 //rutas para las validaciones
+Route::prefix('v1')->group(function () {
 Route::apiResource('categorias', CategoriaController::class)->parameters(['categorias'=>'categoria']);
 Route::apiResource('unidad-medida', UnidadMedidaController::class)->parameters(['unidad-medida'=>'unidad_medida']);
 Route::apiResource('razas', RazaController::class)->parameters(['razas'=>'raza']);
@@ -31,4 +32,4 @@ Route::apiResource('animales', AnimalController::class)->parameters(['animales'=
 Route::apiResource('pesajes', PesajeController::class)->parameters(['pesajes'=>'pesaje']);
 Route::apiResource('tratamientos', TratamientoController::class)->parameters(['tratamientos'=>'tratamiento']);
 Route::apiResource('tratamiento-animal', TratamientoAnimalController::class)->parameters(['tratamiento-animal'=>'tratamiento_animal']);
-
+});

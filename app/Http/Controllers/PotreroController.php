@@ -3,15 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StorePotreroRequest;
+use App\Http\Requests\UpdatePotreroRequest;
 use App\Models\Potrero;
+use App\Services\PotreroService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PotreroController extends Controller
 {
-    // GET /api/potreros
-    public function index()
+
+public function __construct(private readonly PotreroService $potreroService)
     {
-        $potreros = Potrero::all();
+        /* Aplicar middleware de autenticación a todas las rutas excepto index y show
+        $this->middleware('auth:sanctum')->except(['index', 'show']);*/
+    }
+    
+
+    // GET /api/potreros
+    public function index(Request $request):JsonResponse
+    {
+        $potreros = $this->potreroService->listarPotreros($request->query());
 
         return response()->json([
             'message' => 'Listado de potreros obtenido correctamente.',
@@ -19,9 +31,11 @@ class PotreroController extends Controller
         ], 200);
     }
 
-    // GET /api/potreros/{potrero}
-    public function show(Potrero $potrero)
+    // GET /api/potreros/{id_potrero}
+    public function show(int $id):JsonResponse
     {
+        $potrero = $this->potreroService->obtenerPorId($id);
+
         return response()->json([
             'message' => 'Potrero obtenido correctamente.',
             'data'    => $potrero,
@@ -29,26 +43,9 @@ class PotreroController extends Controller
     }
 
     // POST /api/potreros
-    public function store(Request $request)
+    public function store(StorePotreroRequest $request):JsonResponse
     {
-        $validatedData = $request->validate([
-            'nombre'                 => ['required', 'string', 'max:100'],
-            'hectareas_de_extension' => ['required', 'numeric', 'min:0', 'max:999999.99'],
-            'capacidad_maxima'       => ['required', 'integer', 'min:0'],
-            'estado_pasto'           => ['nullable', 'string', 'max:50'],
-        ], [
-            'nombre.required'                 => 'El nombre del potrero es obligatorio.',
-            'nombre.max'                       => 'El nombre no puede exceder los 100 caracteres.',
-            'hectareas_de_extension.required'  => 'Las hectáreas de extensión son obligatorias.',
-            'hectareas_de_extension.numeric'   => 'Las hectáreas de extensión deben ser un valor numérico.',
-            'hectareas_de_extension.min'       => 'Las hectáreas de extensión no pueden ser negativas.',
-            'capacidad_maxima.required'        => 'La capacidad máxima es obligatoria.',
-            'capacidad_maxima.integer'         => 'La capacidad máxima debe ser un número entero.',
-            'capacidad_maxima.min'             => 'La capacidad máxima no puede ser negativa.',
-            'estado_pasto.max'                 => 'El estado del pasto no puede exceder los 50 caracteres.',
-        ]);
-
-        $potrero = Potrero::create($validatedData);
+      $potrero = $this->potreroService->crearPotrero($request->validated());
 
         return response()->json([
             'message' => 'Potrero creado correctamente.',
@@ -57,26 +54,9 @@ class PotreroController extends Controller
     }
 
     // PUT/PATCH /api/potreros/{potrero}
-    public function update(Request $request, Potrero $potrero)
+    public function update(UpdatePotreroRequest $request, int $id):JsonResponse
     {
-        $validatedData = $request->validate([
-            'nombre'                 => ['sometimes', 'required', 'string', 'max:100'],
-            'hectareas_de_extension' => ['sometimes', 'required', 'numeric', 'min:0', 'max:999999.99'],
-            'capacidad_maxima'       => ['sometimes', 'required', 'integer', 'min:0'],
-            'estado_pasto'           => ['nullable', 'string', 'max:50'],
-        ], [
-            'nombre.required'                 => 'El nombre del potrero es obligatorio.',
-            'nombre.max'                       => 'El nombre no puede exceder los 100 caracteres.',
-            'hectareas_de_extension.required'  => 'Las hectáreas de extensión son obligatorias.',
-            'hectareas_de_extension.numeric'   => 'Las hectáreas de extensión deben ser un valor numérico.',
-            'hectareas_de_extension.min'       => 'Las hectáreas de extensión no pueden ser negativas.',
-            'capacidad_maxima.required'        => 'La capacidad máxima es obligatoria.',
-            'capacidad_maxima.integer'         => 'La capacidad máxima debe ser un número entero.',
-            'capacidad_maxima.min'             => 'La capacidad máxima no puede ser negativa.',
-            'estado_pasto.max'                 => 'El estado del pasto no puede exceder los 50 caracteres.',
-        ]);
-
-        $potrero->update($validatedData);
+        $potrero = $this->potreroService->actualizarPotrero($id, $request->validated());
 
         return response()->json([
             'message' => 'Potrero actualizado correctamente.',
@@ -85,9 +65,9 @@ class PotreroController extends Controller
     }
 
     // DELETE /api/potreros/{potrero}
-    public function destroy(Potrero $potrero)
+    public function destroy(int $id):JsonResponse
     {
-        $potrero->delete();
+        $potrero = $this->potreroService->eliminarPotrero($id);
 
         return response()->json([
             'message' => 'Potrero eliminado correctamente.',
