@@ -83,4 +83,17 @@ class AnimalService
 
         return (bool) $animal->delete();
     }
+
+    public function registrarAnimalConPesaje(array $datosAnimal, array $datosPesaje): Animal
+    {
+        return DB::transaction(function () use ($datosAnimal, $datosPesaje) {
+            // Crear el animal
+            $animal = Animal::create($datosAnimal);
+
+            // Crear el pesaje asociado al animal recién creado
+            $animal->pesajes()->create($datosPesaje);
+
+            return $animal;
+        });
+    }
 }
