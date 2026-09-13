@@ -25,7 +25,7 @@ protected $model = Animal::class;
             'potrero_id'       => Potrero::factory(),
             'sexo'             => $this->faker->randomElement(['Macho', 'Hembra']),
             'fecha_nacimiento' => $this->faker->dateTimeBetween('-5 years', '-6 months')->format('Y-m-d'),
-            'estado'           => $this->faker->randomElement(['Activo', 'Inactivo', 'Vendido']),
+            'estado'           => $this->faker->randomElement(['Activo', 'Enfermo', 'Vendido']),
         ];
     }
 }
