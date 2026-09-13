@@ -53,3 +53,6 @@ La entidad `Animal` representa el núcleo del sistema de trazabilidad por códig
     "potrero_id": 1
   }
 ]
+
+---
+

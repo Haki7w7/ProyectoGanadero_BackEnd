@@ -15,8 +15,8 @@ class AnimalSeeder extends Seeder
         $potreroId = Potrero::first()->potrero_id;
         $razaId = Raza::first()->raza_id;
 
-        // Genera 15 animales adicionales para probar paginación
-        Animal::factory(15)->create([
+        // Genera 20 animales adicionales para probar paginación
+        Animal::factory(20)->create([
             'potrero_id' => $potreroId,
             'raza_id'    => $razaId,
         ]);

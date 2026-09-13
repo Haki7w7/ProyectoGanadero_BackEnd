@@ -16,17 +16,21 @@ class Insumo extends Model
     protected $fillable = [
         'nombre',
         'categoria_id',
-        'cantidad_stock',
+        'precio',
         'unidad_medida_id',
+    ];
+
+    protected $casts = [
+        'precio' => 'float',
     ];
 
     public function categoria(): BelongsTo
     {
-        return $this->belongsTo(Categoria::class, 'categoria_id', 'categoria_id');
+        return $this->belongsTo(Categoria::class, 'categoria_id');
     }
 
     public function unidadMedida(): BelongsTo
     {
-        return $this->belongsTo(UnidadMedida::class, 'unidad_medida_id', 'unidad_medida_id');
+        return $this->belongsTo(UnidadMedida::class, 'unidad_medida_id');
     }
 }
