@@ -3,28 +3,38 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreAnimalRequest;
+use App\Http\Requests\UpdateAnimalRequest;
 use App\Models\Animal;
+use App\Services\AnimalService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class AnimalController extends Controller
 {
-    // GET /api/animales
-    public function index()
-    {
-        $animales = Animal::with(['raza', 'potrero'])->get();
 
+    public function __construct(private readonly AnimalService $animalService)
+    {
+        /* Aplicar middleware de autenticación a todas las rutas excepto index y show
+        $this->middleware('auth:sanctum')->except(['index', 'show']);*/
+    }
+
+    
+    // GET /api/animales
+    public function index(Request $request): JsonResponse
+    {
+        $animales = $this->animalService->listarAnimales($request->query());
         return response()->json([
             'message' => 'Listado de animales obtenido correctamente.',
             'data'    => $animales,
         ], 200);
     }
 
-    // GET /api/animales/{animal}
-    public function show(Animal $animal)
+    // GET /api/animales/{id_animal}
+    public function show(int $id): JsonResponse
     {
-        $animal->load(['raza', 'potrero', 'pesajes', 'tratamientos']);
-
+        $animal = $this->animalService->obtenerPorId($id);
         return response()->json([
             'message' => 'Animal obtenido correctamente.',
             'data'    => $animal,
@@ -32,31 +42,9 @@ class AnimalController extends Controller
     }
 
     // POST /api/animales
-    public function store(Request $request)
+    public function store(StoreAnimalRequest $request)
     {
-        $validatedData = $request->validate([
-            'numero_arete'     => ['required', 'string', 'max:50', 'unique:animales,numero_arete'],
-            'raza_id'          => ['required', 'integer', 'exists:razas,raza_id'],
-            'sexo'             => ['required', 'string', Rule::in(['Macho', 'Hembra'])],
-            'fecha_nacimiento' => ['nullable', 'date', 'before_or_equal:today'],
-            'estado'           => ['nullable', 'string', 'max:50'],
-            'potrero_id'       => ['required', 'integer', 'exists:potreros,potrero_id'],
-        ], [
-            'numero_arete.required'            => 'El número de arete es obligatorio.',
-            'numero_arete.unique'              => 'Ya existe un animal registrado con ese número de arete.',
-            'numero_arete.max'                 => 'El número de arete no puede exceder los 50 caracteres.',
-            'raza_id.required'                 => 'La raza es obligatoria.',
-            'raza_id.exists'                   => 'La raza seleccionada no existe.',
-            'sexo.required'                    => 'El sexo es obligatorio.',
-            'sexo.in'                          => 'El sexo debe ser Macho o Hembra.',
-            'fecha_nacimiento.date'            => 'La fecha de nacimiento no es una fecha válida.',
-            'fecha_nacimiento.before_or_equal' => 'La fecha de nacimiento no puede ser futura.',
-            'estado.max'                       => 'El estado no puede exceder los 50 caracteres.',
-            'potrero_id.required'              => 'El potrero es obligatorio.',
-            'potrero_id.exists'                => 'El potrero seleccionado no existe.',
-        ]);
-
-        $animal = Animal::create($validatedData);
+      $animal = $this->animalService->crearAnimal($request->validated());
 
         return response()->json([
             'message' => 'Animal creado correctamente.',
@@ -65,34 +53,9 @@ class AnimalController extends Controller
     }
 
     // PUT/PATCH /api/animales/{animal}
-    public function update(Request $request, Animal $animal)
+    public function update(UpdateAnimalRequest $request,int $id):JsonResponse
     {
-        $validatedData = $request->validate([
-            'numero_arete' => [
-                'sometimes', 'required', 'string', 'max:50',
-                Rule::unique('animales', 'numero_arete')->ignore($animal->id_animal, 'id_animal'),
-            ],
-            'raza_id'          => ['sometimes', 'required', 'integer', 'exists:razas,raza_id'],
-            'sexo'             => ['sometimes', 'required', 'string', Rule::in(['Macho', 'Hembra'])],
-            'fecha_nacimiento' => ['nullable', 'date', 'before_or_equal:today'],
-            'estado'           => ['nullable', 'string', 'max:50'],
-            'potrero_id'       => ['sometimes', 'required', 'integer', 'exists:potreros,potrero_id'],
-        ], [
-            'numero_arete.required'            => 'El número de arete es obligatorio.',
-            'numero_arete.unique'              => 'Ya existe un animal registrado con ese número de arete.',
-            'numero_arete.max'                 => 'El número de arete no puede exceder los 50 caracteres.',
-            'raza_id.required'                 => 'La raza es obligatoria.',
-            'raza_id.exists'                   => 'La raza seleccionada no existe.',
-            'sexo.required'                    => 'El sexo es obligatorio.',
-            'sexo.in'                          => 'El sexo debe ser Macho o Hembra.',
-            'fecha_nacimiento.date'            => 'La fecha de nacimiento no es una fecha válida.',
-            'fecha_nacimiento.before_or_equal' => 'La fecha de nacimiento no puede ser futura.',
-            'estado.max'                       => 'El estado no puede exceder los 50 caracteres.',
-            'potrero_id.required'              => 'El potrero es obligatorio.',
-            'potrero_id.exists'                => 'El potrero seleccionado no existe.',
-        ]);
-
-        $animal->update($validatedData);
+        $animal = $this->animalService->actualizarAnimal($id, $request->validated());
 
         return response()->json([
             'message' => 'Animal actualizado correctamente.',
@@ -101,9 +64,9 @@ class AnimalController extends Controller
     }
 
     // DELETE /api/animales/{animal}
-    public function destroy(Animal $animal)
+    public function destroy($id): JsonResponse
     {
-        $animal->delete();
+        $this->animalService->eliminarAnimal($id);
 
         return response()->json([
             'message' => 'Animal eliminado correctamente.',
