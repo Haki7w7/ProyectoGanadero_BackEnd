@@ -3,26 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class TratamientoAnimal extends Model
+class TratamientoAnimal extends Pivot
 {
-   use HasFactory;
+    use HasFactory;
 
-    protected $table = 'tratamientos';
-    protected $primaryKey = 'tratamiento_id';
+    protected $table = 'tratamiento_animal';
+    protected $primaryKey = 'tratamiento_animal_id';
+    public $incrementing = true;
 
     protected $fillable = [
-        'nombre',
-        'descripcion',
-        'tipo',
+        'id_animal',
+        'tratamiento_id',
+        'fecha_aplicacion',
+        'dosis_ml',
+        'observaciones',
     ];
 
-    public function animales(): BelongsToMany
-    {
-        return $this->belongsToMany(Animal::class, 'tratamiento_animal', 'tratamiento_id', 'id_animal')
-                    ->withPivot(['tratamiento_animal_id', 'fecha_aplicacion', 'dosis_ml', 'observaciones'])
-                    ->withTimestamps();
-    }
+    protected $casts = [
+        'fecha_aplicacion' => 'datetime',
+        'dosis_ml'         => 'float',
+    ];
 }
