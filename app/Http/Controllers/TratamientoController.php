@@ -3,15 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Tratamiento;
+use App\Http\Requests\StoreTratamientoRequest;
+use App\Http\Requests\UpdateTratamientoRequest;
+use App\Services\TratamientoService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class TratamientoController extends Controller
 {
-    // GET /api/tratamientos
-    public function index()
+    public function __construct(private readonly TratamientoService $tratamientoService)
     {
-        $tratamientos = Tratamiento::all();
+    }
+
+    // GET /api/tratamientos
+    public function index(Request $request): JsonResponse
+    {
+        $tratamientos = $this->tratamientoService->listarTratamientos($request->query());
 
         return response()->json([
             'message' => 'Listado de tratamientos obtenido correctamente.',
@@ -19,9 +26,11 @@ class TratamientoController extends Controller
         ], 200);
     }
 
-    // GET /api/tratamientos/{tratamiento}
-    public function show(Tratamiento $tratamiento)
+    // GET /api/tratamientos/{id}
+    public function show(int $id): JsonResponse
     {
+        $tratamiento = $this->tratamientoService->obtenerPorId($id);
+
         return response()->json([
             'message' => 'Tratamiento obtenido correctamente.',
             'data'    => $tratamiento,
@@ -29,19 +38,9 @@ class TratamientoController extends Controller
     }
 
     // POST /api/tratamientos
-    public function store(Request $request)
+    public function store(StoreTratamientoRequest $request): JsonResponse
     {
-        $validatedData = $request->validate([
-            'nombre'      => ['required', 'string', 'max:100'],
-            'descripcion' => ['nullable', 'string'],
-            'tipo'        => ['nullable', 'string', 'max:50'],
-        ], [
-            'nombre.required' => 'El nombre del tratamiento es obligatorio.',
-            'nombre.max'      => 'El nombre no puede exceder los 100 caracteres.',
-            'tipo.max'        => 'El tipo no puede exceder los 50 caracteres.',
-        ]);
-
-        $tratamiento = Tratamiento::create($validatedData);
+        $tratamiento = $this->tratamientoService->crearTratamiento($request->validated());
 
         return response()->json([
             'message' => 'Tratamiento creado correctamente.',
@@ -49,20 +48,10 @@ class TratamientoController extends Controller
         ], 201);
     }
 
-    // PUT/PATCH /api/tratamientos/{tratamiento}
-    public function update(Request $request, Tratamiento $tratamiento)
+    // PUT/PATCH /api/tratamientos/{id}
+    public function update(UpdateTratamientoRequest $request, int $id): JsonResponse
     {
-        $validatedData = $request->validate([
-            'nombre'      => ['sometimes', 'required', 'string', 'max:100'],
-            'descripcion' => ['nullable', 'string'],
-            'tipo'        => ['nullable', 'string', 'max:50'],
-        ], [
-            'nombre.required' => 'El nombre del tratamiento es obligatorio.',
-            'nombre.max'      => 'El nombre no puede exceder los 100 caracteres.',
-            'tipo.max'        => 'El tipo no puede exceder los 50 caracteres.',
-        ]);
-
-        $tratamiento->update($validatedData);
+        $tratamiento = $this->tratamientoService->actualizarTratamiento($id, $request->validated());
 
         return response()->json([
             'message' => 'Tratamiento actualizado correctamente.',
@@ -70,10 +59,10 @@ class TratamientoController extends Controller
         ], 200);
     }
 
-    // DELETE /api/tratamientos/{tratamiento}
-    public function destroy(Tratamiento $tratamiento)
+    // DELETE /api/tratamientos/{id}
+    public function destroy($id): JsonResponse
     {
-        $tratamiento->delete();
+        $this->tratamientoService->eliminarTratamiento((int) $id);
 
         return response()->json([
             'message' => 'Tratamiento eliminado correctamente.',

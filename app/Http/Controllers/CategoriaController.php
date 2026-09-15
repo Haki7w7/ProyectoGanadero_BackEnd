@@ -3,15 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Categoria;
+use App\Http\Requests\StoreCategoriaRequest;
+use App\Http\Requests\UpdateCategoriaRequest;
+use App\Services\CategoriaService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CategoriaController extends Controller
 {
-    // GET /api/categorias
-    public function index()
+    public function __construct(private readonly CategoriaService $categoriaService)
     {
-        $categorias = Categoria::all();
+    }
+
+    // GET /api/categorias
+    public function index(Request $request): JsonResponse
+    {
+        $categorias = $this->categoriaService->listarCategorias($request->query());
 
         return response()->json([
             'message' => 'Listado de categorías obtenido correctamente.',
@@ -19,9 +26,11 @@ class CategoriaController extends Controller
         ], 200);
     }
 
-    // GET /api/categorias/{categoria}
-    public function show(Categoria $categoria)
+    // GET /api/categorias/{id}
+    public function show(int $id): JsonResponse
     {
+        $categoria = $this->categoriaService->obtenerPorId($id);
+
         return response()->json([
             'message' => 'Categoría obtenida correctamente.',
             'data'    => $categoria,
@@ -29,18 +38,9 @@ class CategoriaController extends Controller
     }
 
     // POST /api/categorias
-    public function store(Request $request)
+    public function store(StoreCategoriaRequest $request): JsonResponse
     {
-        $validatedData = $request->validate([
-            'nombre' => ['required', 'string', 'max:100'],
-            'tipo'   => ['nullable', 'string', 'max:50'],
-        ], [
-            'nombre.required' => 'El nombre de la categoría es obligatorio.',
-            'nombre.max'      => 'El nombre no puede exceder los 100 caracteres.',
-            'tipo.max'        => 'El tipo no puede exceder los 50 caracteres.',
-        ]);
-
-        $categoria = Categoria::create($validatedData);
+        $categoria = $this->categoriaService->crearCategoria($request->validated());
 
         return response()->json([
             'message' => 'Categoría creada correctamente.',
@@ -48,19 +48,10 @@ class CategoriaController extends Controller
         ], 201);
     }
 
-    // PUT/PATCH /api/categorias/{categoria}
-    public function update(Request $request, Categoria $categoria)
+    // PUT/PATCH /api/categorias/{id}
+    public function update(UpdateCategoriaRequest $request, int $id): JsonResponse
     {
-        $validatedData = $request->validate([
-            'nombre' => ['sometimes', 'required', 'string', 'max:100'],
-            'tipo'   => ['nullable', 'string', 'max:50'],
-        ], [
-            'nombre.required' => 'El nombre de la categoría es obligatorio.',
-            'nombre.max'      => 'El nombre no puede exceder los 100 caracteres.',
-            'tipo.max'        => 'El tipo no puede exceder los 50 caracteres.',
-        ]);
-
-        $categoria->update($validatedData);
+        $categoria = $this->categoriaService->actualizarCategoria($id, $request->validated());
 
         return response()->json([
             'message' => 'Categoría actualizada correctamente.',
@@ -68,10 +59,10 @@ class CategoriaController extends Controller
         ], 200);
     }
 
-    // DELETE /api/categorias/{categoria}
-    public function destroy(Categoria $categoria)
+    // DELETE /api/categorias/{id}
+    public function destroy($id): JsonResponse
     {
-        $categoria->delete();
+        $this->categoriaService->eliminarCategoria((int) $id);
 
         return response()->json([
             'message' => 'Categoría eliminada correctamente.',

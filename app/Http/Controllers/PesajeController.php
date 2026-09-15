@@ -3,15 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Pesaje;
+use App\Http\Requests\StorePesajeRequest;
+use App\Http\Requests\UpdatePesajeRequest;
+use App\Services\PesajeService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PesajeController extends Controller
 {
-    // GET /api/pesajes
-    public function index()
+    public function __construct(private readonly PesajeService $pesajeService)
     {
-        $pesajes = Pesaje::with('animal')->get();
+    }
+
+    // GET /api/pesajes
+    public function index(Request $request): JsonResponse
+    {
+        $pesajes = $this->pesajeService->listarPesajes($request->query());
 
         return response()->json([
             'message' => 'Listado de pesajes obtenido correctamente.',
@@ -19,10 +26,10 @@ class PesajeController extends Controller
         ], 200);
     }
 
-    // GET /api/pesajes/{pesaje}
-    public function show(Pesaje $pesaje)
+    // GET /api/pesajes/{id}
+    public function show(int $id): JsonResponse
     {
-        $pesaje->load('animal');
+        $pesaje = $this->pesajeService->obtenerPorId($id);
 
         return response()->json([
             'message' => 'Pesaje obtenido correctamente.',
@@ -31,25 +38,9 @@ class PesajeController extends Controller
     }
 
     // POST /api/pesajes
-    public function store(Request $request)
+    public function store(StorePesajeRequest $request): JsonResponse
     {
-        $validatedData = $request->validate([
-            'id_animal'     => ['required', 'integer', 'exists:animales,id_animal'],
-            'peso_kg'       => ['required', 'numeric', 'min:0', 'max:9999.99'],
-            'fecha_pesaje'  => ['required', 'date'],
-            'observaciones' => ['nullable', 'string'],
-        ], [
-            'id_animal.required'    => 'El animal es obligatorio.',
-            'id_animal.exists'      => 'El animal seleccionado no existe.',
-            'peso_kg.required'      => 'El peso es obligatorio.',
-            'peso_kg.numeric'       => 'El peso debe ser un valor numérico.',
-            'peso_kg.min'           => 'El peso no puede ser negativo.',
-            'peso_kg.max'           => 'El peso excede el valor máximo permitido.',
-            'fecha_pesaje.required' => 'La fecha del pesaje es obligatoria.',
-            'fecha_pesaje.date'     => 'La fecha del pesaje no es una fecha válida.',
-        ]);
-
-        $pesaje = Pesaje::create($validatedData);
+        $pesaje = $this->pesajeService->crearPesaje($request->validated());
 
         return response()->json([
             'message' => 'Pesaje registrado correctamente.',
@@ -57,26 +48,10 @@ class PesajeController extends Controller
         ], 201);
     }
 
-    // PUT/PATCH /api/pesajes/{pesaje}
-    public function update(Request $request, Pesaje $pesaje)
+    // PUT/PATCH /api/pesajes/{id}
+    public function update(UpdatePesajeRequest $request, int $id): JsonResponse
     {
-        $validatedData = $request->validate([
-            'id_animal'     => ['sometimes', 'required', 'integer', 'exists:animales,id_animal'],
-            'peso_kg'       => ['sometimes', 'required', 'numeric', 'min:0', 'max:9999.99'],
-            'fecha_pesaje'  => ['sometimes', 'required', 'date'],
-            'observaciones' => ['nullable', 'string'],
-        ], [
-            'id_animal.required'    => 'El animal es obligatorio.',
-            'id_animal.exists'      => 'El animal seleccionado no existe.',
-            'peso_kg.required'      => 'El peso es obligatorio.',
-            'peso_kg.numeric'       => 'El peso debe ser un valor numérico.',
-            'peso_kg.min'           => 'El peso no puede ser negativo.',
-            'peso_kg.max'           => 'El peso excede el valor máximo permitido.',
-            'fecha_pesaje.required' => 'La fecha del pesaje es obligatoria.',
-            'fecha_pesaje.date'     => 'La fecha del pesaje no es una fecha válida.',
-        ]);
-
-        $pesaje->update($validatedData);
+        $pesaje = $this->pesajeService->actualizarPesaje($id, $request->validated());
 
         return response()->json([
             'message' => 'Pesaje actualizado correctamente.',
@@ -84,10 +59,10 @@ class PesajeController extends Controller
         ], 200);
     }
 
-    // DELETE /api/pesajes/{pesaje}
-    public function destroy(Pesaje $pesaje)
+    // DELETE /api/pesajes/{id}
+    public function destroy($id): JsonResponse
     {
-        $pesaje->delete();
+        $this->pesajeService->eliminarPesaje((int) $id);
 
         return response()->json([
             'message' => 'Pesaje eliminado correctamente.',
