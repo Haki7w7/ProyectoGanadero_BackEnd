@@ -4,14 +4,33 @@ namespace App\Services;
 
 use App\Exceptions\ReglaNegocioException;
 use App\Models\UnidadMedida;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class UnidadMedidaService
 {
-    public function listarUnidadesMedida(array $filtros = []): Collection
+    /**
+     * Lista unidades de medida aplicando filtros combinables, ordenamiento dinámico
+     * y paginación con tope de seguridad.
+     */
+    public function listarUnidadesMedida(array $filtros = []): LengthAwarePaginator
     {
-        return UnidadMedida::query()->get();
+        // Paginación segura con tope en 100
+        $perPage = min(max((int) ($filtros['per_page'] ?? 15), 1), 100);
+
+        // Ordenamiento por al menos dos campos válidos
+        $allowedSortFields = ['nombre', 'abreviatura', 'unidad_medida_id', 'created_at'];
+        $sortBy = in_array($filtros['sort_by'] ?? '', $allowedSortFields, true) ? $filtros['sort_by'] : 'unidad_medida_id';
+        $sortOrder = strtolower($filtros['order'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
+
+        return UnidadMedida::query()
+            ->when(!empty($filtros['buscar'] ?? $filtros['nombre'] ?? null), function ($query) use ($filtros) {
+                $termino = $filtros['buscar'] ?? $filtros['nombre'];
+                $query->where('nombre', 'like', '%' . $termino . '%');
+            })
+            ->when(!empty($filtros['abreviatura']), fn ($query) => $query->where('abreviatura', $filtros['abreviatura']))
+            ->orderBy($sortBy, $sortOrder)
+            ->paginate($perPage);
     }
 
     public function obtenerPorId(int $id): UnidadMedida

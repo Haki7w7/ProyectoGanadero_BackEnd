@@ -25,4 +25,14 @@ class TratamientoAnimal extends Pivot
         'fecha_aplicacion' => 'datetime',
         'dosis_ml'         => 'float',
     ];
+
+    public function animal(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Animal::class, 'id_animal', 'id_animal');
+    }
+
+    public function tratamiento(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Tratamiento::class, 'tratamiento_id', 'tratamiento_id');
+    }
 }

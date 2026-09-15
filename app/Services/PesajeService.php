@@ -4,21 +4,34 @@ namespace App\Services;
 
 use App\Exceptions\ReglaNegocioException;
 use App\Models\Pesaje;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class PesajeService
 {
     /**
-     * Lista pesajes aplicando filtro opcional por animal, delegando en el
-     * scope definido en el modelo Pesaje.
+     * Lista pesajes aplicando filtros combinables, ordenamiento dinámico
+     * y paginación con tope de seguridad.
      */
-    public function listarPesajes(array $filtros = []): Collection
+    public function listarPesajes(array $filtros = []): LengthAwarePaginator
     {
+        // Paginación segura con tope en 100
+        $perPage = min(max((int) ($filtros['per_page'] ?? 15), 1), 100);
+
+        // Ordenamiento por al menos dos campos válidos
+        $allowedSortFields = ['fecha_pesaje', 'peso_kg', 'pesaje_id', 'id_animal'];
+        $sortBy = in_array($filtros['sort_by'] ?? '', $allowedSortFields, true) ? $filtros['sort_by'] : 'fecha_pesaje';
+        $sortOrder = strtolower($filtros['order'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
+
         return Pesaje::query()
-            ->when(!empty($filtros['id_animal']), fn ($query) => $query->porAnimal((int) $filtros['id_animal']))
+            ->when(!empty($filtros['id_animal']), fn ($query) => $query->where('id_animal', (int) $filtros['id_animal']))
+            ->when(!empty($filtros['fecha_desde']), fn ($query) => $query->whereDate('fecha_pesaje', '>=', $filtros['fecha_desde']))
+            ->when(!empty($filtros['fecha_hasta']), fn ($query) => $query->whereDate('fecha_pesaje', '<=', $filtros['fecha_hasta']))
+            ->when(isset($filtros['peso_min']), fn ($query) => $query->where('peso_kg', '>=', (float) $filtros['peso_min']))
+            ->when(isset($filtros['peso_max']), fn ($query) => $query->where('peso_kg', '<=', (float) $filtros['peso_max']))
             ->with('animal')
-            ->get();
+            ->orderBy($sortBy, $sortOrder)
+            ->paginate($perPage);
     }
 
     public function obtenerPorId(int $id): Pesaje
