@@ -7,11 +7,12 @@ use App\Models\Animal;
 use App\Models\Potrero;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class AnimalService
 {
     /**
-     * Lista animales aplicando filtros opcionales, delegando en los scopes
+     * Lista >Sanimales aplicando filtros opcionales, delegando en los scopes
      * definidos en el modelo Animal.
      *
      * Filtros soportados: raza_id, potrero_id, sexo, estado.
