@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\ReglaNegocioException;
 use App\Models\Animal;
+use App\Models\Potrero;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -43,10 +44,14 @@ class AnimalService
 
     /**
      * Crea un animal ya validado previamente por StoreAnimalRequest.
+     *
+     * No asigna un animal a un potrero que ya alcanzó su capacidad máxima.
      */
     public function crearAnimal(array $datos): Animal
     {
         return DB::transaction(function () use ($datos) {
+            $this->validarCapacidadPotrero((int) $datos['potrero_id']);
+
             return Animal::create($datos);
         });
     }
@@ -59,6 +64,10 @@ class AnimalService
         $animal = $this->obtenerPorId($id);
 
         DB::transaction(function () use ($animal, $datos) {
+            if (isset($datos['potrero_id']) && (int) $datos['potrero_id'] !== (int) $animal->potrero_id) {
+                $this->validarCapacidadPotrero((int) $datos['potrero_id']);
+            }
+
             $animal->update($datos);
         });
 
@@ -87,13 +96,39 @@ class AnimalService
     public function registrarAnimalConPesaje(array $datosAnimal, array $datosPesaje): Animal
     {
         return DB::transaction(function () use ($datosAnimal, $datosPesaje) {
+            $this->validarCapacidadPotrero((int) $datosAnimal['potrero_id']);
+
             // Crear el animal
             $animal = Animal::create($datosAnimal);
 
-            // Crear el pesaje asociado al animal recién creado
+            // Crear el pesaje asociado al animal recién creado.
+            // Si esto falla, DB::transaction revierte también el animal.
             $animal->pesajes()->create($datosPesaje);
 
             return $animal;
         });
+    }
+
+    /*
+     * El número de animales del potrero no puede superar su
+     * capacidad máxima
+     */
+    private function validarCapacidadPotrero(int $potreroId): void
+    {
+        $potrero = Potrero::find($potreroId);
+
+        if (!$potrero) {
+            throw new ReglaNegocioException('El potrero seleccionado no existe.', 422);
+        }
+
+
+        $ocupados = $potrero->animales()->count();
+
+        if ($ocupados >= (int) $potrero->capacidad_maxima) {
+            throw new ReglaNegocioException(
+                'El potrero seleccionado ya alcanzó su capacidad máxima.',
+                422
+            );
+        }
     }
 }
