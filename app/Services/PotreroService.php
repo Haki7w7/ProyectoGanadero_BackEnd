@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\ReglaNegocioException;
 use App\Models\Potrero;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator; // Cambiar Collection por esto
 use Illuminate\Support\Facades\DB;
 
 class PotreroService
@@ -13,14 +13,25 @@ class PotreroService
      * Lista potreros aplicando filtro opcional por estado_pasto,
      * delegando en el scope definido en el modelo Potrero.
      */
-    public function listarPotreros(array $filtros = []): Collection
+    /**
+     * Lista potreros aplicando filtros combinables, ordenamiento dinámico
+     * y paginación con tope de seguridad de memoria.
+     */
+    public function listarPotreros(array $filtros = []): LengthAwarePaginator
     {
+        // Paginación segura con tope en 100
+        $perPage = min((int) ($filtros['per_page'] ?? 15), 100);
+
+        // Ordenamiento por al menos dos campos válidos
+        $allowedSortFields = ['nombre', 'hectareas_de_extension', 'capacidad_maxima', 'potrero_id'];
+        $sortBy = in_array($filtros['sort_by'] ?? '', $allowedSortFields, true) ? $filtros['sort_by'] : 'potrero_id';
+        $sortOrder = strtolower($filtros['order'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
+
         return Potrero::query()
-            ->when(
-                !empty($filtros['estado_pasto']),
-                fn ($query) => $query->porEstadoPasto($filtros['estado_pasto'])
-            )
-            ->get();
+            ->when(!empty($filtros['estado_pasto']), fn ($query) => $query->where('estado_pasto', $filtros['estado_pasto']))
+            ->when(!empty($filtros['nombre']), fn ($query) => $query->where('nombre', 'like', '%' . $filtros['nombre'] . '%'))
+            ->orderBy($sortBy, $sortOrder)
+            ->paginate($perPage);
     }
 
     /**
