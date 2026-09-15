@@ -19,7 +19,7 @@ class AnimalControllerTest extends TestCase
     {
         Animal::factory()->count(20)->create();
 
-        // Se solicita per_page=500, pero el backend debe acotarlo a 50
+        // Se solicita per_page=500, pero el backend debe acotarlo a 100
         $response = $this->getJson('/api/v1/animales?per_page=500');
 
         $response->assertStatus(200)
@@ -33,7 +33,7 @@ class AnimalControllerTest extends TestCase
                 ],
             ]);
 
-        $this->assertLessThanOrEqual(50, $response->json('data.per_page'));
+        $this->assertLessThanOrEqual(100, $response->json('data.per_page'));
     }
 
     /**

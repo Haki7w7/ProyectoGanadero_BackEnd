@@ -5,27 +5,35 @@ namespace App\Services;
 use App\Exceptions\ReglaNegocioException;
 use App\Models\Animal;
 use App\Models\Potrero;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class AnimalService
 {
     /**
-     * Lista >Sanimales aplicando filtros opcionales, delegando en los scopes
-     * definidos en el modelo Animal.
+     * Lista animales aplicando filtros combinables, ordenamiento dinámico
+     * y paginación con tope de seguridad.
      *
      * Filtros soportados: raza_id, potrero_id, sexo, estado.
      */
-    public function listarAnimales(array $filtros = []): Collection
+    public function listarAnimales(array $filtros = []): LengthAwarePaginator
     {
+        // Paginación segura con tope en 100
+        $perPage = min(max((int) ($filtros['per_page'] ?? 15), 1), 100);
+
+        // Ordenamiento por al menos dos campos válidos
+        $allowedSortFields = ['numero_arete', 'fecha_nacimiento', 'estado', 'id_animal', 'raza_id', 'potrero_id'];
+        $sortBy = in_array($filtros['sort_by'] ?? '', $allowedSortFields, true) ? $filtros['sort_by'] : 'id_animal';
+        $sortOrder = strtolower($filtros['order'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
+
         return Animal::query()
             ->when(!empty($filtros['raza_id']), fn ($query) => $query->porRaza((int) $filtros['raza_id']))
             ->when(!empty($filtros['potrero_id']), fn ($query) => $query->porPotrero((int) $filtros['potrero_id']))
             ->when(!empty($filtros['sexo']), fn ($query) => $query->porSexo($filtros['sexo']))
             ->when(!empty($filtros['estado']), fn ($query) => $query->porEstado($filtros['estado']))
             ->with(['raza', 'potrero'])
-            ->get();
+            ->orderBy($sortBy, $sortOrder)
+            ->paginate($perPage);
     }
 
     /**
