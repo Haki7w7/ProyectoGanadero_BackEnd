@@ -4,20 +4,33 @@ namespace App\Services;
 
 use App\Exceptions\ReglaNegocioException;
 use App\Models\Tratamiento;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class TratamientoService
 {
     /**
-     * Lista tratamientos aplicando filtro opcional por tipo, delegando
-     * en el scope definido en el modelo Tratamiento.
+     * Lista tratamientos aplicando filtros combinables, ordenamiento dinámico
+     * y paginación con tope de seguridad.
      */
-    public function listarTratamientos(array $filtros = []): Collection
+    public function listarTratamientos(array $filtros = []): LengthAwarePaginator
     {
+        // Paginación segura con tope en 100
+        $perPage = min(max((int) ($filtros['per_page'] ?? 15), 1), 100);
+
+        // Ordenamiento por al menos dos campos válidos
+        $allowedSortFields = ['nombre', 'tipo', 'tratamiento_id', 'created_at'];
+        $sortBy = in_array($filtros['sort_by'] ?? '', $allowedSortFields, true) ? $filtros['sort_by'] : 'tratamiento_id';
+        $sortOrder = strtolower($filtros['order'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
+
         return Tratamiento::query()
-            ->when(!empty($filtros['tipo']), fn ($query) => $query->porTipo($filtros['tipo']))
-            ->get();
+            ->when(!empty($filtros['tipo']), fn ($query) => $query->where('tipo', $filtros['tipo']))
+            ->when(!empty($filtros['buscar'] ?? $filtros['nombre'] ?? null), function ($query) use ($filtros) {
+                $termino = $filtros['buscar'] ?? $filtros['nombre'];
+                $query->where('nombre', 'like', '%' . $termino . '%');
+            })
+            ->orderBy($sortBy, $sortOrder)
+            ->paginate($perPage);
     }
 
     public function obtenerPorId(int $id): Tratamiento

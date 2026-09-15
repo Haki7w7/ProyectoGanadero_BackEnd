@@ -4,24 +4,33 @@ namespace App\Services;
 
 use App\Exceptions\ReglaNegocioException;
 use App\Models\TratamientoAnimal;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class TratamientoAnimalService
 {
     /**
-     * Lista aplicaciones de tratamiento aplicando filtros opcionales,
-     * delegando en los scopes definidos en el modelo TratamientoAnimal.
-     *
-     * Filtros soportados: id_animal, tratamiento_id.
+     * Lista aplicaciones de tratamiento aplicando filtros combinables, ordenamiento dinámico
+     * y paginación con tope de seguridad.
      */
-    public function listarTratamientoAnimal(array $filtros = []): Collection
+    public function listarTratamientoAnimal(array $filtros = []): LengthAwarePaginator
     {
+        // Paginación segura con tope en 100
+        $perPage = min(max((int) ($filtros['per_page'] ?? 15), 1), 100);
+
+        // Ordenamiento por al menos dos campos válidos
+        $allowedSortFields = ['fecha_aplicacion', 'dosis_ml', 'tratamiento_animal_id', 'id_animal', 'tratamiento_id'];
+        $sortBy = in_array($filtros['sort_by'] ?? '', $allowedSortFields, true) ? $filtros['sort_by'] : 'fecha_aplicacion';
+        $sortOrder = strtolower($filtros['order'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
+
         return TratamientoAnimal::query()
-            ->when(!empty($filtros['id_animal']), fn ($query) => $query->porAnimal((int) $filtros['id_animal']))
-            ->when(!empty($filtros['tratamiento_id']), fn ($query) => $query->porTratamiento((int) $filtros['tratamiento_id']))
+            ->when(!empty($filtros['id_animal']), fn ($query) => $query->where('id_animal', (int) $filtros['id_animal']))
+            ->when(!empty($filtros['tratamiento_id']), fn ($query) => $query->where('tratamiento_id', (int) $filtros['tratamiento_id']))
+            ->when(!empty($filtros['fecha_desde']), fn ($query) => $query->whereDate('fecha_aplicacion', '>=', $filtros['fecha_desde']))
+            ->when(!empty($filtros['fecha_hasta']), fn ($query) => $query->whereDate('fecha_aplicacion', '<=', $filtros['fecha_hasta']))
             ->with(['animal', 'tratamiento'])
-            ->get();
+            ->orderBy($sortBy, $sortOrder)
+            ->paginate($perPage);
     }
 
     public function obtenerPorId(int $id): TratamientoAnimal
