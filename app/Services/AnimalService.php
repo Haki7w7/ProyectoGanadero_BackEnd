@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Exceptions\ReglaNegocioException;
 use App\Models\Animal;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator; 
 use Illuminate\Support\Facades\DB;
+
+
 
 class AnimalService
 {
@@ -15,15 +17,29 @@ class AnimalService
      *
      * Filtros soportados: raza_id, potrero_id, sexo, estado.
      */
-    public function listarAnimales(array $filtros = []): Collection
+    /**
+     * Lista animales aplicando filtros combinables, ordenamiento dinámico
+     * y paginación con tope de seguridad de memoria.
+     */
+    public function listarAnimales(array $filtros = []): LengthAwarePaginator
     {
+        // Paginación segura con tope en 100
+        $perPage = min((int) ($filtros['per_page'] ?? 15), 100);
+
+        // Ordenamiento por al menos dos campos válidos
+        $allowedSortFields = ['numero_arete', 'fecha_nacimiento', 'id_animal', 'created_at'];
+        $sortBy = in_array($filtros['sort_by'] ?? '', $allowedSortFields, true) ? $filtros['sort_by'] : 'id_animal';
+        $sortOrder = strtolower($filtros['order'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
+
         return Animal::query()
-            ->when(!empty($filtros['raza_id']), fn ($query) => $query->porRaza((int) $filtros['raza_id']))
-            ->when(!empty($filtros['potrero_id']), fn ($query) => $query->porPotrero((int) $filtros['potrero_id']))
-            ->when(!empty($filtros['sexo']), fn ($query) => $query->porSexo($filtros['sexo']))
-            ->when(!empty($filtros['estado']), fn ($query) => $query->porEstado($filtros['estado']))
+            ->when(!empty($filtros['raza_id']), fn ($query) => $query->where('raza_id', (int) $filtros['raza_id']))
+            ->when(!empty($filtros['potrero_id']), fn ($query) => $query->where('potrero_id', (int) $filtros['potrero_id']))
+            ->when(!empty($filtros['sexo']), fn ($query) => $query->where('sexo', $filtros['sexo']))
+            ->when(!empty($filtros['estado']), fn ($query) => $query->where('estado', $filtros['estado']))
+            ->when(!empty($filtros['numero_arete']), fn ($query) => $query->where('numero_arete', 'like', '%' . $filtros['numero_arete'] . '%'))
             ->with(['raza', 'potrero'])
-            ->get();
+            ->orderBy($sortBy, $sortOrder)
+            ->paginate($perPage);
     }
 
     /**
