@@ -15,16 +15,12 @@ class RazaFactory extends Factory
     public function definition(): array
     {
         $razas = [
-            'Brahman',
-            'Nelore',
-            'Angus',
-            'Holstein',
-            'Gyr',
-            'Simmental',
-            'Charolais',
-            'Brangus',
-            'Sardo Negro',
-            'Guzerá',
+            'Brahman', 'Nelore', 'Angus', 'Holstein', 'Gyr',
+            'Simmental', 'Charolais', 'Brangus', 'Sardo Negro', 'Guzerá',
+            'Hereford', 'Limousin', 'Jersey', 'Pardo Suizo', 'Senepol',
+            'Bonsmara', 'Beefmaster', 'Santa Gertrudis', 'Shorthorn', 'Romagnola',
+            'Piedmontese', 'Wagyu', 'Normando', 'Blanco Orejinegro', 'Romosinuano',
+            'Costeño con Cuernos', 'Lucerna', 'Hartón del Valle', 'Chianina', 'Marchigiana',
         ];
 
         return [
