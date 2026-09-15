@@ -15,16 +15,16 @@ protected $model = Potrero::class;
     public function definition(): array
     {
         $nombres = [
-            'Potrero El Alto',
-            'Potrero La Bajada',
-            'Potrero El Zapote',
-            'Potrero La Ceiba',
-            'Potrero El Arrayán',
-            'Potrero Los Bueyes',
-            'Potrero La Quebrada',
-            'Potrero San José',
-            'Potrero El Guanacaste',
-            'Potrero Las Lagunas',
+            'Potrero El Alto', 'Potrero La Bajada', 'Potrero El Zapote',
+            'Potrero La Ceiba', 'Potrero El Arrayán', 'Potrero Los Bueyes',
+            'Potrero La Quebrada', 'Potrero San José', 'Potrero El Guanacaste',
+            'Potrero Las Lagunas', 'Potrero El Roble', 'Potrero La Esperanza',
+            'Potrero El Naranjo', 'Potrero Los Laureles', 'Potrero El Cedro',
+            'Potrero La Palma', 'Potrero El Mango', 'Potrero San Pedro',
+            'Potrero La Colina', 'Potrero El Sauce', 'Potrero Las Acacias',
+            'Potrero El Paraíso', 'Potrero La Pradera', 'Potrero El Encino',
+            'Potrero Los Almendros', 'Potrero La Sabana', 'Potrero El Jícaro',
+            'Potrero San Martín', 'Potrero Las Flores', 'Potrero El Coyol',
         ];
 
         return [
