@@ -4,20 +4,33 @@ namespace App\Services;
 
 use App\Exceptions\ReglaNegocioException;
 use App\Models\Categoria;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class CategoriaService
 {
     /**
-     * Lista categorías aplicando filtro opcional por tipo, delegando
-     * en el scope definido en el modelo Categoria.
+     * Lista categorías aplicando filtros combinables, ordenamiento dinámico
+     * y paginación con tope de seguridad.
      */
-    public function listarCategorias(array $filtros = []): Collection
+    public function listarCategorias(array $filtros = []): LengthAwarePaginator
     {
+        // Paginación segura con tope en 100
+        $perPage = min(max((int) ($filtros['per_page'] ?? 15), 1), 100);
+
+        // Ordenamiento por al menos dos campos válidos
+        $allowedSortFields = ['nombre', 'tipo', 'categoria_id'];
+        $sortBy = in_array($filtros['sort_by'] ?? '', $allowedSortFields, true) ? $filtros['sort_by'] : 'categoria_id';
+        $sortOrder = strtolower($filtros['order'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
+
         return Categoria::query()
-            ->when(!empty($filtros['tipo']), fn ($query) => $query->porTipo($filtros['tipo']))
-            ->get();
+            ->when(!empty($filtros['tipo']), fn ($query) => $query->where('tipo', $filtros['tipo']))
+            ->when(!empty($filtros['buscar'] ?? $filtros['nombre'] ?? null), function ($query) use ($filtros) {
+                $termino = $filtros['buscar'] ?? $filtros['nombre'];
+                $query->where('nombre', 'like', '%' . $termino . '%');
+            })
+            ->orderBy($sortBy, $sortOrder)
+            ->paginate($perPage);
     }
 
     public function obtenerPorId(int $id): Categoria
