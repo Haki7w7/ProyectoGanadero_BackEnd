@@ -3,15 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\UnidadMedida;
+use App\Http\Requests\StoreUnidadMedidaRequest;
+use App\Http\Requests\UpdateUnidadMedidaRequest;
+use App\Services\UnidadMedidaService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class UnidadMedidaController extends Controller
 {
-    // GET /api/unidades-medida
-    public function index()
+    public function __construct(private readonly UnidadMedidaService $unidadMedidaService)
     {
-        $unidades = UnidadMedida::all();
+    }
+
+    // GET /api/unidad-medida
+    public function index(Request $request): JsonResponse
+    {
+        $unidades = $this->unidadMedidaService->listarUnidadesMedida($request->query());
 
         return response()->json([
             'message' => 'Listado de unidades de medida obtenido correctamente.',
@@ -19,28 +26,21 @@ class UnidadMedidaController extends Controller
         ], 200);
     }
 
-    // GET /api/unidades-medida/{unidad_medida}
-    public function show(UnidadMedida $unidad_medida)
+    // GET /api/unidad-medida/{id}
+    public function show(int $id): JsonResponse
     {
+        $unidad = $this->unidadMedidaService->obtenerPorId($id);
+
         return response()->json([
             'message' => 'Unidad de medida obtenida correctamente.',
-            'data'    => $unidad_medida,
+            'data'    => $unidad,
         ], 200);
     }
 
-    // POST /api/unidades-medida
-    public function store(Request $request)
+    // POST /api/unidad-medida
+    public function store(StoreUnidadMedidaRequest $request): JsonResponse
     {
-        $validatedData = $request->validate([
-            'nombre'   => ['required', 'string', 'max:100'],
-            'apertura' => ['nullable', 'string', 'max:20'],
-        ], [
-            'nombre.required' => 'El nombre de la unidad de medida es obligatorio.',
-            'nombre.max'      => 'El nombre no puede exceder los 100 caracteres.',
-            'apertura.max'    => 'La apertura (abreviatura) no puede exceder los 20 caracteres.',
-        ]);
-
-        $unidad = UnidadMedida::create($validatedData);
+        $unidad = $this->unidadMedidaService->crearUnidadMedida($request->validated());
 
         return response()->json([
             'message' => 'Unidad de medida creada correctamente.',
@@ -48,30 +48,21 @@ class UnidadMedidaController extends Controller
         ], 201);
     }
 
-    // PUT/PATCH /api/unidades-medida/{unidad_medida}
-    public function update(Request $request, UnidadMedida $unidad_medida)
+    // PUT/PATCH /api/unidad-medida/{id}
+    public function update(UpdateUnidadMedidaRequest $request, int $id): JsonResponse
     {
-        $validatedData = $request->validate([
-            'nombre'   => ['sometimes', 'required', 'string', 'max:100'],
-            'apertura' => ['nullable', 'string', 'max:20'],
-        ], [
-            'nombre.required' => 'El nombre de la unidad de medida es obligatorio.',
-            'nombre.max'      => 'El nombre no puede exceder los 100 caracteres.',
-            'apertura.max'    => 'La apertura (abreviatura) no puede exceder los 20 caracteres.',
-        ]);
-
-        $unidad_medida->update($validatedData);
+        $unidad = $this->unidadMedidaService->actualizarUnidadMedida($id, $request->validated());
 
         return response()->json([
             'message' => 'Unidad de medida actualizada correctamente.',
-            'data'    => $unidad_medida,
+            'data'    => $unidad,
         ], 200);
     }
 
-    // DELETE /api/unidades-medida/{unidad_medida}
-    public function destroy(UnidadMedida $unidad_medida)
+    // DELETE /api/unidad-medida/{id}
+    public function destroy($id): JsonResponse
     {
-        $unidad_medida->delete();
+        $this->unidadMedidaService->eliminarUnidadMedida((int) $id);
 
         return response()->json([
             'message' => 'Unidad de medida eliminada correctamente.',
