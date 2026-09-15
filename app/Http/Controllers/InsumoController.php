@@ -3,15 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Insumo;
+use App\Http\Requests\StoreInsumoRequest;
+use App\Http\Requests\UpdateInsumoRequest;
+use App\Services\InsumoService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class InsumoController extends Controller
 {
-    // GET /api/insumos
-    public function index()
+    public function __construct(private readonly InsumoService $insumoService)
     {
-        $insumos = Insumo::with(['categoria', 'unidadMedida'])->get();
+    }
+
+    // GET /api/insumos
+    public function index(Request $request): JsonResponse
+    {
+        $insumos = $this->insumoService->listarInsumos($request->query());
 
         return response()->json([
             'message' => 'Listado de insumos obtenido correctamente.',
@@ -19,10 +26,10 @@ class InsumoController extends Controller
         ], 200);
     }
 
-    // GET /api/insumos/{insumo}
-    public function show(Insumo $insumo)
+    // GET /api/insumos/{id}
+    public function show(int $id): JsonResponse
     {
-        $insumo->load(['categoria', 'unidadMedida']);
+        $insumo = $this->insumoService->obtenerPorId($id);
 
         return response()->json([
             'message' => 'Insumo obtenido correctamente.',
@@ -31,26 +38,9 @@ class InsumoController extends Controller
     }
 
     // POST /api/insumos
-    public function store(Request $request)
+    public function store(StoreInsumoRequest $request): JsonResponse
     {
-        $validatedData = $request->validate([
-            'nombre'           => ['required', 'string', 'max:150'],
-            'categoria_id'     => ['required', 'integer', 'exists:categorias,categoria_id'],
-            'precio'           => ['required', 'numeric', 'min:0', 'max:99999999.99'],
-            'unidad_medida_id' => ['required', 'integer', 'exists:unidades_medida,unidad_medida_id'],
-        ], [
-            'nombre.required'           => 'El nombre del insumo es obligatorio.',
-            'nombre.max'                => 'El nombre no puede exceder los 150 caracteres.',
-            'categoria_id.required'     => 'La categoría es obligatoria.',
-            'categoria_id.exists'       => 'La categoría seleccionada no existe.',
-            'precio.required'           => 'El precio es obligatorio.',
-            'precio.numeric'            => 'El precio debe ser un valor numérico.',
-            'precio.min'                => 'El precio no puede ser negativo.',
-            'unidad_medida_id.required' => 'La unidad de medida es obligatoria.',
-            'unidad_medida_id.exists'   => 'La unidad de medida seleccionada no existe.',
-        ]);
-
-        $insumo = Insumo::create($validatedData);
+        $insumo = $this->insumoService->crearInsumo($request->validated());
 
         return response()->json([
             'message' => 'Insumo creado correctamente.',
@@ -58,27 +48,10 @@ class InsumoController extends Controller
         ], 201);
     }
 
-    // PUT/PATCH /api/insumos/{insumo}
-    public function update(Request $request, Insumo $insumo)
+    // PUT/PATCH /api/insumos/{id}
+    public function update(UpdateInsumoRequest $request, int $id): JsonResponse
     {
-        $validatedData = $request->validate([
-            'nombre'           => ['sometimes', 'required', 'string', 'max:150'],
-            'categoria_id'     => ['sometimes', 'required', 'integer', 'exists:categorias,categoria_id'],
-            'precio'           => ['sometimes', 'required', 'numeric', 'min:0', 'max:99999999.99'],
-            'unidad_medida_id' => ['sometimes', 'required', 'integer', 'exists:unidades_medida,unidad_medida_id'],
-        ], [
-            'nombre.required'           => 'El nombre del insumo es obligatorio.',
-            'nombre.max'                => 'El nombre no puede exceder los 150 caracteres.',
-            'categoria_id.required'     => 'La categoría es obligatoria.',
-            'categoria_id.exists'       => 'La categoría seleccionada no existe.',
-            'precio.required'           => 'El precio es obligatorio.',
-            'precio.numeric'            => 'El precio debe ser un valor numérico.',
-            'precio.min'                => 'El precio no puede ser negativo.',
-            'unidad_medida_id.required' => 'La unidad de medida es obligatoria.',
-            'unidad_medida_id.exists'   => 'La unidad de medida seleccionada no existe.',
-        ]);
-
-        $insumo->update($validatedData);
+        $insumo = $this->insumoService->actualizarInsumo($id, $request->validated());
 
         return response()->json([
             'message' => 'Insumo actualizado correctamente.',
@@ -86,10 +59,10 @@ class InsumoController extends Controller
         ], 200);
     }
 
-    // DELETE /api/insumos/{insumo}
-    public function destroy(Insumo $insumo)
+    // DELETE /api/insumos/{id}
+    public function destroy($id): JsonResponse
     {
-        $insumo->delete();
+        $this->insumoService->eliminarInsumo((int) $id);
 
         return response()->json([
             'message' => 'Insumo eliminado correctamente.',

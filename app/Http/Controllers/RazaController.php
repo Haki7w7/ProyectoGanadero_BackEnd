@@ -3,15 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Raza;
+use App\Http\Requests\StoreRazaRequest;
+use App\Http\Requests\UpdateRazaRequest;
+use App\Services\RazaService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class RazaController extends Controller
 {
-    // GET /api/razas
-    public function index()
+    public function __construct(private readonly RazaService $razaService)
     {
-        $razas = Raza::all();
+    }
+
+    // GET /api/razas
+    public function index(Request $request): JsonResponse
+    {
+        $razas = $this->razaService->listarRazas($request->query());
 
         return response()->json([
             'message' => 'Listado de razas obtenido correctamente.',
@@ -19,9 +26,11 @@ class RazaController extends Controller
         ], 200);
     }
 
-    // GET /api/razas/{raza}
-    public function show(Raza $raza)
+    // GET /api/razas/{id}
+    public function show(int $id): JsonResponse
     {
+        $raza = $this->razaService->obtenerPorId($id);
+
         return response()->json([
             'message' => 'Raza obtenida correctamente.',
             'data'    => $raza,
@@ -29,16 +38,9 @@ class RazaController extends Controller
     }
 
     // POST /api/razas
-    public function store(Request $request)
+    public function store(StoreRazaRequest $request): JsonResponse
     {
-        $validatedData = $request->validate([
-            'nombre' => ['required', 'string', 'max:100'],
-        ], [
-            'nombre.required' => 'El nombre de la raza es obligatorio.',
-            'nombre.max'      => 'El nombre no puede exceder los 100 caracteres.',
-        ]);
-
-        $raza = Raza::create($validatedData);
+        $raza = $this->razaService->crearRaza($request->validated());
 
         return response()->json([
             'message' => 'Raza creada correctamente.',
@@ -46,17 +48,10 @@ class RazaController extends Controller
         ], 201);
     }
 
-    // PUT/PATCH /api/razas/{raza}
-    public function update(Request $request, Raza $raza)
+    // PUT/PATCH /api/razas/{id}
+    public function update(UpdateRazaRequest $request, int $id): JsonResponse
     {
-        $validatedData = $request->validate([
-            'nombre' => ['sometimes', 'required', 'string', 'max:100'],
-        ], [
-            'nombre.required' => 'El nombre de la raza es obligatorio.',
-            'nombre.max'      => 'El nombre no puede exceder los 100 caracteres.',
-        ]);
-
-        $raza->update($validatedData);
+        $raza = $this->razaService->actualizarRaza($id, $request->validated());
 
         return response()->json([
             'message' => 'Raza actualizada correctamente.',
@@ -64,10 +59,10 @@ class RazaController extends Controller
         ], 200);
     }
 
-    // DELETE /api/razas/{raza}
-    public function destroy(Raza $raza)
+    // DELETE /api/razas/{id}
+    public function destroy($id): JsonResponse
     {
-        $raza->delete();
+        $this->razaService->eliminarRaza((int) $id);
 
         return response()->json([
             'message' => 'Raza eliminada correctamente.',

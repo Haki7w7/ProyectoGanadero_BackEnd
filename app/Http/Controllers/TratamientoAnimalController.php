@@ -3,15 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\TratamientoAnimal;
+use App\Http\Requests\StoreTratamientoAnimalRequest;
+use App\Http\Requests\UpdateTratamientoAnimalRequest;
+use App\Services\TratamientoAnimalService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class TratamientoAnimalController extends Controller
 {
-    // GET /api/tratamiento-animal
-    public function index()
+    public function __construct(private readonly TratamientoAnimalService $tratamientoAnimalService)
     {
-        $registros = TratamientoAnimal::with(['animal', 'tratamiento'])->get();
+    }
+
+    // GET /api/tratamiento-animal
+    public function index(Request $request): JsonResponse
+    {
+        $registros = $this->tratamientoAnimalService->listarTratamientoAnimal($request->query());
 
         return response()->json([
             'message' => 'Listado de aplicaciones de tratamiento obtenido correctamente.',
@@ -19,39 +26,21 @@ class TratamientoAnimalController extends Controller
         ], 200);
     }
 
-    // GET /api/tratamiento-animal/{tratamiento_animal}
-    public function show(TratamientoAnimal $tratamiento_animal)
+    // GET /api/tratamiento-animal/{id}
+    public function show(int $id): JsonResponse
     {
-        $tratamiento_animal->load(['animal', 'tratamiento']);
+        $registro = $this->tratamientoAnimalService->obtenerPorId($id);
 
         return response()->json([
             'message' => 'Aplicación de tratamiento obtenida correctamente.',
-            'data'    => $tratamiento_animal,
+            'data'    => $registro,
         ], 200);
     }
 
     // POST /api/tratamiento-animal
-    public function store(Request $request)
+    public function store(StoreTratamientoAnimalRequest $request): JsonResponse
     {
-        $validatedData = $request->validate([
-            'id_animal'        => ['required', 'integer', 'exists:animales,id_animal'],
-            'tratamiento_id'   => ['required', 'integer', 'exists:tratamientos,tratamiento_id'],
-            'fecha_aplicacion' => ['required', 'date'],
-            'dosis_ml'         => ['required', 'numeric', 'min:0', 'max:9999.99'],
-            'observaciones'    => ['nullable', 'string'],
-        ], [
-            'id_animal.required'        => 'El animal es obligatorio.',
-            'id_animal.exists'          => 'El animal seleccionado no existe.',
-            'tratamiento_id.required'   => 'El tratamiento es obligatorio.',
-            'tratamiento_id.exists'     => 'El tratamiento seleccionado no existe.',
-            'fecha_aplicacion.required' => 'La fecha de aplicación es obligatoria.',
-            'fecha_aplicacion.date'     => 'La fecha de aplicación no es una fecha válida.',
-            'dosis_ml.required'         => 'La dosis es obligatoria.',
-            'dosis_ml.numeric'          => 'La dosis debe ser un valor numérico.',
-            'dosis_ml.min'              => 'La dosis no puede ser negativa.',
-        ]);
-
-        $registro = TratamientoAnimal::create($validatedData);
+        $registro = $this->tratamientoAnimalService->crearTratamientoAnimal($request->validated());
 
         return response()->json([
             'message' => 'Aplicación de tratamiento registrada correctamente.',
@@ -59,39 +48,21 @@ class TratamientoAnimalController extends Controller
         ], 201);
     }
 
-    // PUT/PATCH /api/tratamiento-animal/{tratamiento_animal}
-    public function update(Request $request, TratamientoAnimal $tratamiento_animal)
+    // PUT/PATCH /api/tratamiento-animal/{id}
+    public function update(UpdateTratamientoAnimalRequest $request, int $id): JsonResponse
     {
-        $validatedData = $request->validate([
-            'id_animal'        => ['sometimes', 'required', 'integer', 'exists:animales,id_animal'],
-            'tratamiento_id'   => ['sometimes', 'required', 'integer', 'exists:tratamientos,tratamiento_id'],
-            'fecha_aplicacion' => ['sometimes', 'required', 'date'],
-            'dosis_ml'         => ['sometimes', 'required', 'numeric', 'min:0', 'max:9999.99'],
-            'observaciones'    => ['nullable', 'string'],
-        ], [
-            'id_animal.required'        => 'El animal es obligatorio.',
-            'id_animal.exists'          => 'El animal seleccionado no existe.',
-            'tratamiento_id.required'   => 'El tratamiento es obligatorio.',
-            'tratamiento_id.exists'     => 'El tratamiento seleccionado no existe.',
-            'fecha_aplicacion.required' => 'La fecha de aplicación es obligatoria.',
-            'fecha_aplicacion.date'     => 'La fecha de aplicación no es una fecha válida.',
-            'dosis_ml.required'         => 'La dosis es obligatoria.',
-            'dosis_ml.numeric'          => 'La dosis debe ser un valor numérico.',
-            'dosis_ml.min'              => 'La dosis no puede ser negativa.',
-        ]);
-
-        $tratamiento_animal->update($validatedData);
+        $registro = $this->tratamientoAnimalService->actualizarTratamientoAnimal($id, $request->validated());
 
         return response()->json([
             'message' => 'Aplicación de tratamiento actualizada correctamente.',
-            'data'    => $tratamiento_animal,
+            'data'    => $registro,
         ], 200);
     }
 
-    // DELETE /api/tratamiento-animal/{tratamiento_animal}
-    public function destroy(TratamientoAnimal $tratamiento_animal)
+    // DELETE /api/tratamiento-animal/{id}
+    public function destroy($id): JsonResponse
     {
-        $tratamiento_animal->delete();
+        $this->tratamientoAnimalService->eliminarTratamientoAnimal((int) $id);
 
         return response()->json([
             'message' => 'Aplicación de tratamiento eliminada correctamente.',
