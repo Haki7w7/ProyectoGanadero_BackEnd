@@ -6,8 +6,8 @@ use App\Exceptions\ReglaNegocioException;
 use App\Models\Animal;
 use App\Models\Potrero;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class AnimalService
 {
