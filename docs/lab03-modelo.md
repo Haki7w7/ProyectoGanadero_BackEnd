@@ -32,3 +32,4 @@ Para poder representar correctamente la lógica operativa de la finca ganadera, 
 ## 4. Consideraciones de Escalabilidad y Arquitectura
 * **Estructura Modular:** El diseño de la base de datos mantiene separados los catálogos estáticos de las tablas transaccionales, esto lo que permite es que si en un futuro se desea agregar nuevas métricas, tipos de insumos o tratamientos, se pueda conseguir de manera efectiva sin alterar la estructura principal.
 * **Trazabilidad Operativa:** La incorporación de tablas de soporte como lo son `Pesaje` y la tabla intermedia `TratamientoAnimal` garantiza un registro histórico firme, facilitando la extracción de métricas, reportes y consultas requeridas para la gestión integral de la finca.
+
