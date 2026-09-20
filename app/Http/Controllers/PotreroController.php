@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePotreroRequest;
 use App\Http\Requests\UpdatePotreroRequest;
+use App\Http\Resources\PotreroResource;
 use App\Models\Potrero;
 use App\Services\PotreroService;
 use Illuminate\Http\JsonResponse;
@@ -31,7 +32,7 @@ class PotreroController extends Controller
     {
         $potreros = $this->potreroService->listarPotreros($request->query());
 
-        return $this->respuestaPaginada($potreros, 'Listado de potreros obtenido correctamente.');
+        return $this->respuestaPaginada($potreros, 'Listado de potreros obtenido correctamente.', PotreroResource::class);
     }
 
     /**
@@ -46,10 +47,7 @@ class PotreroController extends Controller
     {
         $potrero = $this->potreroService->obtenerPorId($id);
 
-        return response()->json([
-            'message' => 'Potrero obtenido correctamente.',
-            'data'    => $potrero,
-        ], 200);
+        return $this->respuestaOk(new PotreroResource($potrero), 'Potrero obtenido correctamente.');
     }
 
     /**
@@ -64,7 +62,7 @@ class PotreroController extends Controller
     {
         $potrero = $this->potreroService->crearPotrero($request->validated());
 
-        return $this->respuestaCreada($potrero, 'Potrero creado correctamente.', 'potreros');
+        return $this->respuestaCreada($potrero, 'Potrero creado correctamente.', 'potreros', new PotreroResource($potrero));
     }
 
     /**
@@ -80,10 +78,7 @@ class PotreroController extends Controller
     {
         $potrero = $this->potreroService->actualizarPotrero($id, $request->validated());
 
-        return response()->json([
-            'message' => 'Potrero actualizado correctamente.',
-            'data'    => $potrero,
-        ], 200);
+        return $this->respuestaOk(new PotreroResource($potrero), 'Potrero actualizado correctamente.');
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCategoriaRequest;
 use App\Http\Requests\UpdateCategoriaRequest;
+use App\Http\Resources\CategoriaResource;
 use App\Services\CategoriaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ class CategoriaController extends Controller
     {
         $categorias = $this->categoriaService->listarCategorias($request->query());
 
-        return $this->respuestaPaginada($categorias, 'Listado de categorías obtenido correctamente.');
+        return $this->respuestaPaginada($categorias, 'Listado de categorías obtenido correctamente.', CategoriaResource::class);
     }
 
     // GET /api/categorias/{id}
@@ -29,10 +30,7 @@ class CategoriaController extends Controller
     {
         $categoria = $this->categoriaService->obtenerPorId($id);
 
-        return response()->json([
-            'message' => 'Categoría obtenida correctamente.',
-            'data'    => $categoria,
-        ], 200);
+        return $this->respuestaOk(new CategoriaResource($categoria), 'Categoría obtenida correctamente.');
     }
 
     // POST /api/categorias
@@ -40,7 +38,7 @@ class CategoriaController extends Controller
     {
         $categoria = $this->categoriaService->crearCategoria($request->validated());
 
-        return $this->respuestaCreada($categoria, 'Categoría creada correctamente.', 'categorias');
+        return $this->respuestaCreada($categoria, 'Categoría creada correctamente.', 'categorias', new CategoriaResource($categoria));
     }
 
     // PUT/PATCH /api/categorias/{id}
@@ -48,10 +46,7 @@ class CategoriaController extends Controller
     {
         $categoria = $this->categoriaService->actualizarCategoria($id, $request->validated());
 
-        return response()->json([
-            'message' => 'Categoría actualizada correctamente.',
-            'data'    => $categoria,
-        ], 200);
+        return $this->respuestaOk(new CategoriaResource($categoria), 'Categoría actualizada correctamente.');
     }
 
     // DELETE /api/categorias/{id}

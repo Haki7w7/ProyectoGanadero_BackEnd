@@ -20,7 +20,7 @@ protected $model = Animal::class;
     public function definition(): array
     {
         return [
-            'numero_arete'     => 'ART-' . $this->faker->unique()->numberBetween(1000, 9999),
+            'numero_arete'     => 'ART-' . $this->faker->unique()->numerify('######'),
             'raza_id'          => Raza::factory(),
             'potrero_id'       => Potrero::factory(),
             'sexo'             => $this->faker->randomElement(['Macho', 'Hembra']),

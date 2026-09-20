@@ -43,7 +43,7 @@ abstract class Controller
      * 201 Created con la cabecera Location apuntando al recurso recién creado.
      *
      * @param Model  $modelo  Registro creado (se usa su llave primaria para el Location).
-     * @param string $recurso Segmento de la ruta del recurso, p. ej. "animales" o "unidad-medida".
+     * @param string $recurso Segmento de la ruta del recurso, p. ej. "animales" o "unidades-medida".
      * @param mixed  $data    Cuerpo a devolver; por defecto el propio modelo.
      *                        Puede ser un JsonResource.
      */

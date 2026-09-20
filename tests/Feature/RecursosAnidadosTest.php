@@ -233,7 +233,7 @@ class RecursosAnidadosTest extends TestCase
 
     public function test_id_no_numerico_en_rutas_planas_responde_404_en_json(): void
     {
-        foreach (['animales', 'pesajes', 'tratamientos', 'tratamiento-animal', 'razas', 'potreros'] as $recurso) {
+        foreach (['animales', 'pesajes', 'tratamientos', 'tratamientos-aplicaciones', 'razas', 'potreros'] as $recurso) {
             $this->getJson("/api/v1/{$recurso}/abc")
                 ->assertStatus(404)
                 ->assertJsonPath('error', 'No encontrado');
@@ -291,7 +291,7 @@ class RecursosAnidadosTest extends TestCase
         $animal      = Animal::factory()->create();
         $tratamiento = $this->crearTratamiento();
 
-        $crear = $this->postJson('/api/v1/tratamiento-animal', [
+        $crear = $this->postJson('/api/v1/tratamientos-aplicaciones', [
             'id_animal'        => $animal->id_animal,
             'tratamiento_id'   => $tratamiento->tratamiento_id,
             'fecha_aplicacion' => '2026-09-10 07:30:00',
@@ -300,10 +300,10 @@ class RecursosAnidadosTest extends TestCase
 
         $id = $crear->json('data.tratamiento_animal_id');
         $crear->assertStatus(201)
-            ->assertHeader('Location', "/api/v1/tratamiento-animal/{$id}")
+            ->assertHeader('Location', "/api/v1/tratamientos-aplicaciones/{$id}")
             ->assertJsonPath('data.dosis_ml', 3.25);
 
-        $this->deleteJson("/api/v1/tratamiento-animal/{$id}")->assertNoContent();
+        $this->deleteJson("/api/v1/tratamientos-aplicaciones/{$id}")->assertNoContent();
         $this->assertDatabaseMissing('tratamiento_animal', ['tratamiento_animal_id' => $id]);
     }
 }

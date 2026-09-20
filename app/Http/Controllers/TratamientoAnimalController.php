@@ -20,7 +20,7 @@ class TratamientoAnimalController extends Controller
     ) {
     }
 
-    // GET /api/v1/tratamiento-animal
+    // GET /api/v1/tratamientos-aplicaciones
     public function index(Request $request): JsonResponse
     {
         $registros = $this->tratamientoAnimalService->listarTratamientoAnimal($request->query());
@@ -40,7 +40,7 @@ class TratamientoAnimalController extends Controller
         return $this->respuestaPaginada($registros, 'Historial sanitario del animal obtenido correctamente.', TratamientoAnimalResource::class);
     }
 
-    // GET /api/v1/tratamiento-animal/{tratamiento_animal}
+    // GET /api/v1/tratamientos-aplicaciones/{tratamiento_animal}
     public function show(int $id): JsonResponse
     {
         $registro = $this->tratamientoAnimalService->obtenerPorId($id);
@@ -48,15 +48,15 @@ class TratamientoAnimalController extends Controller
         return $this->respuestaOk(new TratamientoAnimalResource($registro), 'Aplicación de tratamiento obtenida correctamente.');
     }
 
-    // POST /api/v1/tratamiento-animal
+    // POST /api/v1/tratamientos-aplicaciones
     public function store(StoreTratamientoAnimalRequest $request): JsonResponse
     {
         $registro = $this->tratamientoAnimalService->crearTratamientoAnimal($request->validated());
 
-        return $this->respuestaCreada($registro, 'Aplicación de tratamiento registrada correctamente.', 'tratamiento-animal', new TratamientoAnimalResource($registro));
+        return $this->respuestaCreada($registro, 'Aplicación de tratamiento registrada correctamente.', 'tratamientos-aplicaciones', new TratamientoAnimalResource($registro));
     }
 
-    // PUT/PATCH /api/v1/tratamiento-animal/{tratamiento_animal}
+    // PUT/PATCH /api/v1/tratamientos-aplicaciones/{tratamiento_animal}
     public function update(UpdateTratamientoAnimalRequest $request, int $id): JsonResponse
     {
         $registro = $this->tratamientoAnimalService->actualizarTratamientoAnimal($id, $request->validated());
@@ -64,7 +64,7 @@ class TratamientoAnimalController extends Controller
         return $this->respuestaOk(new TratamientoAnimalResource($registro), 'Aplicación de tratamiento actualizada correctamente.');
     }
 
-    // DELETE /api/v1/tratamiento-animal/{tratamiento_animal}
+    // DELETE /api/v1/tratamientos-aplicaciones/{tratamiento_animal}
     public function destroy($id): Response
     {
         $this->tratamientoAnimalService->eliminarTratamientoAnimal((int) $id);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRazaRequest;
 use App\Http\Requests\UpdateRazaRequest;
+use App\Http\Resources\RazaResource;
 use App\Services\RazaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ class RazaController extends Controller
     {
         $razas = $this->razaService->listarRazas($request->query());
 
-        return $this->respuestaPaginada($razas, 'Listado de razas obtenido correctamente.');
+        return $this->respuestaPaginada($razas, 'Listado de razas obtenido correctamente.', RazaResource::class);
     }
 
     // GET /api/razas/{id}
@@ -29,10 +30,7 @@ class RazaController extends Controller
     {
         $raza = $this->razaService->obtenerPorId($id);
 
-        return response()->json([
-            'message' => 'Raza obtenida correctamente.',
-            'data'    => $raza,
-        ], 200);
+        return $this->respuestaOk(new RazaResource($raza), 'Raza obtenida correctamente.');
     }
 
     // POST /api/razas
@@ -40,7 +38,7 @@ class RazaController extends Controller
     {
         $raza = $this->razaService->crearRaza($request->validated());
 
-        return $this->respuestaCreada($raza, 'Raza creada correctamente.', 'razas');
+        return $this->respuestaCreada($raza, 'Raza creada correctamente.', 'razas', new RazaResource($raza));
     }
 
     // PUT/PATCH /api/razas/{id}
@@ -48,10 +46,7 @@ class RazaController extends Controller
     {
         $raza = $this->razaService->actualizarRaza($id, $request->validated());
 
-        return response()->json([
-            'message' => 'Raza actualizada correctamente.',
-            'data'    => $raza,
-        ], 200);
+        return $this->respuestaOk(new RazaResource($raza), 'Raza actualizada correctamente.');
     }
 
     // DELETE /api/razas/{id}
