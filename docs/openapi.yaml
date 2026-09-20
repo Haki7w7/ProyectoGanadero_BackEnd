@@ -1,0 +1,2524 @@
+openapi: 3.1.0
+info:
+  title: 'Sistema de Gestión Ganadera - API Docs'
+  version: 0.0.1
+  description: 'Documentación interactiva de la API REST para la gestión y trazabilidad ganadera (Laboratorio 5).'
+servers:
+  -
+    url: 'http://localhost:8000/api'
+security:
+  -
+    http: {}
+paths:
+  /user:
+    get:
+      responses:
+        200:
+          description: '`User`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+  /v1/animales:
+    get:
+      operationId: animales.index
+      description: 'Retorna el listado paginado de animales con soporte de filtros por raza, potrero, sexo o estado, y ordenamiento dinámico.'
+      summary: 'Listar animales'
+      tags:
+        - Animales
+        - Animal
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: integer
+                const: 200
+      security: {}
+    post:
+      operationId: animales.store
+      description: 'Valida los datos y registra un nuevo animal, verificando la capacidad disponible del potrero seleccionado.'
+      summary: 'Registrar un nuevo animal'
+      tags:
+        - Animales
+        - Animal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreAnimalRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: integer
+                const: 201
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+  '/v1/animales/{id}':
+    get:
+      operationId: animales.show
+      description: 'Retorna la información completa de un animal por su ID, incluyendo raza, potrero, pesajes y tratamientos.'
+      summary: 'Obtener detalle de un animal'
+      tags:
+        - Animales
+        - Animal
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: integer
+                const: 200
+      security: {}
+    put:
+      operationId: animales.update
+      description: 'Actualiza la información del animal especificado por su ID.'
+      summary: 'Actualizar datos de un animal'
+      tags:
+        - Animales
+        - Animal
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAnimalRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: integer
+                const: 200
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+    delete:
+      operationId: animales.destroy
+      description: 'Elimina el animal del sistema. Falla si el animal tiene historial de pesajes registrados (RN-01).'
+      summary: 'Eliminar un animal'
+      tags:
+        - Animales
+        - Animal
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: integer
+                const: 200
+      security: {}
+  /v1/auth/login:
+    post:
+      operationId: login
+      description: 'Valida las credenciales del usuario y genera un token de acceso personal (Bearer Token).'
+      summary: 'Iniciar sesión'
+      tags:
+        - Autenticación
+        - Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: integer
+                const: 200
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+  /v1/auth/register:
+    post:
+      operationId: register
+      description: 'Registra un nuevo usuario con rol asignado (admin, operario, veterinario) y emite un token Bearer.'
+      summary: 'Registrar usuario'
+      tags:
+        - Autenticación
+        - Register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: integer
+                const: 201
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+  /v1/categorias:
+    get:
+      operationId: categorias.index
+      tags:
+        - Categoria
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Listado de categorías obtenido correctamente.'
+                  data:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        minimum: 1
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Categoria'
+                      first_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      from:
+                        type:
+                          - integer
+                          - 'null'
+                        minimum: 1
+                      last_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      last_page:
+                        type: integer
+                        minimum: 1
+                      links:
+                        type: array
+                        description: 'Generated paginator links.'
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type:
+                                - string
+                                - 'null'
+                            label:
+                              type: string
+                            active:
+                              type: boolean
+                          required:
+                            - url
+                            - label
+                            - active
+                      next_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      prev_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      to:
+                        type:
+                          - integer
+                          - 'null'
+                        description: 'Number of the last item in the slice.'
+                        minimum: 1
+                      total:
+                        type: integer
+                        description: 'Total number of items being paginated.'
+                        minimum: 0
+                    required:
+                      - current_page
+                      - data
+                      - first_page_url
+                      - from
+                      - last_page_url
+                      - last_page
+                      - links
+                      - next_page_url
+                      - path
+                      - per_page
+                      - prev_page_url
+                      - to
+                      - total
+                required:
+                  - message
+                  - data
+      security: {}
+    post:
+      operationId: categorias.store
+      tags:
+        - Categoria
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreCategoriaRequest'
+      responses:
+        201:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Categoría creada correctamente.'
+                  data:
+                    $ref: '#/components/schemas/Categoria'
+                required:
+                  - message
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+  '/v1/categorias/{id}':
+    get:
+      operationId: categorias.show
+      tags:
+        - Categoria
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Categoría obtenida correctamente.'
+                  data:
+                    $ref: '#/components/schemas/Categoria'
+                required:
+                  - message
+                  - data
+      security: {}
+    put:
+      operationId: categorias.update
+      tags:
+        - Categoria
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCategoriaRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Categoría actualizada correctamente.'
+                  data:
+                    $ref: '#/components/schemas/Categoria'
+                required:
+                  - message
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+    delete:
+      operationId: categorias.destroy
+      tags:
+        - Categoria
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Categoría eliminada correctamente.'
+                required:
+                  - message
+      security: {}
+  /v1/insumos:
+    get:
+      operationId: insumos.index
+      tags:
+        - Insumo
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Listado de insumos obtenido correctamente.'
+                  data:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        minimum: 1
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Insumo'
+                      first_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      from:
+                        type:
+                          - integer
+                          - 'null'
+                        minimum: 1
+                      last_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      last_page:
+                        type: integer
+                        minimum: 1
+                      links:
+                        type: array
+                        description: 'Generated paginator links.'
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type:
+                                - string
+                                - 'null'
+                            label:
+                              type: string
+                            active:
+                              type: boolean
+                          required:
+                            - url
+                            - label
+                            - active
+                      next_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      prev_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      to:
+                        type:
+                          - integer
+                          - 'null'
+                        description: 'Number of the last item in the slice.'
+                        minimum: 1
+                      total:
+                        type: integer
+                        description: 'Total number of items being paginated.'
+                        minimum: 0
+                    required:
+                      - current_page
+                      - data
+                      - first_page_url
+                      - from
+                      - last_page_url
+                      - last_page
+                      - links
+                      - next_page_url
+                      - path
+                      - per_page
+                      - prev_page_url
+                      - to
+                      - total
+                required:
+                  - message
+                  - data
+      security: {}
+    post:
+      operationId: insumos.store
+      tags:
+        - Insumo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreInsumoRequest'
+      responses:
+        201:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Insumo creado correctamente.'
+                  data:
+                    $ref: '#/components/schemas/Insumo'
+                required:
+                  - message
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+  '/v1/insumos/{id}':
+    get:
+      operationId: insumos.show
+      tags:
+        - Insumo
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Insumo obtenido correctamente.'
+                  data:
+                    $ref: '#/components/schemas/Insumo'
+                required:
+                  - message
+                  - data
+      security: {}
+    put:
+      operationId: insumos.update
+      tags:
+        - Insumo
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInsumoRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Insumo actualizado correctamente.'
+                  data:
+                    $ref: '#/components/schemas/Insumo'
+                required:
+                  - message
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+    delete:
+      operationId: insumos.destroy
+      tags:
+        - Insumo
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Insumo eliminado correctamente.'
+                required:
+                  - message
+      security: {}
+  /v1/pesajes:
+    get:
+      operationId: pesajes.index
+      tags:
+        - Pesaje
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Listado de pesajes obtenido correctamente.'
+                  data:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        minimum: 1
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Pesaje'
+                      first_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      from:
+                        type:
+                          - integer
+                          - 'null'
+                        minimum: 1
+                      last_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      last_page:
+                        type: integer
+                        minimum: 1
+                      links:
+                        type: array
+                        description: 'Generated paginator links.'
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type:
+                                - string
+                                - 'null'
+                            label:
+                              type: string
+                            active:
+                              type: boolean
+                          required:
+                            - url
+                            - label
+                            - active
+                      next_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      prev_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      to:
+                        type:
+                          - integer
+                          - 'null'
+                        description: 'Number of the last item in the slice.'
+                        minimum: 1
+                      total:
+                        type: integer
+                        description: 'Total number of items being paginated.'
+                        minimum: 0
+                    required:
+                      - current_page
+                      - data
+                      - first_page_url
+                      - from
+                      - last_page_url
+                      - last_page
+                      - links
+                      - next_page_url
+                      - path
+                      - per_page
+                      - prev_page_url
+                      - to
+                      - total
+                required:
+                  - message
+                  - data
+      security: {}
+    post:
+      operationId: pesajes.store
+      tags:
+        - Pesaje
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StorePesajeRequest'
+      responses:
+        201:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Pesaje registrado correctamente.'
+                  data:
+                    $ref: '#/components/schemas/Pesaje'
+                required:
+                  - message
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+  '/v1/pesajes/{id}':
+    get:
+      operationId: pesajes.show
+      tags:
+        - Pesaje
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Pesaje obtenido correctamente.'
+                  data:
+                    $ref: '#/components/schemas/Pesaje'
+                required:
+                  - message
+                  - data
+      security: {}
+    put:
+      operationId: pesajes.update
+      tags:
+        - Pesaje
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePesajeRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Pesaje actualizado correctamente.'
+                  data:
+                    $ref: '#/components/schemas/Pesaje'
+                required:
+                  - message
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+    delete:
+      operationId: pesajes.destroy
+      tags:
+        - Pesaje
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Pesaje eliminado correctamente.'
+                required:
+                  - message
+      security: {}
+  /v1/potreros:
+    get:
+      operationId: potreros.index
+      description: 'Retorna el listado paginado de potreros de la finca con filtros por nombre o estado del pasto.'
+      summary: 'Listar potreros'
+      tags:
+        - Potreros
+        - Potrero
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: integer
+                const: 200
+      security: {}
+    post:
+      operationId: potreros.store
+      description: 'Crea un potrero en el sistema indicando capacidad, área y estado del pasto.'
+      summary: 'Registrar un nuevo potrero'
+      tags:
+        - Potreros
+        - Potrero
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StorePotreroRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: integer
+                const: 201
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+  '/v1/potreros/{id}':
+    get:
+      operationId: potreros.show
+      description: 'Retorna la información de un potrero específico por su ID.'
+      summary: 'Obtener detalle de un potrero'
+      tags:
+        - Potreros
+        - Potrero
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: integer
+                const: 200
+      security: {}
+    put:
+      operationId: potreros.update
+      description: 'Actualiza la información de un potrero existente.'
+      summary: 'Actualizar datos de un potrero'
+      tags:
+        - Potreros
+        - Potrero
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePotreroRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: integer
+                const: 200
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+    delete:
+      operationId: potreros.destroy
+      description: 'Elimina el potrero indicado. Falla si el potrero tiene animales asignados actualmente (RN-02).'
+      summary: 'Eliminar un potrero'
+      tags:
+        - Potreros
+        - Potrero
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: integer
+                const: 200
+      security: {}
+  /v1/razas:
+    get:
+      operationId: razas.index
+      tags:
+        - Raza
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Listado de razas obtenido correctamente.'
+                  data:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        minimum: 1
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Raza'
+                      first_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      from:
+                        type:
+                          - integer
+                          - 'null'
+                        minimum: 1
+                      last_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      last_page:
+                        type: integer
+                        minimum: 1
+                      links:
+                        type: array
+                        description: 'Generated paginator links.'
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type:
+                                - string
+                                - 'null'
+                            label:
+                              type: string
+                            active:
+                              type: boolean
+                          required:
+                            - url
+                            - label
+                            - active
+                      next_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      prev_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      to:
+                        type:
+                          - integer
+                          - 'null'
+                        description: 'Number of the last item in the slice.'
+                        minimum: 1
+                      total:
+                        type: integer
+                        description: 'Total number of items being paginated.'
+                        minimum: 0
+                    required:
+                      - current_page
+                      - data
+                      - first_page_url
+                      - from
+                      - last_page_url
+                      - last_page
+                      - links
+                      - next_page_url
+                      - path
+                      - per_page
+                      - prev_page_url
+                      - to
+                      - total
+                required:
+                  - message
+                  - data
+      security: {}
+    post:
+      operationId: razas.store
+      tags:
+        - Raza
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreRazaRequest'
+      responses:
+        201:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Raza creada correctamente.'
+                  data:
+                    $ref: '#/components/schemas/Raza'
+                required:
+                  - message
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+  '/v1/razas/{id}':
+    get:
+      operationId: razas.show
+      tags:
+        - Raza
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Raza obtenida correctamente.'
+                  data:
+                    $ref: '#/components/schemas/Raza'
+                required:
+                  - message
+                  - data
+      security: {}
+    put:
+      operationId: razas.update
+      tags:
+        - Raza
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRazaRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Raza actualizada correctamente.'
+                  data:
+                    $ref: '#/components/schemas/Raza'
+                required:
+                  - message
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+    delete:
+      operationId: razas.destroy
+      tags:
+        - Raza
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Raza eliminada correctamente.'
+                required:
+                  - message
+      security: {}
+  /v1/tratamientos:
+    get:
+      operationId: tratamientos.index
+      tags:
+        - Tratamiento
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Listado de tratamientos obtenido correctamente.'
+                  data:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        minimum: 1
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Tratamiento'
+                      first_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      from:
+                        type:
+                          - integer
+                          - 'null'
+                        minimum: 1
+                      last_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      last_page:
+                        type: integer
+                        minimum: 1
+                      links:
+                        type: array
+                        description: 'Generated paginator links.'
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type:
+                                - string
+                                - 'null'
+                            label:
+                              type: string
+                            active:
+                              type: boolean
+                          required:
+                            - url
+                            - label
+                            - active
+                      next_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      prev_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      to:
+                        type:
+                          - integer
+                          - 'null'
+                        description: 'Number of the last item in the slice.'
+                        minimum: 1
+                      total:
+                        type: integer
+                        description: 'Total number of items being paginated.'
+                        minimum: 0
+                    required:
+                      - current_page
+                      - data
+                      - first_page_url
+                      - from
+                      - last_page_url
+                      - last_page
+                      - links
+                      - next_page_url
+                      - path
+                      - per_page
+                      - prev_page_url
+                      - to
+                      - total
+                required:
+                  - message
+                  - data
+      security: {}
+    post:
+      operationId: tratamientos.store
+      tags:
+        - Tratamiento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreTratamientoRequest'
+      responses:
+        201:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Tratamiento creado correctamente.'
+                  data:
+                    $ref: '#/components/schemas/Tratamiento'
+                required:
+                  - message
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+  '/v1/tratamientos/{id}':
+    get:
+      operationId: tratamientos.show
+      tags:
+        - Tratamiento
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Tratamiento obtenido correctamente.'
+                  data:
+                    $ref: '#/components/schemas/Tratamiento'
+                required:
+                  - message
+                  - data
+      security: {}
+    put:
+      operationId: tratamientos.update
+      tags:
+        - Tratamiento
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTratamientoRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Tratamiento actualizado correctamente.'
+                  data:
+                    $ref: '#/components/schemas/Tratamiento'
+                required:
+                  - message
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+    delete:
+      operationId: tratamientos.destroy
+      tags:
+        - Tratamiento
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Tratamiento eliminado correctamente.'
+                required:
+                  - message
+      security: {}
+  /v1/tratamiento-animal:
+    get:
+      operationId: tratamiento-animal.index
+      tags:
+        - TratamientoAnimal
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Listado de aplicaciones de tratamiento obtenido correctamente.'
+                  data:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        minimum: 1
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TratamientoAnimal'
+                      first_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      from:
+                        type:
+                          - integer
+                          - 'null'
+                        minimum: 1
+                      last_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      last_page:
+                        type: integer
+                        minimum: 1
+                      links:
+                        type: array
+                        description: 'Generated paginator links.'
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type:
+                                - string
+                                - 'null'
+                            label:
+                              type: string
+                            active:
+                              type: boolean
+                          required:
+                            - url
+                            - label
+                            - active
+                      next_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      prev_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      to:
+                        type:
+                          - integer
+                          - 'null'
+                        description: 'Number of the last item in the slice.'
+                        minimum: 1
+                      total:
+                        type: integer
+                        description: 'Total number of items being paginated.'
+                        minimum: 0
+                    required:
+                      - current_page
+                      - data
+                      - first_page_url
+                      - from
+                      - last_page_url
+                      - last_page
+                      - links
+                      - next_page_url
+                      - path
+                      - per_page
+                      - prev_page_url
+                      - to
+                      - total
+                required:
+                  - message
+                  - data
+      security: {}
+    post:
+      operationId: tratamiento-animal.store
+      tags:
+        - TratamientoAnimal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreTratamientoAnimalRequest'
+      responses:
+        201:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Aplicación de tratamiento registrada correctamente.'
+                  data:
+                    $ref: '#/components/schemas/TratamientoAnimal'
+                required:
+                  - message
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+  '/v1/tratamiento-animal/{id}':
+    get:
+      operationId: tratamiento-animal.show
+      tags:
+        - TratamientoAnimal
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Aplicación de tratamiento obtenida correctamente.'
+                  data:
+                    $ref: '#/components/schemas/TratamientoAnimal'
+                required:
+                  - message
+                  - data
+      security: {}
+    put:
+      operationId: tratamiento-animal.update
+      tags:
+        - TratamientoAnimal
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTratamientoAnimalRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Aplicación de tratamiento actualizada correctamente.'
+                  data:
+                    $ref: '#/components/schemas/TratamientoAnimal'
+                required:
+                  - message
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+    delete:
+      operationId: tratamiento-animal.destroy
+      tags:
+        - TratamientoAnimal
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Aplicación de tratamiento eliminada correctamente.'
+                required:
+                  - message
+      security: {}
+  /v1/unidad-medida:
+    get:
+      operationId: unidad-medida.index
+      tags:
+        - UnidadMedida
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Listado de unidades de medida obtenido correctamente.'
+                  data:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        minimum: 1
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/UnidadMedida'
+                      first_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      from:
+                        type:
+                          - integer
+                          - 'null'
+                        minimum: 1
+                      last_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      last_page:
+                        type: integer
+                        minimum: 1
+                      links:
+                        type: array
+                        description: 'Generated paginator links.'
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type:
+                                - string
+                                - 'null'
+                            label:
+                              type: string
+                            active:
+                              type: boolean
+                          required:
+                            - url
+                            - label
+                            - active
+                      next_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      prev_page_url:
+                        type:
+                          - string
+                          - 'null'
+                      to:
+                        type:
+                          - integer
+                          - 'null'
+                        description: 'Number of the last item in the slice.'
+                        minimum: 1
+                      total:
+                        type: integer
+                        description: 'Total number of items being paginated.'
+                        minimum: 0
+                    required:
+                      - current_page
+                      - data
+                      - first_page_url
+                      - from
+                      - last_page_url
+                      - last_page
+                      - links
+                      - next_page_url
+                      - path
+                      - per_page
+                      - prev_page_url
+                      - to
+                      - total
+                required:
+                  - message
+                  - data
+      security: {}
+    post:
+      operationId: unidad-medida.store
+      tags:
+        - UnidadMedida
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreUnidadMedidaRequest'
+      responses:
+        201:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Unidad de medida creada correctamente.'
+                  data:
+                    $ref: '#/components/schemas/UnidadMedida'
+                required:
+                  - message
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+  '/v1/unidad-medida/{id}':
+    get:
+      operationId: unidad-medida.show
+      tags:
+        - UnidadMedida
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Unidad de medida obtenida correctamente.'
+                  data:
+                    $ref: '#/components/schemas/UnidadMedida'
+                required:
+                  - message
+                  - data
+      security: {}
+    put:
+      operationId: unidad-medida.update
+      tags:
+        - UnidadMedida
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUnidadMedidaRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Unidad de medida actualizada correctamente.'
+                  data:
+                    $ref: '#/components/schemas/UnidadMedida'
+                required:
+                  - message
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+      security: {}
+    delete:
+      operationId: unidad-medida.destroy
+      tags:
+        - UnidadMedida
+      parameters:
+        -
+          name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    const: 'Unidad de medida eliminada correctamente.'
+                required:
+                  - message
+      security: {}
+components:
+  securitySchemes:
+    http:
+      type: http
+      scheme: bearer
+  schemas:
+    Categoria:
+      type: object
+      properties:
+        categoria_id:
+          type: integer
+        nombre:
+          type: string
+        tipo:
+          type:
+            - string
+            - 'null'
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        updated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - categoria_id
+        - nombre
+        - tipo
+        - created_at
+        - updated_at
+      title: Categoria
+    Insumo:
+      type: object
+      properties:
+        insumo_id:
+          type: integer
+        nombre:
+          type: string
+        categoria_id:
+          type: integer
+        precio:
+          type: number
+        unidad_medida_id:
+          type: integer
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        updated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - insumo_id
+        - nombre
+        - categoria_id
+        - precio
+        - unidad_medida_id
+        - created_at
+        - updated_at
+      title: Insumo
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+      required:
+        - email
+        - password
+      title: LoginRequest
+    Pesaje:
+      type: object
+      properties:
+        pesaje_id:
+          type: integer
+        id_animal:
+          type: integer
+        peso_kg:
+          type: number
+        fecha_pesaje:
+          type: string
+          format: date-time
+        observaciones:
+          type:
+            - string
+            - 'null'
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        updated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - pesaje_id
+        - id_animal
+        - peso_kg
+        - fecha_pesaje
+        - observaciones
+        - created_at
+        - updated_at
+      title: Pesaje
+    Raza:
+      type: object
+      properties:
+        raza_id:
+          type: integer
+        nombre:
+          type: string
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        updated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - raza_id
+        - nombre
+        - created_at
+        - updated_at
+      title: Raza
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        password:
+          type: string
+          minLength: 8
+        role:
+          description: |-
+            Exige enviar 'password_confirmation'
+            El rol es obligatorio y SOLO puede ser uno de los definidos en el Enum:
+          $ref: '#/components/schemas/UserRole'
+        password_confirmation:
+          type: string
+          minLength: 8
+      required:
+        - name
+        - email
+        - password
+        - role
+        - password_confirmation
+      title: RegisterRequest
+    StoreAnimalRequest:
+      type: object
+      properties:
+        numero_arete:
+          type: string
+          maxLength: 50
+        raza_id:
+          type: integer
+        sexo:
+          type: string
+          enum:
+            - Macho
+            - Hembra
+        fecha_nacimiento:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        estado:
+          type:
+            - string
+            - 'null'
+          maxLength: 50
+        potrero_id:
+          type: integer
+      required:
+        - numero_arete
+        - raza_id
+        - sexo
+        - potrero_id
+      title: StoreAnimalRequest
+    StoreCategoriaRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          maxLength: 100
+        tipo:
+          type:
+            - string
+            - 'null'
+          maxLength: 50
+      required:
+        - nombre
+      title: StoreCategoriaRequest
+    StoreInsumoRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          maxLength: 150
+        categoria_id:
+          type: integer
+        precio:
+          type: number
+          minimum: 0
+        unidad_medida_id:
+          type: integer
+      required:
+        - nombre
+        - categoria_id
+        - precio
+        - unidad_medida_id
+      title: StoreInsumoRequest
+    StorePesajeRequest:
+      type: object
+      properties:
+        id_animal:
+          type: integer
+        peso_kg:
+          type: number
+          minimum: 0
+          maximum: 9999.99
+        fecha_pesaje:
+          type: string
+          format: date-time
+        observaciones:
+          type:
+            - string
+            - 'null'
+      required:
+        - id_animal
+        - peso_kg
+        - fecha_pesaje
+      title: StorePesajeRequest
+    StorePotreroRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          maxLength: 100
+        hectareas_de_extension:
+          type: number
+          minimum: 0
+          maximum: 999999.99
+        capacidad_maxima:
+          type: integer
+          minimum: 0
+        estado_pasto:
+          type:
+            - string
+            - 'null'
+          maxLength: 50
+      required:
+        - nombre
+        - hectareas_de_extension
+        - capacidad_maxima
+      title: StorePotreroRequest
+    StoreRazaRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          maxLength: 100
+      required:
+        - nombre
+      title: StoreRazaRequest
+    StoreTratamientoAnimalRequest:
+      type: object
+      properties:
+        id_animal:
+          type: integer
+        tratamiento_id:
+          type: integer
+        fecha_aplicacion:
+          type: string
+          format: date-time
+        dosis_ml:
+          type: number
+          minimum: 0
+          maximum: 9999.99
+        observaciones:
+          type:
+            - string
+            - 'null'
+      required:
+        - id_animal
+        - tratamiento_id
+        - fecha_aplicacion
+        - dosis_ml
+      title: StoreTratamientoAnimalRequest
+    StoreTratamientoRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          maxLength: 100
+        descripcion:
+          type:
+            - string
+            - 'null'
+        tipo:
+          type:
+            - string
+            - 'null'
+          maxLength: 50
+      required:
+        - nombre
+      title: StoreTratamientoRequest
+    StoreUnidadMedidaRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          maxLength: 100
+        apertura:
+          type:
+            - string
+            - 'null'
+          maxLength: 20
+      required:
+        - nombre
+      title: StoreUnidadMedidaRequest
+    Tratamiento:
+      type: object
+      properties:
+        tratamiento_id:
+          type: integer
+        nombre:
+          type: string
+        descripcion:
+          type:
+            - string
+            - 'null'
+        tipo:
+          type:
+            - string
+            - 'null'
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        updated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - tratamiento_id
+        - nombre
+        - descripcion
+        - tipo
+        - created_at
+        - updated_at
+      title: Tratamiento
+    TratamientoAnimal:
+      type: object
+      properties:
+        tratamiento_animal_id:
+          type: integer
+        id_animal:
+          type: integer
+        tratamiento_id:
+          type: integer
+        fecha_aplicacion:
+          type: string
+          format: date-time
+        dosis_ml:
+          type: number
+        observaciones:
+          type:
+            - string
+            - 'null'
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        updated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - tratamiento_animal_id
+        - id_animal
+        - tratamiento_id
+        - fecha_aplicacion
+        - dosis_ml
+        - observaciones
+        - created_at
+        - updated_at
+      title: TratamientoAnimal
+    UnidadMedida:
+      type: object
+      properties:
+        unidad_medida_id:
+          type: integer
+        nombre:
+          type: string
+        apertura:
+          type:
+            - string
+            - 'null'
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        updated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - unidad_medida_id
+        - nombre
+        - apertura
+        - created_at
+        - updated_at
+      title: UnidadMedida
+    UpdateAnimalRequest:
+      type: object
+      properties:
+        numero_arete:
+          type: string
+          maxLength: 50
+        raza_id:
+          type: integer
+        sexo:
+          type: string
+          enum:
+            - Macho
+            - Hembra
+        fecha_nacimiento:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        estado:
+          type:
+            - string
+            - 'null'
+          maxLength: 50
+        potrero_id:
+          type: integer
+      title: UpdateAnimalRequest
+    UpdateCategoriaRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          maxLength: 100
+        tipo:
+          type:
+            - string
+            - 'null'
+          maxLength: 50
+      title: UpdateCategoriaRequest
+    UpdateInsumoRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          maxLength: 150
+        categoria_id:
+          type: integer
+        precio:
+          type: number
+          minimum: 0
+        unidad_medida_id:
+          type: integer
+      title: UpdateInsumoRequest
+    UpdatePesajeRequest:
+      type: object
+      properties:
+        id_animal:
+          type: integer
+        peso_kg:
+          type: number
+          minimum: 0
+          maximum: 9999.99
+        fecha_pesaje:
+          type: string
+          format: date-time
+        observaciones:
+          type:
+            - string
+            - 'null'
+      title: UpdatePesajeRequest
+    UpdatePotreroRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          maxLength: 100
+        hectareas_de_extension:
+          type: number
+          minimum: 0
+          maximum: 999999.99
+        capacidad_maxima:
+          type: integer
+          minimum: 0
+        estado_pasto:
+          type:
+            - string
+            - 'null'
+          maxLength: 50
+      title: UpdatePotreroRequest
+    UpdateRazaRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          maxLength: 100
+      title: UpdateRazaRequest
+    UpdateTratamientoAnimalRequest:
+      type: object
+      properties:
+        id_animal:
+          type: integer
+        tratamiento_id:
+          type: integer
+        fecha_aplicacion:
+          type: string
+          format: date-time
+        dosis_ml:
+          type: number
+          minimum: 0
+          maximum: 9999.99
+        observaciones:
+          type:
+            - string
+            - 'null'
+      title: UpdateTratamientoAnimalRequest
+    UpdateTratamientoRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          maxLength: 100
+        descripcion:
+          type:
+            - string
+            - 'null'
+        tipo:
+          type:
+            - string
+            - 'null'
+          maxLength: 50
+      title: UpdateTratamientoRequest
+    UpdateUnidadMedidaRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          maxLength: 100
+        apertura:
+          type:
+            - string
+            - 'null'
+          maxLength: 20
+      title: UpdateUnidadMedidaRequest
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        email_verified_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        role:
+          $ref: '#/components/schemas/UserRole'
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        updated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - id
+        - name
+        - email
+        - email_verified_at
+        - role
+        - created_at
+        - updated_at
+      title: User
+    UserRole:
+      type: string
+      enum:
+        - admin
+        - operario
+        - veterinario
+      title: UserRole
+  responses:
+    AuthenticationException:
+      description: Unauthenticated
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: 'Error overview.'
+            required:
+              - message
+    ValidationException:
+      description: 'Validation error'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: 'Errors overview.'
+              errors:
+                type: object
+                description: 'A detailed description of each field that failed validation.'
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+            required:
+              - message
+              - errors

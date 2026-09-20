@@ -12,19 +12,23 @@ use App\Services\AnimalService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Validation\Rule;
 
+/**
+ * @tags Animales
+ */
 class AnimalController extends Controller
 {
-
     public function __construct(private readonly AnimalService $animalService)
     {
-        /* Aplicar middleware de autenticación a todas las rutas excepto index y show
-        $this->middleware('auth:sanctum')->except(['index', 'show']);*/
     }
 
-
-    // GET /api/v1/animales
+    /**
+     * Listar animales.
+     *
+     * Retorna el listado paginado de animales con soporte de filtros por raza, potrero, sexo o estado, y ordenamiento dinámico.
+     *
+     * @response 200 { "message": "Listado de animales obtenido correctamente.", "data": {...} }
+     */
     public function index(Request $request): AnimalCollection
     {
         $animales = $this->animalService->listarAnimales($request->query());
@@ -34,7 +38,14 @@ class AnimalController extends Controller
             ->additional(['message' => 'Listado de animales obtenido correctamente.']);
     }
 
-    // GET /api/v1/animales/{animal}
+    /**
+     * Obtener detalle de un animal.
+     *
+     * Retorna la información completa de un animal por su ID, incluyendo raza, potrero, pesajes y tratamientos.
+     *
+     * @response 200 { "message": "Animal obtenido correctamente.", "data": {...} }
+     * @response 404 { "error": "Recurso no encontrado", "mensaje": "El animal no existe." }
+     */
     public function show(int $id): JsonResponse
     {
         $animal = $this->animalService->obtenerPorId($id);
@@ -42,7 +53,15 @@ class AnimalController extends Controller
         return $this->respuestaOk(new AnimalResource($animal), 'Animal obtenido correctamente.');
     }
 
-    // POST /api/v1/animales
+    /**
+     * Registrar un nuevo animal.
+     *
+     * Valida los datos y registra un nuevo animal, verificando la capacidad disponible del potrero seleccionado.
+     *
+     * @response 201 { "message": "Animal creado correctamente.", "data": {...} }
+     * @response 422 { "message": "Los datos proporcionados no son válidos.", "errors": {...} }
+     * @response 409 { "error": "Regla de Negocio", "mensaje": "El potrero seleccionado ha alcanzado su capacidad máxima." }
+     */
     public function store(StoreAnimalRequest $request): JsonResponse
     {
         $animal = $this->animalService->crearAnimal($request->validated());
@@ -50,15 +69,31 @@ class AnimalController extends Controller
         return $this->respuestaCreada($animal, 'Animal creado correctamente.', 'animales', new AnimalResource($animal));
     }
 
-    // PUT/PATCH /api/v1/animales/{animal}
-    public function update(UpdateAnimalRequest $request,int $id):JsonResponse
+    /**
+     * Actualizar datos de un animal.
+     *
+     * Actualiza la información del animal especificado por su ID.
+     *
+     * @response 200 { "message": "Animal actualizado correctamente.", "data": {...} }
+     * @response 404 { "error": "Recurso no encontrado" }
+     * @response 422 { "message": "Los datos proporcionados no son válidos." }
+     */
+    public function update(UpdateAnimalRequest $request, int $id): JsonResponse
     {
         $animal = $this->animalService->actualizarAnimal($id, $request->validated());
 
         return $this->respuestaOk(new AnimalResource($animal), 'Animal actualizado correctamente.');
     }
 
-    // DELETE /api/v1/animales/{animal}
+    /**
+     * Eliminar un animal.
+     *
+     * Elimina el animal del sistema. Falla si el animal tiene historial de pesajes registrados (RN-01).
+     *
+     * @response 200 { "message": "Animal eliminado correctamente." }
+     * @response 404 { "error": "Recurso no encontrado" }
+     * @response 409 { "error": "Regla de Negocio", "mensaje": "No se puede eliminar el animal porque tiene pesajes registrados." }
+     */
     public function destroy($id): Response
     {
         $this->animalService->eliminarAnimal($id);
