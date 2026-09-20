@@ -7,9 +7,9 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 
-/**
- * @tags Autenticación
- */
+use Dedoc\Scramble\Attributes\Group;
+
+#[Group('Autenticación')]
 class RegisterController extends Controller
 {
     /**

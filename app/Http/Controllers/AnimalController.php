@@ -16,9 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 
-/**
- * @tags Animales
- */
+
 class AnimalController extends Controller
 {
     public function __construct(
