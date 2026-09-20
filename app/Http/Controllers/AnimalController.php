@@ -7,6 +7,8 @@ use App\Http\Requests\StoreAnimalRequest;
 use App\Http\Requests\UpdateAnimalRequest;
 use App\Http\Resources\AnimalCollection;
 use App\Http\Resources\AnimalResource;
+use App\Http\Resources\AnimalCollection;
+use App\Http\Resources\AnimalResource;
 use App\Models\Animal;
 use App\Services\AnimalService;
 use Illuminate\Http\JsonResponse;
@@ -14,9 +16,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
 
+/**
+ * @tags Animales
+ */
 class AnimalController extends Controller
 {
-
     public function __construct(private readonly AnimalService $animalService)
     {
         /* Aplicar middleware de autenticación a todas las rutas excepto index y show
@@ -46,6 +50,7 @@ class AnimalController extends Controller
     public function store(StoreAnimalRequest $request): JsonResponse
     {
         $animal = $this->animalService->crearAnimal($request->validated());
+        $animal = $this->animalService->crearAnimal($request->validated());
 
         return $this->respuestaCreada($animal, 'Animal creado correctamente.', 'animales', new AnimalResource($animal));
     }
@@ -63,6 +68,7 @@ class AnimalController extends Controller
     {
         $this->animalService->eliminarAnimal($id);
 
+        return $this->respuestaSinContenido();
         return $this->respuestaSinContenido();
     }
 }
