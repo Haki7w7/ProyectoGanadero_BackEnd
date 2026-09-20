@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateUnidadMedidaRequest;
 use App\Services\UnidadMedidaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class UnidadMedidaController extends Controller
 {
@@ -20,10 +21,7 @@ class UnidadMedidaController extends Controller
     {
         $unidades = $this->unidadMedidaService->listarUnidadesMedida($request->query());
 
-        return response()->json([
-            'message' => 'Listado de unidades de medida obtenido correctamente.',
-            'data'    => $unidades,
-        ], 200);
+        return $this->respuestaPaginada($unidades, 'Listado de unidades de medida obtenido correctamente.');
     }
 
     // GET /api/unidad-medida/{id}
@@ -42,10 +40,7 @@ class UnidadMedidaController extends Controller
     {
         $unidad = $this->unidadMedidaService->crearUnidadMedida($request->validated());
 
-        return response()->json([
-            'message' => 'Unidad de medida creada correctamente.',
-            'data'    => $unidad,
-        ], 201);
+        return $this->respuestaCreada($unidad, 'Unidad de medida creada correctamente.', 'unidad-medida');
     }
 
     // PUT/PATCH /api/unidad-medida/{id}
@@ -60,12 +55,10 @@ class UnidadMedidaController extends Controller
     }
 
     // DELETE /api/unidad-medida/{id}
-    public function destroy($id): JsonResponse
+    public function destroy($id): Response
     {
         $this->unidadMedidaService->eliminarUnidadMedida((int) $id);
 
-        return response()->json([
-            'message' => 'Unidad de medida eliminada correctamente.',
-        ], 200);
+        return $this->respuestaSinContenido();
     }
 }

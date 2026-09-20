@@ -20,15 +20,12 @@ class PotreroControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'message',
-                'data' => [
-                    'current_page',
-                    'data',
-                    'per_page',
-                    'total',
-                ],
+                'data',
+                'meta'  => ['current_page', 'last_page', 'per_page', 'total'],
+                'links' => ['first', 'last', 'prev', 'next'],
             ]);
 
-        $this->assertEquals(5, $response->json('data.per_page'));
+        $this->assertEquals(5, $response->json('meta.per_page'));
     }
 
     public function test_store_potrero_crea_con_codigo_201(): void
@@ -55,7 +52,9 @@ class PotreroControllerTest extends TestCase
 
         $response = $this->deleteJson('/api/v1/potreros/' . $potrero->potrero_id);
 
-        $response->assertStatus(422);
+        // Lab 5: las reglas de negocio responden 409 Conflict.
+        $response->assertStatus(409)
+            ->assertJsonPath('error', 'Regla de Negocio');
         $this->assertDatabaseHas('potreros', ['potrero_id' => $potrero->potrero_id]);
     }
 }

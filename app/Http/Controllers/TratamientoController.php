@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTratamientoRequest;
 use App\Http\Requests\UpdateTratamientoRequest;
+use App\Http\Resources\TratamientoResource;
 use App\Services\TratamientoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class TratamientoController extends Controller
 {
@@ -15,57 +17,43 @@ class TratamientoController extends Controller
     {
     }
 
-    // GET /api/tratamientos
+    // GET /api/v1/tratamientos
     public function index(Request $request): JsonResponse
     {
         $tratamientos = $this->tratamientoService->listarTratamientos($request->query());
 
-        return response()->json([
-            'message' => 'Listado de tratamientos obtenido correctamente.',
-            'data'    => $tratamientos,
-        ], 200);
+        return $this->respuestaPaginada($tratamientos, 'Listado de tratamientos obtenido correctamente.', TratamientoResource::class);
     }
 
-    // GET /api/tratamientos/{id}
+    // GET /api/v1/tratamientos/{tratamiento}
     public function show(int $id): JsonResponse
     {
         $tratamiento = $this->tratamientoService->obtenerPorId($id);
 
-        return response()->json([
-            'message' => 'Tratamiento obtenido correctamente.',
-            'data'    => $tratamiento,
-        ], 200);
+        return $this->respuestaOk(new TratamientoResource($tratamiento), 'Tratamiento obtenido correctamente.');
     }
 
-    // POST /api/tratamientos
+    // POST /api/v1/tratamientos
     public function store(StoreTratamientoRequest $request): JsonResponse
     {
         $tratamiento = $this->tratamientoService->crearTratamiento($request->validated());
 
-        return response()->json([
-            'message' => 'Tratamiento creado correctamente.',
-            'data'    => $tratamiento,
-        ], 201);
+        return $this->respuestaCreada($tratamiento, 'Tratamiento creado correctamente.', 'tratamientos', new TratamientoResource($tratamiento));
     }
 
-    // PUT/PATCH /api/tratamientos/{id}
+    // PUT/PATCH /api/v1/tratamientos/{tratamiento}
     public function update(UpdateTratamientoRequest $request, int $id): JsonResponse
     {
         $tratamiento = $this->tratamientoService->actualizarTratamiento($id, $request->validated());
 
-        return response()->json([
-            'message' => 'Tratamiento actualizado correctamente.',
-            'data'    => $tratamiento,
-        ], 200);
+        return $this->respuestaOk(new TratamientoResource($tratamiento), 'Tratamiento actualizado correctamente.');
     }
 
-    // DELETE /api/tratamientos/{id}
-    public function destroy($id): JsonResponse
+    // DELETE /api/v1/tratamientos/{tratamiento}
+    public function destroy($id): Response
     {
         $this->tratamientoService->eliminarTratamiento((int) $id);
 
-        return response()->json([
-            'message' => 'Tratamiento eliminado correctamente.',
-        ], 200);
+        return $this->respuestaSinContenido();
     }
 }
