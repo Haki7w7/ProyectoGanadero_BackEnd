@@ -26,7 +26,7 @@ class TratamientoAnimalResource extends JsonResource
                 'id_animal'    => $this->animal->id_animal,
                 'numero_arete' => $this->animal->numero_arete,
             ]),
-            'tratamiento'           => new TratamientoResource($this->whenLoaded('tratamiento')),
+            'tratamiento'           => TratamientoResource::make($this->whenLoaded('tratamiento')),
             'created_at'            => $this->created_at?->toJSON(),
             'updated_at'            => $this->updated_at?->toJSON(),
         ];

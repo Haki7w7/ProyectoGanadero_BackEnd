@@ -69,6 +69,16 @@ class Animal extends Model
         return $query->where('potrero_id', $potreroId);
     }
 
+    public function scopePorRaza(Builder $query, $razaId): Builder
+    {
+        return $query->where('raza_id', $razaId);
+    }
+
+    public function scopePorEstado(Builder $query, string $estado): Builder
+    {
+        return $query->where('estado', $estado);
+    }
+
     public function scopePorSexo(Builder $query, string $sexo): Builder
     {
         return $query->where('sexo', $sexo);

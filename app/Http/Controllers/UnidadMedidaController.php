@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUnidadMedidaRequest;
 use App\Http\Requests\UpdateUnidadMedidaRequest;
+use App\Http\Resources\UnidadMedidaResource;
 use App\Services\UnidadMedidaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,45 +17,39 @@ class UnidadMedidaController extends Controller
     {
     }
 
-    // GET /api/unidad-medida
+    // GET /api/unidades-medida
     public function index(Request $request): JsonResponse
     {
         $unidades = $this->unidadMedidaService->listarUnidadesMedida($request->query());
 
-        return $this->respuestaPaginada($unidades, 'Listado de unidades de medida obtenido correctamente.');
+        return $this->respuestaPaginada($unidades, 'Listado de unidades de medida obtenido correctamente.', UnidadMedidaResource::class);
     }
 
-    // GET /api/unidad-medida/{id}
+    // GET /api/unidades-medida/{id}
     public function show(int $id): JsonResponse
     {
         $unidad = $this->unidadMedidaService->obtenerPorId($id);
 
-        return response()->json([
-            'message' => 'Unidad de medida obtenida correctamente.',
-            'data'    => $unidad,
-        ], 200);
+        return $this->respuestaOk(new UnidadMedidaResource($unidad), 'Unidad de medida obtenida correctamente.');
     }
 
-    // POST /api/unidad-medida
+    // POST /api/unidades-medida
     public function store(StoreUnidadMedidaRequest $request): JsonResponse
     {
         $unidad = $this->unidadMedidaService->crearUnidadMedida($request->validated());
 
-        return $this->respuestaCreada($unidad, 'Unidad de medida creada correctamente.', 'unidad-medida');
+        return $this->respuestaCreada($unidad, 'Unidad de medida creada correctamente.', 'unidades-medida', new UnidadMedidaResource($unidad));
     }
 
-    // PUT/PATCH /api/unidad-medida/{id}
+    // PUT/PATCH /api/unidades-medida/{id}
     public function update(UpdateUnidadMedidaRequest $request, int $id): JsonResponse
     {
         $unidad = $this->unidadMedidaService->actualizarUnidadMedida($id, $request->validated());
 
-        return response()->json([
-            'message' => 'Unidad de medida actualizada correctamente.',
-            'data'    => $unidad,
-        ], 200);
+        return $this->respuestaOk(new UnidadMedidaResource($unidad), 'Unidad de medida actualizada correctamente.');
     }
 
-    // DELETE /api/unidad-medida/{id}
+    // DELETE /api/unidades-medida/{id}
     public function destroy($id): Response
     {
         $this->unidadMedidaService->eliminarUnidadMedida((int) $id);
