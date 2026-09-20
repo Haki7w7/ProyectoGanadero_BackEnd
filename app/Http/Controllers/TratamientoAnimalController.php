@@ -5,67 +5,70 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTratamientoAnimalRequest;
 use App\Http\Requests\UpdateTratamientoAnimalRequest;
+use App\Http\Resources\TratamientoAnimalResource;
+use App\Services\AnimalService;
 use App\Services\TratamientoAnimalService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class TratamientoAnimalController extends Controller
 {
-    public function __construct(private readonly TratamientoAnimalService $tratamientoAnimalService)
-    {
+    public function __construct(
+        private readonly TratamientoAnimalService $tratamientoAnimalService,
+        private readonly AnimalService $animalService,
+    ) {
     }
 
-    // GET /api/tratamiento-animal
+    // GET /api/v1/tratamiento-animal
     public function index(Request $request): JsonResponse
     {
         $registros = $this->tratamientoAnimalService->listarTratamientoAnimal($request->query());
 
-        return response()->json([
-            'message' => 'Listado de aplicaciones de tratamiento obtenido correctamente.',
-            'data'    => $registros,
-        ], 200);
+        return $this->respuestaPaginada($registros, 'Listado de aplicaciones de tratamiento obtenido correctamente.', TratamientoAnimalResource::class);
     }
 
-    // GET /api/tratamiento-animal/{id}
+    // GET /api/v1/animales/{animal}/tratamientos  (historial sanitario del animal)
+    public function indexPorAnimal(Request $request, int $animal): JsonResponse
+    {
+        $this->animalService->verificarExistencia($animal);
+
+        // El animal de la URL siempre manda sobre cualquier ?id_animal= de la query.
+        $filtros = array_merge($request->query(), ['id_animal' => $animal]);
+        $registros = $this->tratamientoAnimalService->listarTratamientoAnimal($filtros);
+
+        return $this->respuestaPaginada($registros, 'Historial sanitario del animal obtenido correctamente.', TratamientoAnimalResource::class);
+    }
+
+    // GET /api/v1/tratamiento-animal/{tratamiento_animal}
     public function show(int $id): JsonResponse
     {
         $registro = $this->tratamientoAnimalService->obtenerPorId($id);
 
-        return response()->json([
-            'message' => 'Aplicación de tratamiento obtenida correctamente.',
-            'data'    => $registro,
-        ], 200);
+        return $this->respuestaOk(new TratamientoAnimalResource($registro), 'Aplicación de tratamiento obtenida correctamente.');
     }
 
-    // POST /api/tratamiento-animal
+    // POST /api/v1/tratamiento-animal
     public function store(StoreTratamientoAnimalRequest $request): JsonResponse
     {
         $registro = $this->tratamientoAnimalService->crearTratamientoAnimal($request->validated());
 
-        return response()->json([
-            'message' => 'Aplicación de tratamiento registrada correctamente.',
-            'data'    => $registro,
-        ], 201);
+        return $this->respuestaCreada($registro, 'Aplicación de tratamiento registrada correctamente.', 'tratamiento-animal', new TratamientoAnimalResource($registro));
     }
 
-    // PUT/PATCH /api/tratamiento-animal/{id}
+    // PUT/PATCH /api/v1/tratamiento-animal/{tratamiento_animal}
     public function update(UpdateTratamientoAnimalRequest $request, int $id): JsonResponse
     {
         $registro = $this->tratamientoAnimalService->actualizarTratamientoAnimal($id, $request->validated());
 
-        return response()->json([
-            'message' => 'Aplicación de tratamiento actualizada correctamente.',
-            'data'    => $registro,
-        ], 200);
+        return $this->respuestaOk(new TratamientoAnimalResource($registro), 'Aplicación de tratamiento actualizada correctamente.');
     }
 
-    // DELETE /api/tratamiento-animal/{id}
-    public function destroy($id): JsonResponse
+    // DELETE /api/v1/tratamiento-animal/{tratamiento_animal}
+    public function destroy($id): Response
     {
         $this->tratamientoAnimalService->eliminarTratamientoAnimal((int) $id);
 
-        return response()->json([
-            'message' => 'Aplicación de tratamiento eliminada correctamente.',
-        ], 200);
+        return $this->respuestaSinContenido();
     }
 }

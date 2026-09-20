@@ -9,6 +9,7 @@ use App\Models\Potrero;
 use App\Services\PotreroService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class PotreroController extends Controller
 {
@@ -25,10 +26,7 @@ public function __construct(private readonly PotreroService $potreroService)
     {
         $potreros = $this->potreroService->listarPotreros($request->query());
 
-        return response()->json([
-            'message' => 'Listado de potreros obtenido correctamente.',
-            'data'    => $potreros,
-        ], 200);
+        return $this->respuestaPaginada($potreros, 'Listado de potreros obtenido correctamente.');
     }
 
     // GET /api/potreros/{id_potrero}
@@ -47,10 +45,7 @@ public function __construct(private readonly PotreroService $potreroService)
     {
       $potrero = $this->potreroService->crearPotrero($request->validated());
 
-        return response()->json([
-            'message' => 'Potrero creado correctamente.',
-            'data'    => $potrero,
-        ], 201);
+        return $this->respuestaCreada($potrero, 'Potrero creado correctamente.', 'potreros');
     }
 
     // PUT/PATCH /api/potreros/{potrero}
@@ -65,12 +60,10 @@ public function __construct(private readonly PotreroService $potreroService)
     }
 
     // DELETE /api/potreros/{potrero}
-    public function destroy(int $id):JsonResponse
+    public function destroy(int $id): Response
     {
-        $potrero = $this->potreroService->eliminarPotrero($id);
+        $this->potreroService->eliminarPotrero($id);
 
-        return response()->json([
-            'message' => 'Potrero eliminado correctamente.',
-        ], 200);
+        return $this->respuestaSinContenido();
     }
 }

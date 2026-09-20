@@ -52,6 +52,18 @@ class AnimalService
     }
 
     /**
+     * Verifica que el animal exista sin cargar sus relaciones. Se usa en las
+     * rutas anidadas (/animales/{animal}/...) para responder 404 cuando el
+     * animal de la URL no existe.
+     */
+    public function verificarExistencia(int $id): void
+    {
+        if (!Animal::whereKey($id)->exists()) {
+            throw new ReglaNegocioException('El animal solicitado no existe.', 404);
+        }
+    }
+
+    /**
      * Crea un animal ya validado previamente por StoreAnimalRequest.
      *
      * No asigna un animal a un potrero que ya alcanzó su capacidad máxima.
