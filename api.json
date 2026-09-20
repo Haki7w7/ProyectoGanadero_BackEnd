@@ -10,12 +10,91 @@
             "url": "http://localhost:8000/api"
         }
     ],
+    "tags": [
+        {
+            "name": "Autenticaci\u00f3n"
+        }
+    ],
     "security": [
         {
             "http": []
         }
     ],
     "paths": {
+        "/v1/auth/login": {
+            "post": {
+                "operationId": "login",
+                "description": "Valida las credenciales del usuario y genera un token de acceso personal (Bearer Token).",
+                "summary": "Iniciar sesi\u00f3n",
+                "tags": [
+                    "Autenticaci\u00f3n"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "integer",
+                                    "const": 200
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/v1/auth/register": {
+            "post": {
+                "operationId": "register",
+                "description": "Registra un nuevo usuario con rol asignado (admin, operario, veterinario) y emite un token Bearer.",
+                "summary": "Registrar usuario",
+                "tags": [
+                    "Autenticaci\u00f3n"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "integer",
+                                    "const": 201
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": []
+            }
+        },
         "/user": {
             "get": {
                 "responses": {
@@ -41,7 +120,6 @@
                 "description": "Retorna el listado paginado de animales con soporte de filtros por raza, potrero, sexo o estado, y ordenamiento din\u00e1mico.",
                 "summary": "Listar animales",
                 "tags": [
-                    "Animales",
                     "Animal"
                 ],
                 "responses": {
@@ -64,7 +142,6 @@
                 "description": "Valida los datos y registra un nuevo animal, verificando la capacidad disponible del potrero seleccionado.",
                 "summary": "Registrar un nuevo animal",
                 "tags": [
-                    "Animales",
                     "Animal"
                 ],
                 "requestBody": {
@@ -102,7 +179,6 @@
                 "description": "Retorna la informaci\u00f3n completa de un animal por su ID, incluyendo raza, potrero, pesajes y tratamientos.",
                 "summary": "Obtener detalle de un animal",
                 "tags": [
-                    "Animales",
                     "Animal"
                 ],
                 "parameters": [
@@ -135,7 +211,6 @@
                 "description": "Actualiza la informaci\u00f3n del animal especificado por su ID.",
                 "summary": "Actualizar datos de un animal",
                 "tags": [
-                    "Animales",
                     "Animal"
                 ],
                 "parameters": [
@@ -180,7 +255,6 @@
                 "description": "Elimina el animal del sistema. Falla si el animal tiene historial de pesajes registrados (RN-01).",
                 "summary": "Eliminar un animal",
                 "tags": [
-                    "Animales",
                     "Animal"
                 ],
                 "parameters": [
@@ -209,85 +283,11 @@
                 "security": []
             }
         },
-        "/v1/auth/login": {
-            "post": {
-                "operationId": "login",
-                "description": "Valida las credenciales del usuario y genera un token de acceso personal (Bearer Token).",
-                "summary": "Iniciar sesi\u00f3n",
-                "tags": [
-                    "Autenticaci\u00f3n",
-                    "Login"
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/LoginRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "integer",
-                                    "const": 200
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    }
-                },
-                "security": []
-            }
-        },
-        "/v1/auth/register": {
-            "post": {
-                "operationId": "register",
-                "description": "Registra un nuevo usuario con rol asignado (admin, operario, veterinario) y emite un token Bearer.",
-                "summary": "Registrar usuario",
-                "tags": [
-                    "Autenticaci\u00f3n",
-                    "Register"
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RegisterRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "integer",
-                                    "const": 201
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    }
-                },
-                "security": []
-            }
-        },
         "/v1/categorias": {
             "get": {
                 "operationId": "categorias.index",
+                "description": "Retorna el listado paginado de categor\u00edas registradas en el sistema.",
+                "summary": "Listar categor\u00edas",
                 "tags": [
                     "Categoria"
                 ],
@@ -304,125 +304,76 @@
                                             "const": "Listado de categor\u00edas obtenido correctamente."
                                         },
                                         "data": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "meta": {
                                             "type": "object",
                                             "properties": {
                                                 "current_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "data": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "$ref": "#/components/schemas/Categoria"
-                                                    }
-                                                },
-                                                "first_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "from": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "minimum": 1
-                                                },
-                                                "last_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
+                                                    "type": "integer"
                                                 },
                                                 "last_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "links": {
-                                                    "type": "array",
-                                                    "description": "Generated paginator links.",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "url": {
-                                                                "type": [
-                                                                    "string",
-                                                                    "null"
-                                                                ]
-                                                            },
-                                                            "label": {
-                                                                "type": "string"
-                                                            },
-                                                            "active": {
-                                                                "type": "boolean"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "url",
-                                                            "label",
-                                                            "active"
-                                                        ]
-                                                    }
-                                                },
-                                                "next_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "path": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ],
-                                                    "description": "Base path for paginator generated URLs."
+                                                    "type": "integer"
                                                 },
                                                 "per_page": {
-                                                    "type": "integer",
-                                                    "description": "Number of items shown per page.",
-                                                    "minimum": 0
-                                                },
-                                                "prev_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "to": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "description": "Number of the last item in the slice.",
-                                                    "minimum": 1
+                                                    "type": "integer"
                                                 },
                                                 "total": {
-                                                    "type": "integer",
-                                                    "description": "Total number of items being paginated.",
-                                                    "minimum": 0
+                                                    "type": "integer"
                                                 }
                                             },
                                             "required": [
                                                 "current_page",
-                                                "data",
-                                                "first_page_url",
-                                                "from",
-                                                "last_page_url",
                                                 "last_page",
-                                                "links",
-                                                "next_page_url",
-                                                "path",
                                                 "per_page",
-                                                "prev_page_url",
-                                                "to",
                                                 "total"
+                                            ]
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": "string"
+                                                },
+                                                "last": {
+                                                    "type": "string"
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
                                             ]
                                         }
                                     },
                                     "required": [
                                         "message",
-                                        "data"
+                                        "data",
+                                        "meta",
+                                        "links"
                                     ]
                                 }
                             }
@@ -433,6 +384,8 @@
             },
             "post": {
                 "operationId": "categorias.store",
+                "description": "Valida los datos y registra una nueva categor\u00eda en el sistema.",
+                "summary": "Registrar una nueva categor\u00eda",
                 "tags": [
                     "Categoria"
                 ],
@@ -459,7 +412,14 @@
                                             "const": "Categor\u00eda creada correctamente."
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/Categoria"
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/Categoria"
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -480,6 +440,8 @@
         "/v1/categorias/{id}": {
             "get": {
                 "operationId": "categorias.show",
+                "description": "Retorna la informaci\u00f3n de una categor\u00eda espec\u00edfica por su ID.",
+                "summary": "Obtener detalle de una categor\u00eda",
                 "tags": [
                     "Categoria"
                 ],
@@ -522,6 +484,8 @@
             },
             "put": {
                 "operationId": "categorias.update",
+                "description": "Actualiza la informaci\u00f3n de una categor\u00eda existente por su ID.",
+                "summary": "Actualizar una categor\u00eda",
                 "tags": [
                     "Categoria"
                 ],
@@ -576,6 +540,8 @@
             },
             "delete": {
                 "operationId": "categorias.destroy",
+                "description": "Elimina del sistema la categor\u00eda indicada por su ID.",
+                "summary": "Eliminar una categor\u00eda",
                 "tags": [
                     "Categoria"
                 ],
@@ -590,24 +556,8 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Categor\u00eda eliminada correctamente."
-                                        }
-                                    },
-                                    "required": [
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
+                    "204": {
+                        "description": "No content"
                     }
                 },
                 "security": []
@@ -616,6 +566,8 @@
         "/v1/insumos": {
             "get": {
                 "operationId": "insumos.index",
+                "description": "Retorna el listado paginado de insumos agr\u00edcolas o veterinarios registrados.",
+                "summary": "Listar insumos",
                 "tags": [
                     "Insumo"
                 ],
@@ -632,125 +584,76 @@
                                             "const": "Listado de insumos obtenido correctamente."
                                         },
                                         "data": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "meta": {
                                             "type": "object",
                                             "properties": {
                                                 "current_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "data": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "$ref": "#/components/schemas/Insumo"
-                                                    }
-                                                },
-                                                "first_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "from": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "minimum": 1
-                                                },
-                                                "last_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
+                                                    "type": "integer"
                                                 },
                                                 "last_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "links": {
-                                                    "type": "array",
-                                                    "description": "Generated paginator links.",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "url": {
-                                                                "type": [
-                                                                    "string",
-                                                                    "null"
-                                                                ]
-                                                            },
-                                                            "label": {
-                                                                "type": "string"
-                                                            },
-                                                            "active": {
-                                                                "type": "boolean"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "url",
-                                                            "label",
-                                                            "active"
-                                                        ]
-                                                    }
-                                                },
-                                                "next_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "path": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ],
-                                                    "description": "Base path for paginator generated URLs."
+                                                    "type": "integer"
                                                 },
                                                 "per_page": {
-                                                    "type": "integer",
-                                                    "description": "Number of items shown per page.",
-                                                    "minimum": 0
-                                                },
-                                                "prev_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "to": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "description": "Number of the last item in the slice.",
-                                                    "minimum": 1
+                                                    "type": "integer"
                                                 },
                                                 "total": {
-                                                    "type": "integer",
-                                                    "description": "Total number of items being paginated.",
-                                                    "minimum": 0
+                                                    "type": "integer"
                                                 }
                                             },
                                             "required": [
                                                 "current_page",
-                                                "data",
-                                                "first_page_url",
-                                                "from",
-                                                "last_page_url",
                                                 "last_page",
-                                                "links",
-                                                "next_page_url",
-                                                "path",
                                                 "per_page",
-                                                "prev_page_url",
-                                                "to",
                                                 "total"
+                                            ]
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": "string"
+                                                },
+                                                "last": {
+                                                    "type": "string"
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
                                             ]
                                         }
                                     },
                                     "required": [
                                         "message",
-                                        "data"
+                                        "data",
+                                        "meta",
+                                        "links"
                                     ]
                                 }
                             }
@@ -761,6 +664,8 @@
             },
             "post": {
                 "operationId": "insumos.store",
+                "description": "Valida los datos y registra un nuevo insumo en el inventario.",
+                "summary": "Registrar un nuevo insumo",
                 "tags": [
                     "Insumo"
                 ],
@@ -787,7 +692,14 @@
                                             "const": "Insumo creado correctamente."
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/Insumo"
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/Insumo"
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -808,6 +720,8 @@
         "/v1/insumos/{id}": {
             "get": {
                 "operationId": "insumos.show",
+                "description": "Retorna la informaci\u00f3n de un insumo espec\u00edfico por su ID.",
+                "summary": "Obtener detalle de un insumo",
                 "tags": [
                     "Insumo"
                 ],
@@ -850,6 +764,8 @@
             },
             "put": {
                 "operationId": "insumos.update",
+                "description": "Actualiza la informaci\u00f3n y existencias de un insumo existente por su ID.",
+                "summary": "Actualizar datos de un insumo",
                 "tags": [
                     "Insumo"
                 ],
@@ -904,6 +820,8 @@
             },
             "delete": {
                 "operationId": "insumos.destroy",
+                "description": "Elimina el insumo indicado del sistema por su ID.",
+                "summary": "Eliminar un insumo",
                 "tags": [
                     "Insumo"
                 ],
@@ -918,24 +836,8 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Insumo eliminado correctamente."
-                                        }
-                                    },
-                                    "required": [
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
+                    "204": {
+                        "description": "No content"
                     }
                 },
                 "security": []
@@ -944,6 +846,8 @@
         "/v1/pesajes": {
             "get": {
                 "operationId": "pesajes.index",
+                "description": "Retorna el listado paginado de registros de pesaje con soporte de filtros.",
+                "summary": "Listar pesajes",
                 "tags": [
                     "Pesaje"
                 ],
@@ -960,125 +864,76 @@
                                             "const": "Listado de pesajes obtenido correctamente."
                                         },
                                         "data": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "meta": {
                                             "type": "object",
                                             "properties": {
                                                 "current_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "data": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "$ref": "#/components/schemas/Pesaje"
-                                                    }
-                                                },
-                                                "first_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "from": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "minimum": 1
-                                                },
-                                                "last_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
+                                                    "type": "integer"
                                                 },
                                                 "last_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "links": {
-                                                    "type": "array",
-                                                    "description": "Generated paginator links.",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "url": {
-                                                                "type": [
-                                                                    "string",
-                                                                    "null"
-                                                                ]
-                                                            },
-                                                            "label": {
-                                                                "type": "string"
-                                                            },
-                                                            "active": {
-                                                                "type": "boolean"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "url",
-                                                            "label",
-                                                            "active"
-                                                        ]
-                                                    }
-                                                },
-                                                "next_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "path": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ],
-                                                    "description": "Base path for paginator generated URLs."
+                                                    "type": "integer"
                                                 },
                                                 "per_page": {
-                                                    "type": "integer",
-                                                    "description": "Number of items shown per page.",
-                                                    "minimum": 0
-                                                },
-                                                "prev_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "to": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "description": "Number of the last item in the slice.",
-                                                    "minimum": 1
+                                                    "type": "integer"
                                                 },
                                                 "total": {
-                                                    "type": "integer",
-                                                    "description": "Total number of items being paginated.",
-                                                    "minimum": 0
+                                                    "type": "integer"
                                                 }
                                             },
                                             "required": [
                                                 "current_page",
-                                                "data",
-                                                "first_page_url",
-                                                "from",
-                                                "last_page_url",
                                                 "last_page",
-                                                "links",
-                                                "next_page_url",
-                                                "path",
                                                 "per_page",
-                                                "prev_page_url",
-                                                "to",
                                                 "total"
+                                            ]
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": "string"
+                                                },
+                                                "last": {
+                                                    "type": "string"
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
                                             ]
                                         }
                                     },
                                     "required": [
                                         "message",
-                                        "data"
+                                        "data",
+                                        "meta",
+                                        "links"
                                     ]
                                 }
                             }
@@ -1089,6 +944,8 @@
             },
             "post": {
                 "operationId": "pesajes.store",
+                "description": "Valida los datos y registra un nuevo pesaje en el sistema.",
+                "summary": "Registrar un nuevo pesaje",
                 "tags": [
                     "Pesaje"
                 ],
@@ -1115,7 +972,14 @@
                                             "const": "Pesaje registrado correctamente."
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/Pesaje"
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/PesajeResource"
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -1136,6 +1000,8 @@
         "/v1/pesajes/{id}": {
             "get": {
                 "operationId": "pesajes.show",
+                "description": "Retorna la informaci\u00f3n completa de un registro de pesaje por su ID.",
+                "summary": "Obtener detalle de un pesaje",
                 "tags": [
                     "Pesaje"
                 ],
@@ -1162,7 +1028,14 @@
                                             "const": "Pesaje obtenido correctamente."
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/Pesaje"
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/PesajeResource"
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -1178,6 +1051,8 @@
             },
             "put": {
                 "operationId": "pesajes.update",
+                "description": "Actualiza los datos de un registro de pesaje existente por su ID.",
+                "summary": "Actualizar un pesaje",
                 "tags": [
                     "Pesaje"
                 ],
@@ -1213,7 +1088,14 @@
                                             "const": "Pesaje actualizado correctamente."
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/Pesaje"
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/PesajeResource"
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -1232,6 +1114,8 @@
             },
             "delete": {
                 "operationId": "pesajes.destroy",
+                "description": "Elimina el registro de pesaje indicado del sistema.",
+                "summary": "Eliminar un pesaje",
                 "tags": [
                     "Pesaje"
                 ],
@@ -1246,6 +1130,32 @@
                     }
                 ],
                 "responses": {
+                    "204": {
+                        "description": "No content"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/v1/animales/{animal}/pesajes": {
+            "get": {
+                "operationId": "animales.pesajes.index",
+                "description": "Retorna el historial cronol\u00f3gico de pesajes asociados a un animal espec\u00edfico.",
+                "summary": "Listar pesajes de un animal",
+                "tags": [
+                    "Pesaje"
+                ],
+                "parameters": [
+                    {
+                        "name": "animal",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
                     "200": {
                         "description": "",
                         "content": {
@@ -1255,15 +1165,147 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "const": "Pesaje eliminado correctamente."
+                                            "const": "Listado de pesajes del animal obtenido correctamente."
+                                        },
+                                        "data": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "last_page",
+                                                "per_page",
+                                                "total"
+                                            ]
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": "string"
+                                                },
+                                                "last": {
+                                                    "type": "string"
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
+                                            ]
                                         }
                                     },
                                     "required": [
-                                        "message"
+                                        "message",
+                                        "data",
+                                        "meta",
+                                        "links"
                                     ]
                                 }
                             }
                         }
+                    }
+                },
+                "security": []
+            },
+            "post": {
+                "operationId": "animales.pesajes.store",
+                "description": "Registra un nuevo pesaje vinculado directamente al animal indicado en la ruta.",
+                "summary": "Registrar pesaje para un animal",
+                "tags": [
+                    "Pesaje"
+                ],
+                "parameters": [
+                    {
+                        "name": "animal",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StorePesajeAnimalRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Pesaje registrado correctamente."
+                                        },
+                                        "data": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/PesajeResource"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
                     }
                 },
                 "security": []
@@ -1275,7 +1317,6 @@
                 "description": "Retorna el listado paginado de potreros de la finca con filtros por nombre o estado del pasto.",
                 "summary": "Listar potreros",
                 "tags": [
-                    "Potreros",
                     "Potrero"
                 ],
                 "responses": {
@@ -1298,7 +1339,6 @@
                 "description": "Crea un potrero en el sistema indicando capacidad, \u00e1rea y estado del pasto.",
                 "summary": "Registrar un nuevo potrero",
                 "tags": [
-                    "Potreros",
                     "Potrero"
                 ],
                 "requestBody": {
@@ -1336,7 +1376,6 @@
                 "description": "Retorna la informaci\u00f3n de un potrero espec\u00edfico por su ID.",
                 "summary": "Obtener detalle de un potrero",
                 "tags": [
-                    "Potreros",
                     "Potrero"
                 ],
                 "parameters": [
@@ -1369,7 +1408,6 @@
                 "description": "Actualiza la informaci\u00f3n de un potrero existente.",
                 "summary": "Actualizar datos de un potrero",
                 "tags": [
-                    "Potreros",
                     "Potrero"
                 ],
                 "parameters": [
@@ -1414,7 +1452,6 @@
                 "description": "Elimina el potrero indicado. Falla si el potrero tiene animales asignados actualmente (RN-02).",
                 "summary": "Eliminar un potrero",
                 "tags": [
-                    "Potreros",
                     "Potrero"
                 ],
                 "parameters": [
@@ -1446,6 +1483,8 @@
         "/v1/razas": {
             "get": {
                 "operationId": "razas.index",
+                "description": "Retorna el listado paginado de razas registradas en el sistema.",
+                "summary": "Listar razas",
                 "tags": [
                     "Raza"
                 ],
@@ -1462,125 +1501,76 @@
                                             "const": "Listado de razas obtenido correctamente."
                                         },
                                         "data": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "meta": {
                                             "type": "object",
                                             "properties": {
                                                 "current_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "data": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "$ref": "#/components/schemas/Raza"
-                                                    }
-                                                },
-                                                "first_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "from": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "minimum": 1
-                                                },
-                                                "last_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
+                                                    "type": "integer"
                                                 },
                                                 "last_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "links": {
-                                                    "type": "array",
-                                                    "description": "Generated paginator links.",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "url": {
-                                                                "type": [
-                                                                    "string",
-                                                                    "null"
-                                                                ]
-                                                            },
-                                                            "label": {
-                                                                "type": "string"
-                                                            },
-                                                            "active": {
-                                                                "type": "boolean"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "url",
-                                                            "label",
-                                                            "active"
-                                                        ]
-                                                    }
-                                                },
-                                                "next_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "path": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ],
-                                                    "description": "Base path for paginator generated URLs."
+                                                    "type": "integer"
                                                 },
                                                 "per_page": {
-                                                    "type": "integer",
-                                                    "description": "Number of items shown per page.",
-                                                    "minimum": 0
-                                                },
-                                                "prev_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "to": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "description": "Number of the last item in the slice.",
-                                                    "minimum": 1
+                                                    "type": "integer"
                                                 },
                                                 "total": {
-                                                    "type": "integer",
-                                                    "description": "Total number of items being paginated.",
-                                                    "minimum": 0
+                                                    "type": "integer"
                                                 }
                                             },
                                             "required": [
                                                 "current_page",
-                                                "data",
-                                                "first_page_url",
-                                                "from",
-                                                "last_page_url",
                                                 "last_page",
-                                                "links",
-                                                "next_page_url",
-                                                "path",
                                                 "per_page",
-                                                "prev_page_url",
-                                                "to",
                                                 "total"
+                                            ]
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": "string"
+                                                },
+                                                "last": {
+                                                    "type": "string"
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
                                             ]
                                         }
                                     },
                                     "required": [
                                         "message",
-                                        "data"
+                                        "data",
+                                        "meta",
+                                        "links"
                                     ]
                                 }
                             }
@@ -1591,6 +1581,8 @@
             },
             "post": {
                 "operationId": "razas.store",
+                "description": "Valida los datos y registra una nueva raza de ganado en el sistema.",
+                "summary": "Registrar una nueva raza",
                 "tags": [
                     "Raza"
                 ],
@@ -1617,7 +1609,14 @@
                                             "const": "Raza creada correctamente."
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/Raza"
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/Raza"
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -1638,6 +1637,8 @@
         "/v1/razas/{id}": {
             "get": {
                 "operationId": "razas.show",
+                "description": "Retorna la informaci\u00f3n de una raza espec\u00edfica por su ID.",
+                "summary": "Obtener detalle de una raza",
                 "tags": [
                     "Raza"
                 ],
@@ -1680,6 +1681,8 @@
             },
             "put": {
                 "operationId": "razas.update",
+                "description": "Actualiza la informaci\u00f3n de una raza existente por su ID.",
+                "summary": "Actualizar una raza",
                 "tags": [
                     "Raza"
                 ],
@@ -1734,6 +1737,8 @@
             },
             "delete": {
                 "operationId": "razas.destroy",
+                "description": "Elimina del sistema la raza indicada por su ID.",
+                "summary": "Eliminar una raza",
                 "tags": [
                     "Raza"
                 ],
@@ -1748,24 +1753,8 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Raza eliminada correctamente."
-                                        }
-                                    },
-                                    "required": [
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
+                    "204": {
+                        "description": "No content"
                     }
                 },
                 "security": []
@@ -1774,6 +1763,8 @@
         "/v1/tratamientos": {
             "get": {
                 "operationId": "tratamientos.index",
+                "description": "Retorna el listado paginado del cat\u00e1logo de tratamientos veterinarios disponibles.",
+                "summary": "Listar tratamientos",
                 "tags": [
                     "Tratamiento"
                 ],
@@ -1790,125 +1781,76 @@
                                             "const": "Listado de tratamientos obtenido correctamente."
                                         },
                                         "data": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "meta": {
                                             "type": "object",
                                             "properties": {
                                                 "current_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "data": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "$ref": "#/components/schemas/Tratamiento"
-                                                    }
-                                                },
-                                                "first_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "from": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "minimum": 1
-                                                },
-                                                "last_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
+                                                    "type": "integer"
                                                 },
                                                 "last_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "links": {
-                                                    "type": "array",
-                                                    "description": "Generated paginator links.",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "url": {
-                                                                "type": [
-                                                                    "string",
-                                                                    "null"
-                                                                ]
-                                                            },
-                                                            "label": {
-                                                                "type": "string"
-                                                            },
-                                                            "active": {
-                                                                "type": "boolean"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "url",
-                                                            "label",
-                                                            "active"
-                                                        ]
-                                                    }
-                                                },
-                                                "next_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "path": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ],
-                                                    "description": "Base path for paginator generated URLs."
+                                                    "type": "integer"
                                                 },
                                                 "per_page": {
-                                                    "type": "integer",
-                                                    "description": "Number of items shown per page.",
-                                                    "minimum": 0
-                                                },
-                                                "prev_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "to": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "description": "Number of the last item in the slice.",
-                                                    "minimum": 1
+                                                    "type": "integer"
                                                 },
                                                 "total": {
-                                                    "type": "integer",
-                                                    "description": "Total number of items being paginated.",
-                                                    "minimum": 0
+                                                    "type": "integer"
                                                 }
                                             },
                                             "required": [
                                                 "current_page",
-                                                "data",
-                                                "first_page_url",
-                                                "from",
-                                                "last_page_url",
                                                 "last_page",
-                                                "links",
-                                                "next_page_url",
-                                                "path",
                                                 "per_page",
-                                                "prev_page_url",
-                                                "to",
                                                 "total"
+                                            ]
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": "string"
+                                                },
+                                                "last": {
+                                                    "type": "string"
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
                                             ]
                                         }
                                     },
                                     "required": [
                                         "message",
-                                        "data"
+                                        "data",
+                                        "meta",
+                                        "links"
                                     ]
                                 }
                             }
@@ -1919,6 +1861,8 @@
             },
             "post": {
                 "operationId": "tratamientos.store",
+                "description": "Valida los datos y registra un nuevo tipo de tratamiento m\u00e9dico o preventivo.",
+                "summary": "Registrar un nuevo tratamiento",
                 "tags": [
                     "Tratamiento"
                 ],
@@ -1945,7 +1889,14 @@
                                             "const": "Tratamiento creado correctamente."
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/Tratamiento"
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/TratamientoResource"
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -1966,6 +1917,8 @@
         "/v1/tratamientos/{id}": {
             "get": {
                 "operationId": "tratamientos.show",
+                "description": "Retorna la informaci\u00f3n de un tratamiento espec\u00edfico por su ID.",
+                "summary": "Obtener detalle de un tratamiento",
                 "tags": [
                     "Tratamiento"
                 ],
@@ -1992,7 +1945,14 @@
                                             "const": "Tratamiento obtenido correctamente."
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/Tratamiento"
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/TratamientoResource"
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -2008,6 +1968,8 @@
             },
             "put": {
                 "operationId": "tratamientos.update",
+                "description": "Actualiza la informaci\u00f3n de un tratamiento existente por su ID.",
+                "summary": "Actualizar un tratamiento",
                 "tags": [
                     "Tratamiento"
                 ],
@@ -2043,7 +2005,14 @@
                                             "const": "Tratamiento actualizado correctamente."
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/Tratamiento"
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/TratamientoResource"
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -2062,6 +2031,8 @@
             },
             "delete": {
                 "operationId": "tratamientos.destroy",
+                "description": "Elimina del cat\u00e1logo el tratamiento indicado por su ID.",
+                "summary": "Eliminar un tratamiento",
                 "tags": [
                     "Tratamiento"
                 ],
@@ -2076,24 +2047,8 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Tratamiento eliminado correctamente."
-                                        }
-                                    },
-                                    "required": [
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
+                    "204": {
+                        "description": "No content"
                     }
                 },
                 "security": []
@@ -2102,6 +2057,8 @@
         "/v1/tratamiento-animal": {
             "get": {
                 "operationId": "tratamiento-animal.index",
+                "description": "Retorna el listado paginado de aplicaciones de tratamientos veterinarios administradas a los animales.",
+                "summary": "Listar aplicaciones de tratamiento",
                 "tags": [
                     "TratamientoAnimal"
                 ],
@@ -2118,125 +2075,76 @@
                                             "const": "Listado de aplicaciones de tratamiento obtenido correctamente."
                                         },
                                         "data": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "meta": {
                                             "type": "object",
                                             "properties": {
                                                 "current_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "data": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "$ref": "#/components/schemas/TratamientoAnimal"
-                                                    }
-                                                },
-                                                "first_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "from": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "minimum": 1
-                                                },
-                                                "last_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
+                                                    "type": "integer"
                                                 },
                                                 "last_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "links": {
-                                                    "type": "array",
-                                                    "description": "Generated paginator links.",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "url": {
-                                                                "type": [
-                                                                    "string",
-                                                                    "null"
-                                                                ]
-                                                            },
-                                                            "label": {
-                                                                "type": "string"
-                                                            },
-                                                            "active": {
-                                                                "type": "boolean"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "url",
-                                                            "label",
-                                                            "active"
-                                                        ]
-                                                    }
-                                                },
-                                                "next_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "path": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ],
-                                                    "description": "Base path for paginator generated URLs."
+                                                    "type": "integer"
                                                 },
                                                 "per_page": {
-                                                    "type": "integer",
-                                                    "description": "Number of items shown per page.",
-                                                    "minimum": 0
-                                                },
-                                                "prev_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "to": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "description": "Number of the last item in the slice.",
-                                                    "minimum": 1
+                                                    "type": "integer"
                                                 },
                                                 "total": {
-                                                    "type": "integer",
-                                                    "description": "Total number of items being paginated.",
-                                                    "minimum": 0
+                                                    "type": "integer"
                                                 }
                                             },
                                             "required": [
                                                 "current_page",
-                                                "data",
-                                                "first_page_url",
-                                                "from",
-                                                "last_page_url",
                                                 "last_page",
-                                                "links",
-                                                "next_page_url",
-                                                "path",
                                                 "per_page",
-                                                "prev_page_url",
-                                                "to",
                                                 "total"
+                                            ]
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": "string"
+                                                },
+                                                "last": {
+                                                    "type": "string"
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
                                             ]
                                         }
                                     },
                                     "required": [
                                         "message",
-                                        "data"
+                                        "data",
+                                        "meta",
+                                        "links"
                                     ]
                                 }
                             }
@@ -2247,6 +2155,8 @@
             },
             "post": {
                 "operationId": "tratamiento-animal.store",
+                "description": "Registra la administraci\u00f3n de un tratamiento a un animal con verificaci\u00f3n de insumos y dosis.",
+                "summary": "Registrar aplicaci\u00f3n de tratamiento",
                 "tags": [
                     "TratamientoAnimal"
                 ],
@@ -2273,7 +2183,14 @@
                                             "const": "Aplicaci\u00f3n de tratamiento registrada correctamente."
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/TratamientoAnimal"
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/TratamientoAnimalResource"
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -2294,6 +2211,8 @@
         "/v1/tratamiento-animal/{id}": {
             "get": {
                 "operationId": "tratamiento-animal.show",
+                "description": "Retorna la informaci\u00f3n detallada de una aplicaci\u00f3n de tratamiento por su ID.",
+                "summary": "Obtener detalle de una aplicaci\u00f3n de tratamiento",
                 "tags": [
                     "TratamientoAnimal"
                 ],
@@ -2320,7 +2239,14 @@
                                             "const": "Aplicaci\u00f3n de tratamiento obtenida correctamente."
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/TratamientoAnimal"
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/TratamientoAnimalResource"
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -2336,6 +2262,8 @@
             },
             "put": {
                 "operationId": "tratamiento-animal.update",
+                "description": "Actualiza la informaci\u00f3n de una aplicaci\u00f3n de tratamiento existente por su ID.",
+                "summary": "Actualizar aplicaci\u00f3n de tratamiento",
                 "tags": [
                     "TratamientoAnimal"
                 ],
@@ -2371,7 +2299,14 @@
                                             "const": "Aplicaci\u00f3n de tratamiento actualizada correctamente."
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/TratamientoAnimal"
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/TratamientoAnimalResource"
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -2390,6 +2325,8 @@
             },
             "delete": {
                 "operationId": "tratamiento-animal.destroy",
+                "description": "Elimina del sistema el registro de la aplicaci\u00f3n de tratamiento indicada.",
+                "summary": "Eliminar aplicaci\u00f3n de tratamiento",
                 "tags": [
                     "TratamientoAnimal"
                 ],
@@ -2404,6 +2341,32 @@
                     }
                 ],
                 "responses": {
+                    "204": {
+                        "description": "No content"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/v1/animales/{animal}/tratamientos": {
+            "get": {
+                "operationId": "animales.tratamientos.index",
+                "description": "Retorna el historial sanitario completo y los tratamientos aplicados a un animal espec\u00edfico.",
+                "summary": "Historial de tratamientos de un animal",
+                "tags": [
+                    "TratamientoAnimal"
+                ],
+                "parameters": [
+                    {
+                        "name": "animal",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
                     "200": {
                         "description": "",
                         "content": {
@@ -2413,11 +2376,79 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "const": "Aplicaci\u00f3n de tratamiento eliminada correctamente."
+                                            "const": "Historial sanitario del animal obtenido correctamente."
+                                        },
+                                        "data": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "last_page",
+                                                "per_page",
+                                                "total"
+                                            ]
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": "string"
+                                                },
+                                                "last": {
+                                                    "type": "string"
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
+                                            ]
                                         }
                                     },
                                     "required": [
-                                        "message"
+                                        "message",
+                                        "data",
+                                        "meta",
+                                        "links"
                                     ]
                                 }
                             }
@@ -2430,6 +2461,8 @@
         "/v1/unidad-medida": {
             "get": {
                 "operationId": "unidad-medida.index",
+                "description": "Retorna el listado paginado de unidades de medida registradas en el sistema.",
+                "summary": "Listar unidades de medida",
                 "tags": [
                     "UnidadMedida"
                 ],
@@ -2446,125 +2479,76 @@
                                             "const": "Listado de unidades de medida obtenido correctamente."
                                         },
                                         "data": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "meta": {
                                             "type": "object",
                                             "properties": {
                                                 "current_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "data": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "$ref": "#/components/schemas/UnidadMedida"
-                                                    }
-                                                },
-                                                "first_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "from": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "minimum": 1
-                                                },
-                                                "last_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
+                                                    "type": "integer"
                                                 },
                                                 "last_page": {
-                                                    "type": "integer",
-                                                    "minimum": 1
-                                                },
-                                                "links": {
-                                                    "type": "array",
-                                                    "description": "Generated paginator links.",
-                                                    "items": {
-                                                        "type": "object",
-                                                        "properties": {
-                                                            "url": {
-                                                                "type": [
-                                                                    "string",
-                                                                    "null"
-                                                                ]
-                                                            },
-                                                            "label": {
-                                                                "type": "string"
-                                                            },
-                                                            "active": {
-                                                                "type": "boolean"
-                                                            }
-                                                        },
-                                                        "required": [
-                                                            "url",
-                                                            "label",
-                                                            "active"
-                                                        ]
-                                                    }
-                                                },
-                                                "next_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "path": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ],
-                                                    "description": "Base path for paginator generated URLs."
+                                                    "type": "integer"
                                                 },
                                                 "per_page": {
-                                                    "type": "integer",
-                                                    "description": "Number of items shown per page.",
-                                                    "minimum": 0
-                                                },
-                                                "prev_page_url": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
-                                                    ]
-                                                },
-                                                "to": {
-                                                    "type": [
-                                                        "integer",
-                                                        "null"
-                                                    ],
-                                                    "description": "Number of the last item in the slice.",
-                                                    "minimum": 1
+                                                    "type": "integer"
                                                 },
                                                 "total": {
-                                                    "type": "integer",
-                                                    "description": "Total number of items being paginated.",
-                                                    "minimum": 0
+                                                    "type": "integer"
                                                 }
                                             },
                                             "required": [
                                                 "current_page",
-                                                "data",
-                                                "first_page_url",
-                                                "from",
-                                                "last_page_url",
                                                 "last_page",
-                                                "links",
-                                                "next_page_url",
-                                                "path",
                                                 "per_page",
-                                                "prev_page_url",
-                                                "to",
                                                 "total"
+                                            ]
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": "string"
+                                                },
+                                                "last": {
+                                                    "type": "string"
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
                                             ]
                                         }
                                     },
                                     "required": [
                                         "message",
-                                        "data"
+                                        "data",
+                                        "meta",
+                                        "links"
                                     ]
                                 }
                             }
@@ -2575,6 +2559,8 @@
             },
             "post": {
                 "operationId": "unidad-medida.store",
+                "description": "Valida los datos y registra una nueva unidad de medida en el sistema.",
+                "summary": "Registrar una unidad de medida",
                 "tags": [
                     "UnidadMedida"
                 ],
@@ -2601,7 +2587,14 @@
                                             "const": "Unidad de medida creada correctamente."
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/UnidadMedida"
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "$ref": "#/components/schemas/UnidadMedida"
+                                                }
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -2622,6 +2615,8 @@
         "/v1/unidad-medida/{id}": {
             "get": {
                 "operationId": "unidad-medida.show",
+                "description": "Retorna la informaci\u00f3n de una unidad de medida espec\u00edfica por su ID.",
+                "summary": "Obtener detalle de una unidad de medida",
                 "tags": [
                     "UnidadMedida"
                 ],
@@ -2664,6 +2659,8 @@
             },
             "put": {
                 "operationId": "unidad-medida.update",
+                "description": "Actualiza la informaci\u00f3n de una unidad de medida existente por su ID.",
+                "summary": "Actualizar una unidad de medida",
                 "tags": [
                     "UnidadMedida"
                 ],
@@ -2718,6 +2715,8 @@
             },
             "delete": {
                 "operationId": "unidad-medida.destroy",
+                "description": "Elimina del sistema la unidad de medida indicada por su ID.",
+                "summary": "Eliminar una unidad de medida",
                 "tags": [
                     "UnidadMedida"
                 ],
@@ -2732,24 +2731,8 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "const": "Unidad de medida eliminada correctamente."
-                                        }
-                                    },
-                                    "required": [
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
+                    "204": {
+                        "description": "No content"
                     }
                 },
                 "security": []
@@ -2865,7 +2848,7 @@
                 ],
                 "title": "LoginRequest"
             },
-            "Pesaje": {
+            "PesajeResource": {
                 "type": "object",
                 "properties": {
                     "pesaje_id": {
@@ -2878,8 +2861,10 @@
                         "type": "number"
                     },
                     "fecha_pesaje": {
-                        "type": "string",
-                        "format": "date-time"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "observaciones": {
                         "type": [
@@ -2887,19 +2872,33 @@
                             "null"
                         ]
                     },
+                    "animal": {
+                        "type": "object",
+                        "description": "Resumen del animal, solo si la relaci\u00f3n fue cargada.",
+                        "properties": {
+                            "id_animal": {
+                                "type": "integer"
+                            },
+                            "numero_arete": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id_animal",
+                            "numero_arete"
+                        ]
+                    },
                     "created_at": {
                         "type": [
                             "string",
                             "null"
-                        ],
-                        "format": "date-time"
+                        ]
                     },
                     "updated_at": {
                         "type": [
                             "string",
                             "null"
-                        ],
-                        "format": "date-time"
+                        ]
                     }
                 },
                 "required": [
@@ -2911,7 +2910,7 @@
                     "created_at",
                     "updated_at"
                 ],
-                "title": "Pesaje"
+                "title": "PesajeResource"
             },
             "Raza": {
                 "type": "object",
@@ -3068,6 +3067,36 @@
                 ],
                 "title": "StoreInsumoRequest"
             },
+            "StorePesajeAnimalRequest": {
+                "type": "object",
+                "description": "Validaci\u00f3n para POST /api/v1/animales/{animal}/pesajes.\n\nReutiliza las reglas de StorePesajeRequest, pero el animal NO viaja en el\ncuerpo: se toma de la URL. Cualquier \"id_animal\" enviado en el cuerpo se\nignora para que el pesaje no pueda registrarse en un animal distinto al de la ruta.",
+                "properties": {
+                    "id_animal": {
+                        "type": "integer"
+                    },
+                    "peso_kg": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 9999.99
+                    },
+                    "fecha_pesaje": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "observaciones": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "id_animal",
+                    "peso_kg",
+                    "fecha_pesaje"
+                ],
+                "title": "StorePesajeAnimalRequest"
+            },
             "StorePesajeRequest": {
                 "type": "object",
                 "properties": {
@@ -3220,7 +3249,77 @@
                 ],
                 "title": "StoreUnidadMedidaRequest"
             },
-            "Tratamiento": {
+            "TratamientoAnimalResource": {
+                "type": "object",
+                "properties": {
+                    "tratamiento_animal_id": {
+                        "type": "integer"
+                    },
+                    "id_animal": {
+                        "type": "integer"
+                    },
+                    "tratamiento_id": {
+                        "type": "integer"
+                    },
+                    "fecha_aplicacion": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "dosis_ml": {
+                        "type": "number"
+                    },
+                    "observaciones": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "animal": {
+                        "type": "object",
+                        "properties": {
+                            "id_animal": {
+                                "type": "integer"
+                            },
+                            "numero_arete": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id_animal",
+                            "numero_arete"
+                        ]
+                    },
+                    "tratamiento": {
+                        "$ref": "#/components/schemas/TratamientoResource"
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "tratamiento_animal_id",
+                    "id_animal",
+                    "tratamiento_id",
+                    "fecha_aplicacion",
+                    "dosis_ml",
+                    "observaciones",
+                    "created_at",
+                    "updated_at"
+                ],
+                "title": "TratamientoAnimalResource"
+            },
+            "TratamientoResource": {
                 "type": "object",
                 "properties": {
                     "tratamiento_id": {
@@ -3241,19 +3340,43 @@
                             "null"
                         ]
                     },
+                    "aplicacion": {
+                        "type": "object",
+                        "properties": {
+                            "tratamiento_animal_id": {
+                                "type": "string"
+                            },
+                            "fecha_aplicacion": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "dosis_ml": {
+                                "type": "string"
+                            },
+                            "observaciones": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "tratamiento_animal_id",
+                            "fecha_aplicacion",
+                            "dosis_ml",
+                            "observaciones"
+                        ]
+                    },
                     "created_at": {
                         "type": [
                             "string",
                             "null"
-                        ],
-                        "format": "date-time"
+                        ]
                     },
                     "updated_at": {
                         "type": [
                             "string",
                             "null"
-                        ],
-                        "format": "date-time"
+                        ]
                     }
                 },
                 "required": [
@@ -3264,59 +3387,7 @@
                     "created_at",
                     "updated_at"
                 ],
-                "title": "Tratamiento"
-            },
-            "TratamientoAnimal": {
-                "type": "object",
-                "properties": {
-                    "tratamiento_animal_id": {
-                        "type": "integer"
-                    },
-                    "id_animal": {
-                        "type": "integer"
-                    },
-                    "tratamiento_id": {
-                        "type": "integer"
-                    },
-                    "fecha_aplicacion": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "dosis_ml": {
-                        "type": "number"
-                    },
-                    "observaciones": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "created_at": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "format": "date-time"
-                    },
-                    "updated_at": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "format": "date-time"
-                    }
-                },
-                "required": [
-                    "tratamiento_animal_id",
-                    "id_animal",
-                    "tratamiento_id",
-                    "fecha_aplicacion",
-                    "dosis_ml",
-                    "observaciones",
-                    "created_at",
-                    "updated_at"
-                ],
-                "title": "TratamientoAnimal"
+                "title": "TratamientoResource"
             },
             "UnidadMedida": {
                 "type": "object",
