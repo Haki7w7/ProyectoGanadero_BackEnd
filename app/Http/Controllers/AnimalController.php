@@ -7,8 +7,6 @@ use App\Http\Requests\StoreAnimalRequest;
 use App\Http\Requests\UpdateAnimalRequest;
 use App\Http\Resources\AnimalCollection;
 use App\Http\Resources\AnimalResource;
-use App\Http\Resources\AnimalCollection;
-use App\Http\Resources\AnimalResource;
 use App\Models\Animal;
 use App\Services\AnimalService;
 use Illuminate\Http\JsonResponse;
@@ -68,7 +66,6 @@ class AnimalController extends Controller
     {
         $this->animalService->eliminarAnimal($id);
 
-        return $this->respuestaSinContenido();
         return $this->respuestaSinContenido();
     }
 }
