@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateRazaRequest;
 use App\Services\RazaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class RazaController extends Controller
 {
@@ -20,10 +21,7 @@ class RazaController extends Controller
     {
         $razas = $this->razaService->listarRazas($request->query());
 
-        return response()->json([
-            'message' => 'Listado de razas obtenido correctamente.',
-            'data'    => $razas,
-        ], 200);
+        return $this->respuestaPaginada($razas, 'Listado de razas obtenido correctamente.');
     }
 
     // GET /api/razas/{id}
@@ -42,10 +40,7 @@ class RazaController extends Controller
     {
         $raza = $this->razaService->crearRaza($request->validated());
 
-        return response()->json([
-            'message' => 'Raza creada correctamente.',
-            'data'    => $raza,
-        ], 201);
+        return $this->respuestaCreada($raza, 'Raza creada correctamente.', 'razas');
     }
 
     // PUT/PATCH /api/razas/{id}
@@ -60,12 +55,10 @@ class RazaController extends Controller
     }
 
     // DELETE /api/razas/{id}
-    public function destroy($id): JsonResponse
+    public function destroy($id): Response
     {
         $this->razaService->eliminarRaza((int) $id);
 
-        return response()->json([
-            'message' => 'Raza eliminada correctamente.',
-        ], 200);
+        return $this->respuestaSinContenido();
     }
 }

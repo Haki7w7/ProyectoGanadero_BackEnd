@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateInsumoRequest;
 use App\Services\InsumoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class InsumoController extends Controller
 {
@@ -20,10 +21,7 @@ class InsumoController extends Controller
     {
         $insumos = $this->insumoService->listarInsumos($request->query());
 
-        return response()->json([
-            'message' => 'Listado de insumos obtenido correctamente.',
-            'data'    => $insumos,
-        ], 200);
+        return $this->respuestaPaginada($insumos, 'Listado de insumos obtenido correctamente.');
     }
 
     // GET /api/insumos/{id}
@@ -42,10 +40,7 @@ class InsumoController extends Controller
     {
         $insumo = $this->insumoService->crearInsumo($request->validated());
 
-        return response()->json([
-            'message' => 'Insumo creado correctamente.',
-            'data'    => $insumo,
-        ], 201);
+        return $this->respuestaCreada($insumo, 'Insumo creado correctamente.', 'insumos');
     }
 
     // PUT/PATCH /api/insumos/{id}
@@ -60,12 +55,10 @@ class InsumoController extends Controller
     }
 
     // DELETE /api/insumos/{id}
-    public function destroy($id): JsonResponse
+    public function destroy($id): Response
     {
         $this->insumoService->eliminarInsumo((int) $id);
 
-        return response()->json([
-            'message' => 'Insumo eliminado correctamente.',
-        ], 200);
+        return $this->respuestaSinContenido();
     }
 }

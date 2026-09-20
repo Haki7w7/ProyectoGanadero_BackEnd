@@ -25,15 +25,12 @@ class AnimalControllerTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'message',
-                'data' => [
-                    'current_page',
-                    'data',
-                    'per_page',
-                    'total',
-                ],
+                'data',
+                'meta'  => ['current_page', 'last_page', 'per_page', 'total'],
+                'links' => ['first', 'last', 'prev', 'next'],
             ]);
 
-        $this->assertLessThanOrEqual(100, $response->json('data.per_page'));
+        $this->assertLessThanOrEqual(100, $response->json('meta.per_page'));
     }
 
     /**
@@ -68,7 +65,8 @@ class AnimalControllerTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonPath('message', 'Animal creado correctamente.')
-            ->assertJsonPath('data.numero_arete', 'ARETE-TEST-100');
+            ->assertJsonPath('data.numero_arete', 'ARETE-TEST-100')
+            ->assertHeader('Location', '/api/v1/animales/' . $response->json('data.id_animal'));
 
         $this->assertDatabaseHas('animales', ['numero_arete' => 'ARETE-TEST-100']);
     }

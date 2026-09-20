@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateCategoriaRequest;
 use App\Services\CategoriaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class CategoriaController extends Controller
 {
@@ -20,10 +21,7 @@ class CategoriaController extends Controller
     {
         $categorias = $this->categoriaService->listarCategorias($request->query());
 
-        return response()->json([
-            'message' => 'Listado de categorías obtenido correctamente.',
-            'data'    => $categorias,
-        ], 200);
+        return $this->respuestaPaginada($categorias, 'Listado de categorías obtenido correctamente.');
     }
 
     // GET /api/categorias/{id}
@@ -42,10 +40,7 @@ class CategoriaController extends Controller
     {
         $categoria = $this->categoriaService->crearCategoria($request->validated());
 
-        return response()->json([
-            'message' => 'Categoría creada correctamente.',
-            'data'    => $categoria,
-        ], 201);
+        return $this->respuestaCreada($categoria, 'Categoría creada correctamente.', 'categorias');
     }
 
     // PUT/PATCH /api/categorias/{id}
@@ -60,12 +55,10 @@ class CategoriaController extends Controller
     }
 
     // DELETE /api/categorias/{id}
-    public function destroy($id): JsonResponse
+    public function destroy($id): Response
     {
         $this->categoriaService->eliminarCategoria((int) $id);
 
-        return response()->json([
-            'message' => 'Categoría eliminada correctamente.',
-        ], 200);
+        return $this->respuestaSinContenido();
     }
 }
