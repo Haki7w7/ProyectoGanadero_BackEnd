@@ -32,6 +32,9 @@ Route::prefix('v1')->group(function () {
     Route::post('auth/login', LoginController::class);
     Route::post('auth/register', RegisterController::class);
 
+    // Autenticación (rutas protegidas)
+    Route::middleware('auth:sanctum')->group(function () {
+
     // Recursos REST
     Route::apiResource('categorias', CategoriaController::class)->parameters(['categorias'=>'categoria']);
     Route::apiResource('unidades-medida', UnidadMedidaController::class)->parameters(['unidades-medida'=>'unidad_medida']);
@@ -59,4 +62,5 @@ Route::prefix('v1')->group(function () {
         ->whereNumber('raza')->name('razas.animales.index');
     Route::get('categorias/{categoria}/insumos', [InsumoController::class, 'indexPorCategoria'])
         ->whereNumber('categoria')->name('categorias.insumos.index');
+    });
 });
