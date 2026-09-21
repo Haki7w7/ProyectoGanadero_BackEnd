@@ -29,21 +29,31 @@ class LoginController extends Controller
      *   }
      * }
      */
-    public function __invoke(LoginRequest $request): JsonResponse
-    {
-        $usuario = User::where('email', $request->email)->first();
+  public function __invoke(LoginRequest $request): JsonResponse
+{
+    $usuario = User::where('email', $request->email)->first();
 
-        if (! $usuario || ! Hash::check($request->password, $usuario->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['Las credenciales proporcionadas son incorrectas.'],
-            ]);
-        }
-
-        $token = $usuario->createToken('auth-token');
-
-        return response()->json([
-            'message' => 'Autenticación exitosa.',
-            'token'   => $token->plainTextToken,
-        ], 200);
+    if (! $usuario || ! Hash::check($request->password, $usuario->password)) {
+        throw ValidationException::withMessages([
+            'email' => ['Las credenciales proporcionadas son incorrectas.'],
+        ]);
     }
+
+    // Definición de habilidades según el rol del usuario
+    $permisos = $usuario->rol === 'admin' ? ['*'] : ['animales:read', 'animales:create'];
+
+    // Creación del token de Sanctum
+    $token = $usuario->createToken('auth_token', $permisos)->plainTextToken;
+
+    return response()->json([
+        'message' => 'Autenticación exitosa.',
+        'token'   => $token, // Se pasa $token directamente ya que es el string generado
+        'user'    => [
+            'id'    => $usuario->id,
+            'name'  => $usuario->name,
+            'email' => $usuario->email,
+            'rol'   => $usuario->rol,
+        ],
+    ], 200);
+}
 }

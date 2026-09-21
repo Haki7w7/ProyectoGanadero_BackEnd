@@ -142,10 +142,17 @@ class AnimalController extends Controller
      * @param  int|string  $id  Identificador único del animal a eliminar.
      * @return Response Respuesta HTTP 204 No Content sin cuerpo.
      */
-    public function destroy($id): Response
-    {
-        $this->animalService->eliminarAnimal($id);
-
-        return $this->respuestaSinContenido();
+ public function destroy(Request $request, $id): Response
+{
+    // 1. Verificación de permisos
+    if (! $request->user()->tokenCan('animales:delete') && ! $request->user()->tokenCan('*')) {
+        abort(403, 'Acceso denegado. No posee permisos suficientes');
     }
+
+    // 2. Lógica de negocio en el servicio
+    $this->animalService->eliminarAnimal($id);
+
+    // 3. Respuesta exitosa (204 No Content)
+    return $this->respuestaSinContenido();
+}
 }
