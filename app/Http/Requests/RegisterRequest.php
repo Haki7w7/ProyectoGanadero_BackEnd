@@ -6,6 +6,7 @@ use App\Enum\UserRole;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
 {
@@ -28,7 +29,7 @@ class RegisterRequest extends FormRequest
         
         'name'                  => ['required', 'string', 'max:255'],
         'email'                 => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-        'password'              => ['required', 'string', 'min:8', 'confirmed'], // Exige enviar 'password_confirmation'
+        'password'              => ['required', 'string', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()->uncompromised()], // Exige enviar 'password_confirmation'
          
         // El rol es obligatorio y SOLO puede ser uno de los definidos en el Enum:
         'role'     => ['required', 'string', Rule::enum(UserRole::class)],
@@ -43,8 +44,12 @@ class RegisterRequest extends FormRequest
         'email.email'        => 'Debe ingresar un correo válido.',
         'email.unique'       => 'Este correo electrónico ya se encuentra registrado.',
         'password.required'  => 'La contraseña es obligatoria.',
-        'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
         'password.confirmed' => 'Las contraseñas no coinciden.',
+        'password.letters'   => 'La contraseña debe contener al menos una letra.',
+        'password.mixed'     => 'La contraseña debe contener mayúsculas y minúsculas.',
+        'password.numbers'   => 'La contraseña debe contener al menos un número.',
+        'password.symbols'   => 'La contraseña debe contener al menos un símbolo.',
+        'password.uncompromised' => 'La contraseña apareció en una filtración de datos. Elija otra.',
         'role.required'      => 'El rol es obligatorio.',
         'role.enum'          => 'El rol seleccionado no es válido. Debe ser admin, operario o veterinario.',
         ];

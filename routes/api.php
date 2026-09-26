@@ -10,6 +10,7 @@ use App\Http\Controllers\PotreroController;
 use App\Http\Controllers\InsumoController;
 use App\Http\Controllers\AnimalController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\PesajeController;
 use App\Http\Controllers\TratamientoController;
 use App\Http\Controllers\TratamientoAnimalController;
@@ -31,6 +32,7 @@ Route::prefix('v1')->group(function () {
     // Autenticación (rutas públicas)
     Route::post('auth/login', LoginController::class);
     Route::post('auth/register', RegisterController::class);
+    Route::post('auth/logout', LogoutController::class)->middleware('auth:sanctum');
 
     // Recursos REST
     Route::apiResource('categorias', CategoriaController::class)->parameters(['categorias'=>'categoria']);
