@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Support\PaginacionUniforme;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
@@ -23,6 +24,7 @@ use Illuminate\Http\Response;
  */
 abstract class Controller
 {
+    use AuthorizesRequests;
     /**
      * Prefijo de la versión vigente de la API (usado para la cabecera Location).
      */
@@ -81,7 +83,7 @@ abstract class Controller
     protected function respuestaPaginada(LengthAwarePaginator $paginador, string $mensaje, ?string $recurso = null): JsonResponse
     {
         $items = $recurso !== null
-            ? $recurso::collection($paginador->getCollection())->resolve(request())
+            ? $recurso::collection($paginador->getCollecgetion())->resolve(request())
             : $paginador->items();
 
         return response()->json(array_merge(

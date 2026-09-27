@@ -28,6 +28,8 @@ class PotreroController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Potrero::class); // CAPA 1
+
         $potreros = $this->potreroService->listarPotreros($request->query());
 
         return $this->respuestaPaginada($potreros, 'Listado de potreros obtenido correctamente.', PotreroResource::class);
@@ -45,6 +47,8 @@ class PotreroController extends Controller
     {
         $potrero = $this->potreroService->obtenerPorId($id);
 
+        $this->authorize('view', $potrero); // CAPA 1
+
         return $this->respuestaOk(new PotreroResource($potrero), 'Potrero obtenido correctamente.');
     }
 
@@ -58,6 +62,8 @@ class PotreroController extends Controller
      */
     public function store(StorePotreroRequest $request): JsonResponse
     {
+        $this->authorize('create', Potrero::class); // CAPA 1
+
         $potrero = $this->potreroService->crearPotrero($request->validated());
 
         return $this->respuestaCreada($potrero, 'Potrero creado correctamente.', 'potreros', new PotreroResource($potrero));
@@ -74,6 +80,10 @@ class PotreroController extends Controller
      */
     public function update(UpdatePotreroRequest $request, int $id): JsonResponse
     {
+        $potrero = $this->potreroService->obtenerPorId($id);
+
+        $this->authorize('update', $potrero); // CAPA 1
+
         $potrero = $this->potreroService->actualizarPotrero($id, $request->validated());
 
         return $this->respuestaOk(new PotreroResource($potrero), 'Potrero actualizado correctamente.');
@@ -90,6 +100,10 @@ class PotreroController extends Controller
      */
     public function destroy(int $id): Response
     {
+        $potrero = $this->potreroService->obtenerPorId($id);
+
+        $this->authorize('delete', $potrero); // CAPA 1
+
         $this->potreroService->eliminarPotrero($id);
 
         return $this->respuestaSinContenido();

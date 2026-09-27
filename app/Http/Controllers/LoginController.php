@@ -56,29 +56,20 @@ class LoginController extends Controller
 
         RateLimiter::clear($clave);
 
-        $token = $usuario->createToken('auth-token', $usuario->role->abilities());
+        // Abilities según rol de Spatie (Persona 1 debe refinar esto)
+        $rol = $usuario->getRoleNames()->first() ?? 'operario';
+        $abilities = match ($rol) {
+            'admin'       => ['*'],
+            'veterinario' => ['animales:read', 'tratamientos:manage', 'pesajes:create'],
+            'operario'    => ['animales:read', 'pesajes:create', 'potreros:read'],
+            default       => [],
+        };
+
+        $token = $usuario->createToken('auth-token', $abilities);
 
         return response()->json([
             'message' => 'Autenticación exitosa.',
             'token'   => $token->plainTextToken,
         ], 200);
     }
-
-    // Definición de habilidades según el rol del usuario
-    $permisos = $usuario->rol === 'admin' ? ['*'] : ['animales:read', 'animales:create'];
-
-    // Creación del token de Sanctum
-    $token = $usuario->createToken('auth_token', $permisos)->plainTextToken;
-
-    return response()->json([
-        'message' => 'Autenticación exitosa.',
-        'token'   => $token, // Se pasa $token directamente ya que es el string generado
-        'user'    => [
-            'id'    => $usuario->id,
-            'name'  => $usuario->name,
-            'email' => $usuario->email,
-            'rol'   => $usuario->rol,
-        ],
-    ], 200);
-}
 }

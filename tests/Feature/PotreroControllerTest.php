@@ -11,6 +11,13 @@ class PotreroControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+        \Laravel\Sanctum\Sanctum::actingAs($admin, ['*']);
+    }
+
     public function test_index_potreros_responde_200_con_paginacion(): void
     {
         Potrero::factory()->count(10)->create();

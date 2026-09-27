@@ -4,8 +4,9 @@ namespace App\Services;
 
 use App\Exceptions\ReglaNegocioException;
 use App\Models\Potrero;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator; // Cambiar Collection por esto
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class PotreroService
 {
@@ -56,6 +57,8 @@ class PotreroService
      */
     public function crearPotrero(array $datos): Potrero
     {
+        Gate::authorize('create', Potrero::class); // CAPA 2
+
         return DB::transaction(function () use ($datos) {
             return Potrero::create($datos);
         });
@@ -67,6 +70,8 @@ class PotreroService
     public function actualizarPotrero(int $id, array $datos): Potrero
     {
         $potrero = $this->obtenerPorId($id);
+
+        Gate::authorize('update', $potrero); // CAPA 2
 
         DB::transaction(function () use ($potrero, $datos) {
             $potrero->update($datos);
@@ -82,6 +87,8 @@ class PotreroService
     public function eliminarPotrero(int $id): bool
     {
         $potrero = $this->obtenerPorId($id);
+
+        Gate::authorize('delete', $potrero); // CAPA 2
 
         if ($potrero->animales()->exists()) {
             throw new ReglaNegocioException(

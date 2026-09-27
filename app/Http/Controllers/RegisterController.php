@@ -41,10 +41,18 @@ class RegisterController extends Controller
             'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'role'     => $request->role,
         ]);
 
-        $token = $usuario->createToken('auth-token', $usuario->role->abilities());
+        $usuario->assignRole($request->role);
+
+        $abilities = match ($request->role) {
+            'admin'       => ['*'],
+            'veterinario' => ['animales:read', 'tratamientos:manage', 'pesajes:create'],
+            'operario'    => ['animales:read', 'pesajes:create', 'potreros:read'],
+            default       => [],
+        };
+
+        $token = $usuario->createToken('auth-token', $abilities);
 
         return response()->json([
             'message' => 'Usuario registrado exitosamente.',
@@ -53,7 +61,7 @@ class RegisterController extends Controller
                 'id'    => $usuario->id,
                 'name'  => $usuario->name,
                 'email' => $usuario->email,
-                'role'  => $usuario->role,
+                'role'  => $request->role,
             ],
         ], 201);
     }

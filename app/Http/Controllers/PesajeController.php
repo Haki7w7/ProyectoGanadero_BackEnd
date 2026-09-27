@@ -7,6 +7,7 @@ use App\Http\Requests\StorePesajeAnimalRequest;
 use App\Http\Requests\StorePesajeRequest;
 use App\Http\Requests\UpdatePesajeRequest;
 use App\Http\Resources\PesajeResource;
+use App\Models\Pesaje;
 use App\Services\AnimalService;
 use App\Services\PesajeService;
 use Illuminate\Http\JsonResponse;
@@ -28,6 +29,8 @@ class PesajeController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Pesaje::class); // CAPA 1
+
         $pesajes = $this->pesajeService->listarPesajes($request->query());
 
         return $this->respuestaPaginada($pesajes, 'Listado de pesajes obtenido correctamente.', PesajeResource::class);
@@ -40,6 +43,8 @@ class PesajeController extends Controller
      */
     public function indexPorAnimal(Request $request, int $animal): JsonResponse
     {
+        $this->authorize('viewAny', Pesaje::class); // CAPA 1
+
         $this->animalService->verificarExistencia($animal);
 
         // El animal de la URL siempre manda sobre cualquier ?id_animal= de la query.
@@ -58,6 +63,8 @@ class PesajeController extends Controller
     {
         $pesaje = $this->pesajeService->obtenerPorId($id);
 
+        $this->authorize('view', $pesaje); // CAPA 1
+
         return $this->respuestaOk(new PesajeResource($pesaje), 'Pesaje obtenido correctamente.');
     }
 
@@ -68,6 +75,8 @@ class PesajeController extends Controller
      */
     public function store(StorePesajeRequest $request): JsonResponse
     {
+        $this->authorize('create', Pesaje::class); // CAPA 1
+
         $pesaje = $this->pesajeService->crearPesaje($request->validated());
 
         return $this->respuestaCreada($pesaje, 'Pesaje registrado correctamente.', 'pesajes', new PesajeResource($pesaje));
@@ -80,6 +89,8 @@ class PesajeController extends Controller
      */
     public function storePorAnimal(StorePesajeAnimalRequest $request, int $animal): JsonResponse
     {
+        $this->authorize('create', Pesaje::class); // CAPA 1
+
         // StorePesajeAnimalRequest ya inyectó id_animal desde la URL.
         $pesaje = $this->pesajeService->crearPesaje($request->validated());
 
@@ -94,6 +105,10 @@ class PesajeController extends Controller
      */
     public function update(UpdatePesajeRequest $request, int $id): JsonResponse
     {
+        $pesaje = $this->pesajeService->obtenerPorId($id);
+
+        $this->authorize('update', $pesaje); // CAPA 1
+
         $pesaje = $this->pesajeService->actualizarPesaje($id, $request->validated());
 
         return $this->respuestaOk(new PesajeResource($pesaje), 'Pesaje actualizado correctamente.');
@@ -104,9 +119,13 @@ class PesajeController extends Controller
      *
      * Elimina el registro de pesaje indicado del sistema.
      */
-    public function destroy($id): Response
+    public function destroy(int $id): Response
     {
-        $this->pesajeService->eliminarPesaje((int) $id);
+        $pesaje = $this->pesajeService->obtenerPorId($id);
+
+        $this->authorize('delete', $pesaje); // CAPA 1
+
+        $this->pesajeService->eliminarPesaje($id);
 
         return $this->respuestaSinContenido();
     }

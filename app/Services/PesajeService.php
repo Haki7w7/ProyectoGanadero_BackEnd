@@ -6,6 +6,7 @@ use App\Exceptions\ReglaNegocioException;
 use App\Models\Pesaje;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class PesajeService
 {
@@ -47,6 +48,8 @@ class PesajeService
 
     public function crearPesaje(array $datos): Pesaje
     {
+        Gate::authorize('create', Pesaje::class); // CAPA 2
+
         return DB::transaction(function () use ($datos) {
             return Pesaje::create($datos);
         });
@@ -55,6 +58,8 @@ class PesajeService
     public function actualizarPesaje(int $id, array $datos): Pesaje
     {
         $pesaje = $this->obtenerPorId($id);
+
+        Gate::authorize('update', $pesaje); // CAPA 2
 
         DB::transaction(function () use ($pesaje, $datos) {
             $pesaje->update($datos);
@@ -66,6 +71,8 @@ class PesajeService
     public function eliminarPesaje(int $id): bool
     {
         $pesaje = $this->obtenerPorId($id);
+
+        Gate::authorize('delete', $pesaje); // CAPA 2
 
         return (bool) $pesaje->delete();
     }
