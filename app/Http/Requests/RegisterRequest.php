@@ -48,6 +48,6 @@ class RegisterRequest extends FormRequest
             'password.uncompromised' => 'La contraseña apareció en una filtración de datos. Elija otra.',
             'role.required'          => 'El rol es obligatorio.',
             'role.in'                => 'El rol seleccionado no es válido. Debe ser admin, veterinario u operario.',
-        ];
+      ];
     }
 }

@@ -83,7 +83,7 @@ abstract class Controller
     protected function respuestaPaginada(LengthAwarePaginator $paginador, string $mensaje, ?string $recurso = null): JsonResponse
     {
         $items = $recurso !== null
-            ? $recurso::collection($paginador->getCollection())->resolve(request())
+            ? $recurso::collection($paginador->getCollecgetion())->resolve(request())
             : $paginador->items();
 
         return response()->json(array_merge(
