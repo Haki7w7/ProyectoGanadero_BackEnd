@@ -16,9 +16,12 @@ use App\Http\Controllers\TratamientoController;
 use App\Http\Controllers\TratamientoAnimalController;
 use App\Http\Controllers\RegisterController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Route::get('/user', function (Request $request) {
+//     return $request->user();
+// })->middleware('auth:sanctum');
+
+Route::get('/user', fn (Request $req) => new \App\Http\Resources\UserResource($req->user()))
+    ->middleware('auth:sanctum');
 
 //rutas para las validaciones
 Route::prefix('v1')->group(function () {

@@ -37,4 +37,19 @@ class User extends Authenticatable
         $roleAdmin = role::create(['name' => 'admin']);
         $roleCajero = role::create(['name' => 'cajero']);
     }
+
+
+    // Helpers de Rol de Uusuarios 
+
+    public function isadmin(): bool{
+        return $this->role === UserRole::ADMIN;
+    } 
+
+    public function isVeterinario(): bool{
+        return $this->role === UserRole::VETERINARIO;
+    }
+
+    public function isOperario(): bool{
+        return $this->role === UserRole::OPERARIO;
+    }
 }
