@@ -12,10 +12,6 @@ class User extends Authenticatable
 {
 
 
-
- 
-    use HasApiTokens, HasFactory, Notifiable;
-
     protected $table = 'users';
 
     protected $fillable = [
@@ -36,5 +32,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+        
+
+        $roleAdmin = role::create(['name' => 'admin']);
+        $roleCajero = role::create(['name' => 'cajero']);
     }
 }

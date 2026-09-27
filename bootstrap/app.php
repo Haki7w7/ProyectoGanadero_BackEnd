@@ -54,9 +54,16 @@ return Application::configure(basePath: dirname(__DIR__))
         // 2) Validación -> 422 con el detalle de errores por campo.
         //    Se mantiene la clave "errors" (mismo nombre que usa Laravel) para
         //    que assertJsonValidationErrors() y los clientes actuales sigan funcionando.
+        //    Cuerpo JSON corrupto -> 400: si el Content-Type es JSON pero el
+        //    contenido crudo no parsea, no fue un error de validación sino de sintaxis.
         $exceptions->render(function (ValidationException $e, Request $request) use ($esApi, $error) {
             if (! $esApi($request)) {
                 return null;
+            }
+
+            $crudo = $request->getContent();
+            if ($request->isJson() && is_string($crudo) && $crudo !== '' && json_decode($crudo) === null && json_last_error() !== JSON_ERROR_NONE) {
+                return $error('Solicitud inválida', 'El cuerpo JSON enviado no es válido.', 400);
             }
 
             return $error(
@@ -92,6 +99,15 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return $error('No autenticado', 'Debe autenticarse para acceder a este recurso.', 401);
+        });
+
+        // 4b) JSON malformado -> 400 (antes del capturador genérico).
+        $exceptions->render(function (JsonException $e, Request $request) use ($esApi, $error) {
+            if (! $esApi($request)) {
+                return null;
+            }
+
+            return $error('Solicitud inválida', 'El cuerpo JSON enviado no es válido.', 400);
         });
 
         // 5) Cualquier otra cosa (debe registrarse al final: captura Throwable).
