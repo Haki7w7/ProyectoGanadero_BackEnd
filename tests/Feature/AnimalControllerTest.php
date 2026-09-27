@@ -12,6 +12,13 @@ class AnimalControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+        \Laravel\Sanctum\Sanctum::actingAs($admin, ['*']);
+    }
+
     /**
      * Verifica que el index responde 200 y aplica el tope máximo de paginación.
      */

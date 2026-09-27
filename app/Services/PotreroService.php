@@ -21,7 +21,9 @@ class PotreroService
     public function listarPotreros(array $filtros = []): LengthAwarePaginator
     {
         // Paginación segura con tope en 100
-        $perPage = min((int) ($filtros['per_page'] ?? 15), 100);
+        // $perPage = min((int) ($filtros['per_page'] ?? 15), 100);
+
+        $perPage = min (max((int) ($filtros['per_page'] ?? 15), 1), 100);
 
         // Ordenamiento por al menos dos campos válidos
         $allowedSortFields = ['nombre', 'hectareas_de_extension', 'capacidad_maxima', 'potrero_id'];

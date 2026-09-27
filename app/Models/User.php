@@ -18,6 +18,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     protected $hidden = [
@@ -25,11 +26,54 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    private ?string $rolePendingAssignment = null;
+
+    public function setRoleAttribute(?string $value): void
+    {
+        $this->rolePendingAssignment = $value;
+    }
+
+    public function getRoleAttribute(): ?string
+    {
+        return $this->getRoleNames()->first();
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(function (User $user) {
+            if ($user->rolePendingAssignment !== null) {
+                \Spatie\Permission\Models\Role::firstOrCreate([
+                    'name'       => $user->rolePendingAssignment,
+                    'guard_name' => 'web',
+                ]);
+                $user->syncRoles([$user->rolePendingAssignment]);
+                $user->rolePendingAssignment = null;
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
         ];
+    }
+
+    // Helpers de Rol — usan Spatie (hasRole) en lugar del Enum eliminado
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    public function isVeterinario(): bool
+    {
+        return $this->hasRole('veterinario');
+    }
+
+    public function isOperario(): bool
+    {
+        return $this->hasRole('operario');
     }
 }

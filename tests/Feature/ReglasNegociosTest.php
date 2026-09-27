@@ -22,6 +22,7 @@ class ReglasNegocioTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->actingAs(\App\Models\User::factory()->create(['role' => 'admin']));
         $this->animalService = app(AnimalService::class);
         $this->potreroService = app(PotreroService::class);
     }

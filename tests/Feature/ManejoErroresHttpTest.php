@@ -17,6 +17,13 @@ class ManejoErroresHttpTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+        \Laravel\Sanctum\Sanctum::actingAs($admin, ['*']);
+    }
+
     public function test_recurso_inexistente_responde_404_en_json(): void
     {
         $this->getJson('/api/v1/animales/999999')

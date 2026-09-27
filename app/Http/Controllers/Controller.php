@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Support\PaginacionUniforme;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
@@ -23,6 +24,7 @@ use Illuminate\Http\Response;
  */
 abstract class Controller
 {
+    use AuthorizesRequests;
     /**
      * Prefijo de la versión vigente de la API (usado para la cabecera Location).
      */

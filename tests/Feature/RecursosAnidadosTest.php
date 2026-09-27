@@ -17,6 +17,13 @@ class RecursosAnidadosTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+        \Laravel\Sanctum\Sanctum::actingAs($admin, ['*']);
+    }
+
     private function crearTratamiento(array $atributos = []): Tratamiento
     {
         return Tratamiento::create(array_merge([
