@@ -44,7 +44,7 @@ class RegisterController extends Controller
             'role'     => $request->role,
         ]);
 
-        $token = $usuario->createToken('auth-token');
+        $token = $usuario->createToken('auth-token', $usuario->role->abilities());
 
         return response()->json([
             'message' => 'Usuario registrado exitosamente.',
