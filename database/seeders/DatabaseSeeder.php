@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enum\UserRole;
 use App\Models\Animal;
 use App\Models\Pesaje;
 use App\Models\Potrero;
@@ -20,7 +21,22 @@ class DatabaseSeeder extends Seeder
             'name'     => 'Aarón Rodríguez',
             'email'    => 'aaron@guateganado.cr',
             'password' => Hash::make('password123'),
-            'role'     => 'admin',
+            // 'role'     => 'admin',
+            'role'     => UserRole::ADMIN, //En este nuevo campo se usa el Enum, no el String.
+        ]);
+
+        User::factory()->create([
+            'name'     => 'Veterianrio',
+            'email'    => 'vet@guateGanado',
+            'password' => Hash::make('password123'),
+            'role'     => UserRole::VETERINARIO,
+        ]);
+
+        User::factory()->create([
+            'name'     => 'Operario',
+            'email'    => 'operario@guateGanado',
+            'password' => Hash::make('password123'),
+            'role'     => UserRole::OPERARIO,
         ]);
 
         // 2. Genera Razas y Potreros
