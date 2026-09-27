@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTratamientoAnimalRequest;
 use App\Http\Requests\UpdateTratamientoAnimalRequest;
 use App\Http\Resources\TratamientoAnimalResource;
+use App\Models\TratamientoAnimal;
 use App\Services\AnimalService;
 use App\Services\TratamientoAnimalService;
 use Illuminate\Http\JsonResponse;
@@ -27,6 +28,8 @@ class TratamientoAnimalController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', TratamientoAnimal::class); // CAPA 1
+
         $registros = $this->tratamientoAnimalService->listarTratamientoAnimal($request->query());
 
         return $this->respuestaPaginada($registros, 'Listado de aplicaciones de tratamiento obtenido correctamente.', TratamientoAnimalResource::class);
@@ -39,6 +42,8 @@ class TratamientoAnimalController extends Controller
      */
     public function indexPorAnimal(Request $request, int $animal): JsonResponse
     {
+        $this->authorize('viewAny', TratamientoAnimal::class); // CAPA 1
+
         $this->animalService->verificarExistencia($animal);
 
         // El animal de la URL siempre manda sobre cualquier ?id_animal= de la query.
@@ -57,6 +62,8 @@ class TratamientoAnimalController extends Controller
     {
         $registro = $this->tratamientoAnimalService->obtenerPorId($id);
 
+        $this->authorize('view', $registro); // CAPA 1
+
         return $this->respuestaOk(new TratamientoAnimalResource($registro), 'Aplicación de tratamiento obtenida correctamente.');
     }
 
@@ -67,6 +74,8 @@ class TratamientoAnimalController extends Controller
      */
     public function store(StoreTratamientoAnimalRequest $request): JsonResponse
     {
+        $this->authorize('create', TratamientoAnimal::class); // CAPA 1
+
         $registro = $this->tratamientoAnimalService->crearTratamientoAnimal($request->validated());
 
         return $this->respuestaCreada($registro, 'Aplicación de tratamiento registrada correctamente.', 'tratamientos-aplicaciones', new TratamientoAnimalResource($registro));
@@ -79,6 +88,10 @@ class TratamientoAnimalController extends Controller
      */
     public function update(UpdateTratamientoAnimalRequest $request, int $id): JsonResponse
     {
+        $registro = $this->tratamientoAnimalService->obtenerPorId($id);
+
+        $this->authorize('update', $registro); // CAPA 1
+
         $registro = $this->tratamientoAnimalService->actualizarTratamientoAnimal($id, $request->validated());
 
         return $this->respuestaOk(new TratamientoAnimalResource($registro), 'Aplicación de tratamiento actualizada correctamente.');
@@ -89,9 +102,13 @@ class TratamientoAnimalController extends Controller
      *
      * Elimina del sistema el registro de la aplicación de tratamiento indicada.
      */
-    public function destroy($id): Response
+    public function destroy(int $id): Response
     {
-        $this->tratamientoAnimalService->eliminarTratamientoAnimal((int) $id);
+        $registro = $this->tratamientoAnimalService->obtenerPorId($id);
+
+        $this->authorize('delete', $registro); // CAPA 1
+
+        $this->tratamientoAnimalService->eliminarTratamientoAnimal($id);
 
         return $this->respuestaSinContenido();
     }

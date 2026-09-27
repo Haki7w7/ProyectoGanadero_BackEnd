@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\ReglaNegocioException;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
@@ -9,6 +10,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -22,6 +24,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         //
+    })
+    ->booting(function () {
+        // Registrar policies para modelos que no se auto-descubren
+        // (TratamientoAnimal extiende Pivot en lugar de Model).
+        Gate::policy(\App\Models\TratamientoAnimal::class, \App\Policies\TratamientoAnimalPolicy::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // ¿La petición espera JSON? Solo entonces se aplican los formatos de abajo.
@@ -99,6 +106,15 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return $error('No autenticado', 'Debe autenticarse para acceder a este recurso.', 401);
+        });
+
+        // 4a) No autorizado -> 403 (AuthorizationException de policies/gates).
+        $exceptions->render(function (AuthorizationException $e, Request $request) use ($esApi, $error) {
+            if (! $esApi($request)) {
+                return null;
+            }
+
+            return $error('Acceso denegado', 'No tiene permisos para realizar esta acción.', 403);
         });
 
         // 4b) JSON malformado -> 400 (antes del capturador genérico).

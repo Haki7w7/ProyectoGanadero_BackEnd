@@ -7,6 +7,7 @@ use App\Models\Animal;
 use App\Models\Potrero;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class AnimalService
 {
@@ -70,6 +71,8 @@ class AnimalService
      */
     public function crearAnimal(array $datos): Animal
     {
+        Gate::authorize('create', Animal::class); // CAPA 2
+
         return DB::transaction(function () use ($datos) {
             $this->validarCapacidadPotrero((int) $datos['potrero_id']);
 
@@ -83,6 +86,8 @@ class AnimalService
     public function actualizarAnimal(int $id, array $datos): Animal
     {
         $animal = $this->obtenerPorId($id);
+
+        Gate::authorize('update', $animal); // CAPA 2
 
         DB::transaction(function () use ($animal, $datos) {
             if (isset($datos['potrero_id']) && (int) $datos['potrero_id'] !== (int) $animal->potrero_id) {
@@ -103,6 +108,8 @@ class AnimalService
     public function eliminarAnimal(int $id): bool
     {
         $animal = $this->obtenerPorId($id);
+
+        Gate::authorize('delete', $animal); // CAPA 2
 
         if ($animal->pesajes()->exists()) {
             throw new ReglaNegocioException(

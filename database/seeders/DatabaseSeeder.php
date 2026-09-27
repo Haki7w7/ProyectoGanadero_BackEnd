@@ -10,18 +10,49 @@ use App\Models\Tratamiento;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Crea Usuario Administrador de Prueba
-        User::factory()->create([
+
+
+    app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+    
+    Role::truncate();
+    User::truncate();
+    Permission::truncate();
+
+        // 1. Crear los 3 roles requeridos por el Lab 6
+        $roleAdmin       = Role::create(['name' => 'admin']);
+        $roleVeterinario = Role::create(['name' => 'veterinario']);
+        $roleOperario    = Role::create(['name' => 'operario']);
+
+        // 2. Crear usuarios de prueba (uno por rol)
+        $admin = User::factory()->create([
             'name'     => 'Aarón Rodríguez',
             'email'    => 'aaron@guateganado.cr',
-            'password' => Hash::make('password123'),
-            'role'     => 'admin',
+            'password' => Hash::make('Admin@1234!'),
         ]);
+
+        $veterinario = User::factory()->create([
+            'name'     => 'María López',
+            'email'    => 'maria@guateganado.cr',
+            'password' => Hash::make('Vet@12345!'),
+        ]);
+
+        $operario = User::factory()->create([
+            'name'     => 'Juan Villareal',
+            'email'    => 'Juan@guateganado.cr',
+            'password' => Hash::make('Op@123456!'),
+        ]);
+
+        $admin->assignRole($roleAdmin);
+        $veterinario->assignRole($roleVeterinario);
+        $operario->assignRole($roleOperario);
+
 
         // 2. Genera Razas y Potreros
         $razas    = Raza::factory()->count(10)->create();

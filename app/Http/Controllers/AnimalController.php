@@ -14,7 +14,6 @@ use App\Services\RazaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Validation\Rule;
 
 
 
@@ -25,8 +24,6 @@ class AnimalController extends Controller
         private readonly PotreroService $potreroService,
         private readonly RazaService $razaService,
     ) {
-        /* Aplicar middleware de autenticación a todas las rutas excepto index y show
-        $this->middleware('auth:sanctum')->except(['index', 'show']);*/
     }
 
     /**
@@ -39,6 +36,8 @@ class AnimalController extends Controller
      */
     public function index(Request $request): AnimalCollection
     {
+        $this->authorize('viewAny', Animal::class); // CAPA 1
+
         $animales = $this->animalService->listarAnimales($request->query());
 
         // AnimalCollection ya entrega data + meta + links; se agrega el mensaje.
@@ -59,6 +58,8 @@ class AnimalController extends Controller
     {
         $animal = $this->animalService->obtenerPorId($id);
 
+        $this->authorize('view', $animal); // CAPA 1
+
         return $this->respuestaOk(new AnimalResource($animal), 'Animal obtenido correctamente.');
     }
 
@@ -73,6 +74,8 @@ class AnimalController extends Controller
      */
     public function store(StoreAnimalRequest $request): JsonResponse
     {
+        $this->authorize('create', Animal::class); // CAPA 1
+
         $animal = $this->animalService->crearAnimal($request->validated());
 
         return $this->respuestaCreada($animal, 'Animal creado correctamente.', 'animales', new AnimalResource($animal));
@@ -90,6 +93,10 @@ class AnimalController extends Controller
      */
     public function update(UpdateAnimalRequest $request, int $id): JsonResponse
     {
+        $animal = $this->animalService->obtenerPorId($id);
+
+        $this->authorize('update', $animal); // CAPA 1
+
         $animal = $this->animalService->actualizarAnimal($id, $request->validated());
 
         return $this->respuestaOk(new AnimalResource($animal), 'Animal actualizado correctamente.');
@@ -107,6 +114,8 @@ class AnimalController extends Controller
      */
     public function indexPorPotrero(Request $request, int $potrero): JsonResponse
     {
+        $this->authorize('viewAny', Animal::class); // CAPA 1
+
         $this->potreroService->obtenerPorId($potrero);
 
         $animales = $this->animalService->listarAnimales(array_merge($request->query(), ['potrero_id' => $potrero]));
@@ -126,6 +135,8 @@ class AnimalController extends Controller
      */
     public function indexPorRaza(Request $request, int $raza): JsonResponse
     {
+        $this->authorize('viewAny', Animal::class); // CAPA 1
+
         $this->razaService->obtenerPorId($raza);
 
         $animales = $this->animalService->listarAnimales(array_merge($request->query(), ['raza_id' => $raza]));
@@ -139,20 +150,17 @@ class AnimalController extends Controller
      * Elimina el registro de un animal del sistema por su ID.
      * Impide la eliminación si el animal posee registros de pesaje en su historial.
      *
-     * @param  int|string  $id  Identificador único del animal a eliminar.
+     * @param  int  $id  Identificador único del animal a eliminar.
      * @return Response Respuesta HTTP 204 No Content sin cuerpo.
      */
- public function destroy(Request $request, $id): Response
-{
-    // 1. Verificación de permisos
-    if (! $request->user()->tokenCan('animales:delete') && ! $request->user()->tokenCan('*')) {
-        abort(403, 'Acceso denegado. No posee permisos suficientes');
+    public function destroy(int $id): Response
+    {
+        $animal = $this->animalService->obtenerPorId($id);
+
+        $this->authorize('delete', $animal); // CAPA 1
+
+        $this->animalService->eliminarAnimal($id);
+
+        return $this->respuestaSinContenido();
     }
-
-    // 2. Lógica de negocio en el servicio
-    $this->animalService->eliminarAnimal($id);
-
-    // 3. Respuesta exitosa (204 No Content)
-    return $this->respuestaSinContenido();
-}
 }

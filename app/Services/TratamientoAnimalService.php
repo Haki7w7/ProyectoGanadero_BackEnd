@@ -6,6 +6,7 @@ use App\Exceptions\ReglaNegocioException;
 use App\Models\TratamientoAnimal;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class TratamientoAnimalService
 {
@@ -46,6 +47,8 @@ class TratamientoAnimalService
 
     public function crearTratamientoAnimal(array $datos): TratamientoAnimal
     {
+        Gate::authorize('create', TratamientoAnimal::class); // CAPA 2
+
         return DB::transaction(function () use ($datos) {
             return TratamientoAnimal::create($datos);
         });
@@ -54,6 +57,8 @@ class TratamientoAnimalService
     public function actualizarTratamientoAnimal(int $id, array $datos): TratamientoAnimal
     {
         $registro = $this->obtenerPorId($id);
+
+        Gate::authorize('update', $registro); // CAPA 2
 
         DB::transaction(function () use ($registro, $datos) {
             $registro->update($datos);
@@ -65,6 +70,8 @@ class TratamientoAnimalService
     public function eliminarTratamientoAnimal(int $id): bool
     {
         $registro = $this->obtenerPorId($id);
+
+        Gate::authorize('delete', $registro); // CAPA 2
 
         return (bool) $registro->delete();
     }

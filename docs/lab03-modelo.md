@@ -1,6 +1,6 @@
 
 # Documentación del Modelo de Datos - Finca Ganadera
-**Curso:** Desarrollo de Software IV (IF0009)[cite: 1]  
+**Curso:** Desarrollo de Software IV (IF0009)  
 **Profesor:** Alonso Chavarría  
 **Proyecto:** Sistema de Gestión para Finca Ganadera  
 
