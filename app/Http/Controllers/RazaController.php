@@ -17,7 +17,11 @@ class RazaController extends Controller
     {
     }
 
-    // GET /api/razas
+    /**
+     * Listar razas.
+     *
+     * Retorna el listado paginado de razas registradas en el sistema.
+     */
     public function index(Request $request): JsonResponse
     {
         $razas = $this->razaService->listarRazas($request->query());
@@ -25,7 +29,11 @@ class RazaController extends Controller
         return $this->respuestaPaginada($razas, 'Listado de razas obtenido correctamente.', RazaResource::class);
     }
 
-    // GET /api/razas/{id}
+    /**
+     * Obtener detalle de una raza.
+     *
+     * Retorna la información de una raza específica por su ID.
+     */
     public function show(int $id): JsonResponse
     {
         $raza = $this->razaService->obtenerPorId($id);
@@ -33,7 +41,11 @@ class RazaController extends Controller
         return $this->respuestaOk(new RazaResource($raza), 'Raza obtenida correctamente.');
     }
 
-    // POST /api/razas
+    /**
+     * Registrar una nueva raza.
+     *
+     * Valida los datos y registra una nueva raza de ganado en el sistema.
+     */
     public function store(StoreRazaRequest $request): JsonResponse
     {
         $raza = $this->razaService->crearRaza($request->validated());
@@ -41,7 +53,11 @@ class RazaController extends Controller
         return $this->respuestaCreada($raza, 'Raza creada correctamente.', 'razas', new RazaResource($raza));
     }
 
-    // PUT/PATCH /api/razas/{id}
+    /**
+     * Actualizar una raza.
+     *
+     * Actualiza la información de una raza existente por su ID.
+     */
     public function update(UpdateRazaRequest $request, int $id): JsonResponse
     {
         $raza = $this->razaService->actualizarRaza($id, $request->validated());
@@ -49,7 +65,11 @@ class RazaController extends Controller
         return $this->respuestaOk(new RazaResource($raza), 'Raza actualizada correctamente.');
     }
 
-    // DELETE /api/razas/{id}
+    /**
+     * Eliminar una raza.
+     *
+     * Elimina del sistema la raza indicada por su ID.
+     */
     public function destroy($id): Response
     {
         $this->razaService->eliminarRaza((int) $id);

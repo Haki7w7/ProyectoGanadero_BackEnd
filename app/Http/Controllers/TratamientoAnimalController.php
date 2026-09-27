@@ -20,7 +20,11 @@ class TratamientoAnimalController extends Controller
     ) {
     }
 
-    // GET /api/v1/tratamientos-aplicaciones
+    /**
+     * Listar aplicaciones de tratamiento.
+     *
+     * Retorna el listado paginado de aplicaciones de tratamientos veterinarios administradas a los animales.
+     */
     public function index(Request $request): JsonResponse
     {
         $registros = $this->tratamientoAnimalService->listarTratamientoAnimal($request->query());
@@ -28,7 +32,11 @@ class TratamientoAnimalController extends Controller
         return $this->respuestaPaginada($registros, 'Listado de aplicaciones de tratamiento obtenido correctamente.', TratamientoAnimalResource::class);
     }
 
-    // GET /api/v1/animales/{animal}/tratamientos  (historial sanitario del animal)
+    /**
+     * Historial de tratamientos de un animal.
+     *
+     * Retorna el historial sanitario completo y los tratamientos aplicados a un animal específico.
+     */
     public function indexPorAnimal(Request $request, int $animal): JsonResponse
     {
         $this->animalService->verificarExistencia($animal);
@@ -40,7 +48,11 @@ class TratamientoAnimalController extends Controller
         return $this->respuestaPaginada($registros, 'Historial sanitario del animal obtenido correctamente.', TratamientoAnimalResource::class);
     }
 
-    // GET /api/v1/tratamientos-aplicaciones/{tratamiento_animal}
+    /**
+     * Obtener detalle de una aplicación de tratamiento.
+     *
+     * Retorna la información detallada de una aplicación de tratamiento por su ID.
+     */
     public function show(int $id): JsonResponse
     {
         $registro = $this->tratamientoAnimalService->obtenerPorId($id);
@@ -48,7 +60,11 @@ class TratamientoAnimalController extends Controller
         return $this->respuestaOk(new TratamientoAnimalResource($registro), 'Aplicación de tratamiento obtenida correctamente.');
     }
 
-    // POST /api/v1/tratamientos-aplicaciones
+    /**
+     * Registrar aplicación de tratamiento.
+     *
+     * Registra la administración de un tratamiento a un animal con verificación de insumos y dosis.
+     */
     public function store(StoreTratamientoAnimalRequest $request): JsonResponse
     {
         $registro = $this->tratamientoAnimalService->crearTratamientoAnimal($request->validated());
@@ -56,7 +72,11 @@ class TratamientoAnimalController extends Controller
         return $this->respuestaCreada($registro, 'Aplicación de tratamiento registrada correctamente.', 'tratamientos-aplicaciones', new TratamientoAnimalResource($registro));
     }
 
-    // PUT/PATCH /api/v1/tratamientos-aplicaciones/{tratamiento_animal}
+    /**
+     * Actualizar aplicación de tratamiento.
+     *
+     * Actualiza la información de una aplicación de tratamiento existente por su ID.
+     */
     public function update(UpdateTratamientoAnimalRequest $request, int $id): JsonResponse
     {
         $registro = $this->tratamientoAnimalService->actualizarTratamientoAnimal($id, $request->validated());
@@ -64,7 +84,11 @@ class TratamientoAnimalController extends Controller
         return $this->respuestaOk(new TratamientoAnimalResource($registro), 'Aplicación de tratamiento actualizada correctamente.');
     }
 
-    // DELETE /api/v1/tratamientos-aplicaciones/{tratamiento_animal}
+    /**
+     * Eliminar aplicación de tratamiento.
+     *
+     * Elimina del sistema el registro de la aplicación de tratamiento indicada.
+     */
     public function destroy($id): Response
     {
         $this->tratamientoAnimalService->eliminarTratamientoAnimal((int) $id);

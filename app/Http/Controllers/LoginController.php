@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
-/**
- * @tags Autenticación
- */
+use Dedoc\Scramble\Attributes\Group;
+
+#[Group('Autenticación')]
 class LoginController extends Controller
 {
     /**
@@ -63,4 +63,22 @@ class LoginController extends Controller
             'token'   => $token->plainTextToken,
         ], 200);
     }
+
+    // Definición de habilidades según el rol del usuario
+    $permisos = $usuario->rol === 'admin' ? ['*'] : ['animales:read', 'animales:create'];
+
+    // Creación del token de Sanctum
+    $token = $usuario->createToken('auth_token', $permisos)->plainTextToken;
+
+    return response()->json([
+        'message' => 'Autenticación exitosa.',
+        'token'   => $token, // Se pasa $token directamente ya que es el string generado
+        'user'    => [
+            'id'    => $usuario->id,
+            'name'  => $usuario->name,
+            'email' => $usuario->email,
+            'rol'   => $usuario->rol,
+        ],
+    ], 200);
+}
 }

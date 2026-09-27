@@ -12,9 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-/**
- * @tags Potreros
- */
+
 class PotreroController extends Controller
 {
     public function __construct(private readonly PotreroService $potreroService)

@@ -21,7 +21,11 @@ class PesajeController extends Controller
     ) {
     }
 
-    // GET /api/v1/pesajes
+    /**
+     * Listar pesajes.
+     *
+     * Retorna el listado paginado de registros de pesaje con soporte de filtros.
+     */
     public function index(Request $request): JsonResponse
     {
         $pesajes = $this->pesajeService->listarPesajes($request->query());
@@ -29,7 +33,11 @@ class PesajeController extends Controller
         return $this->respuestaPaginada($pesajes, 'Listado de pesajes obtenido correctamente.', PesajeResource::class);
     }
 
-    // GET /api/v1/animales/{animal}/pesajes
+    /**
+     * Listar pesajes de un animal.
+     *
+     * Retorna el historial cronológico de pesajes asociados a un animal específico.
+     */
     public function indexPorAnimal(Request $request, int $animal): JsonResponse
     {
         $this->animalService->verificarExistencia($animal);
@@ -41,7 +49,11 @@ class PesajeController extends Controller
         return $this->respuestaPaginada($pesajes, 'Listado de pesajes del animal obtenido correctamente.', PesajeResource::class);
     }
 
-    // GET /api/v1/pesajes/{pesaje}
+    /**
+     * Obtener detalle de un pesaje.
+     *
+     * Retorna la información completa de un registro de pesaje por su ID.
+     */
     public function show(int $id): JsonResponse
     {
         $pesaje = $this->pesajeService->obtenerPorId($id);
@@ -49,7 +61,11 @@ class PesajeController extends Controller
         return $this->respuestaOk(new PesajeResource($pesaje), 'Pesaje obtenido correctamente.');
     }
 
-    // POST /api/v1/pesajes
+    /**
+     * Registrar un nuevo pesaje.
+     *
+     * Valida los datos y registra un nuevo pesaje en el sistema.
+     */
     public function store(StorePesajeRequest $request): JsonResponse
     {
         $pesaje = $this->pesajeService->crearPesaje($request->validated());
@@ -57,7 +73,11 @@ class PesajeController extends Controller
         return $this->respuestaCreada($pesaje, 'Pesaje registrado correctamente.', 'pesajes', new PesajeResource($pesaje));
     }
 
-    // POST /api/v1/animales/{animal}/pesajes
+    /**
+     * Registrar pesaje para un animal.
+     *
+     * Registra un nuevo pesaje vinculado directamente al animal indicado en la ruta.
+     */
     public function storePorAnimal(StorePesajeAnimalRequest $request, int $animal): JsonResponse
     {
         // StorePesajeAnimalRequest ya inyectó id_animal desde la URL.
@@ -67,7 +87,11 @@ class PesajeController extends Controller
         return $this->respuestaCreada($pesaje, 'Pesaje registrado correctamente.', 'pesajes', new PesajeResource($pesaje));
     }
 
-    // PUT/PATCH /api/v1/pesajes/{pesaje}
+    /**
+     * Actualizar un pesaje.
+     *
+     * Actualiza los datos de un registro de pesaje existente por su ID.
+     */
     public function update(UpdatePesajeRequest $request, int $id): JsonResponse
     {
         $pesaje = $this->pesajeService->actualizarPesaje($id, $request->validated());
@@ -75,7 +99,11 @@ class PesajeController extends Controller
         return $this->respuestaOk(new PesajeResource($pesaje), 'Pesaje actualizado correctamente.');
     }
 
-    // DELETE /api/v1/pesajes/{pesaje}
+    /**
+     * Eliminar un pesaje.
+     *
+     * Elimina el registro de pesaje indicado del sistema.
+     */
     public function destroy($id): Response
     {
         $this->pesajeService->eliminarPesaje((int) $id);

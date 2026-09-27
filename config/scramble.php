@@ -50,7 +50,7 @@ return [
         /*
          * Description rendered on the home page of the API documentation (`/docs/api`).
          */
-        'description' => 'Documentación interactiva de la API REST para la gestión y trazabilidad ganadera (Laboratorio 5).',
+        'description' => 'Documentación interactiva de la API REST para la gestión y trazabilidad ganadera de la empresa. Permite a los desarrolladores explorar y probar los endpoints de la API, facilitando la integración con sistemas externos y aplicaciones móviles.',
     ],
 
     'ui' => [
@@ -65,7 +65,7 @@ return [
         'enabled' => env('SCRAMBLE_DEV_TOOLS', env('APP_DEBUG', false)),
     ],
 
-    'renderer' => 'elements',
+    'renderer' => 'scalar',
 
     'renderers' => [
         /*
@@ -87,7 +87,7 @@ return [
         'scalar' => [
             'view' => 'scramble::scalar',
             'cdn' => 'https://cdn.jsdelivr.net/npm/@scalar/api-reference',
-            'theme' => 'laravel',
+            'theme' => 'mars',
             'proxyUrl' => 'https://proxy.scalar.com',
             'darkMode' => true,
             'showDeveloperTools' => 'never',
