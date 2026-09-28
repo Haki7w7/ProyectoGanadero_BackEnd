@@ -14,6 +14,7 @@
           "accept": true
         }
       },
+
       "request": {
         "method": "POST",
         "header": [
@@ -59,6 +60,35 @@
       },
       "response": []
     },
+
+{
+      "name": "Cierre de Sesión (Logout)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{auth_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/auth/logout",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "logout"
+          ]
+        }
+      },
+      "response": []
+    },
+
     {
       "name": "Registro y validacion de token",
       "request": {
@@ -126,7 +156,7 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:8000/api/v1/animales?page=1&per_page=10",
+          "raw": "{{base_url}}/animales?page=1&per_page=10",
           "protocol": "http",
           "host": [
             "localhost"
@@ -175,7 +205,7 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:8000/api/v1/animales/1",
+          "raw": "{{base_url}}/animales/1",
           "protocol": "http",
           "host": [
             "localhost"
@@ -215,7 +245,7 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:8000/api/v1/animales/1/pesajes",
+          "raw": "{{base_url}}/animales/1/pesajes",
           "protocol": "http",
           "host": [
             "localhost"
@@ -265,7 +295,7 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8000/api/v1/animales",
+          "raw": "{{base_url}}/animales",
           "protocol": "http",
           "host": [
             "localhost"
@@ -313,7 +343,7 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8000/api/v1/animales/1/pesajes",
+          "raw": "{{base_url}}/animales/1/pesajes",
           "protocol": "http",
           "host": [
             "localhost"
@@ -354,7 +384,7 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:8000/api/v1/animales/21",
+          "raw": "{{base_url}}/animales/21",
           "protocol": "http",
           "host": [
             "localhost"
@@ -403,7 +433,7 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8000/api/v1/animales",
+          "raw": "{{base_url}}/animales",
           "protocol": "http",
           "host": [
             "localhost"
@@ -438,7 +468,7 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:8000/api/v1/animales",
+          "raw": "{{base_url}}/animales",
           "protocol": "http",
           "host": [
             "localhost"
@@ -477,7 +507,7 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:8000/api/v1/animales/21",
+          "raw": "{{base_url}}/animales/21",
           "protocol": "http",
           "host": [
             "localhost"
@@ -512,7 +542,7 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:8000/api/v1/animales/99999",
+          "raw": "{{base_url}}/animales/99999",
           "protocol": "http",
           "host": [
             "localhost"
@@ -547,7 +577,7 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:8000/api/v1/animales/1",
+          "raw": "{{base_url}}/animales/1",
           "protocol": "http",
           "host": [
             "localhost"
@@ -591,7 +621,7 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8000/api/v1/animales",
+          "raw": "{{base_url}}/animales",
           "protocol": "http",
           "host": [
             "localhost"
@@ -639,7 +669,7 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8000/api/v1/animales",
+          "raw": "{{base_url}}/animales",
           "protocol": "http",
           "host": [
             "localhost"
@@ -687,7 +717,7 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8000/api/v1/animales/1/pesajes",
+          "raw": "{{base_url}}/animales/1/pesajes",
           "protocol": "http",
           "host": [
             "localhost"
