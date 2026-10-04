@@ -1,28 +1,31 @@
 
-import { IsString, IsNotEmpty, IsNumber, IsDateString, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsDateString, IsOptional, MaxLength, IsIn } from 'class-validator';
 
 export class CreateAnimalDto {
   @IsString()
   @IsNotEmpty()
-  numeroArete: string;
+  @MaxLength(50)
+  numero_arete: string;
 
   @IsNumber()
   @IsNotEmpty()
-  razaId: number;
+  raza_id: number;
 
   @IsString()
   @IsNotEmpty()
+  @IsIn(['Macho', 'Hembra'], { message: 'El sexo debe ser Macho o Hembra.' })
   sexo: string;
 
+  @IsOptional()
   @IsDateString()
-  @IsNotEmpty()
-  fechaNacimiento: string;
+  fecha_nacimiento?: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  estado: string;
+  @MaxLength(50)
+  estado?: string;
 
   @IsNumber()
   @IsNotEmpty()
-  potreroId: number;
+  potrero_id: number;
 }
