@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
+use App\Support\Abilities;
+use Dedoc\Scramble\Attributes\Group;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
-
-use Dedoc\Scramble\Attributes\Group;
+use Spatie\Permission\Models\Role;
 
 #[Group('Autenticación')]
 class RegisterController extends Controller
@@ -37,32 +38,42 @@ class RegisterController extends Controller
      */
     public function __invoke(RegisterRequest $request): JsonResponse
     {
+        $rol = $this->resolverRol($request->role);
+
         $usuario = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
+            'name' => $request->name,
+            'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
-        $usuario->assignRole($request->role);
+        $usuario->assignRole($rol);
 
-        $abilities = match ($request->role) {
-            'admin'       => ['*'],
-            'veterinario' => ['animales:read', 'tratamientos:manage', 'pesajes:create'],
-            'operario'    => ['animales:read', 'pesajes:create', 'potreros:read'],
-            default       => [],
-        };
-
-        $token = $usuario->createToken('auth-token', $abilities);
+        $token = $usuario->createToken('auth-token', Abilities::paraRol($rol));
 
         return response()->json([
             'message' => 'Usuario registrado exitosamente.',
-            'token'   => $token->plainTextToken,
+            'token' => $token->plainTextToken,
             'usuario' => [
-                'id'    => $usuario->id,
-                'name'  => $usuario->name,
+                'id' => $usuario->id,
+                'name' => $usuario->name,
                 'email' => $usuario->email,
-                'role'  => $request->role,
+                'role' => $rol,
             ],
         ], 201);
+    }
+
+    /**
+     * Garantiza que el rol exista antes de asignarlo.
+     *
+     * assignRole() lanza RoleDoesNotExist si el rol no está en la base de datos,
+     * lo que devolvía 500 en toda instalación donde no se hubiera corrido el
+     * seeder. findOrCreate mantiene el registro disponible sin depender de que
+     * alguien haya precargado los roles.
+     */
+    private function resolverRol(string $rol): string
+    {
+        Role::findOrCreate($rol, 'web');
+
+        return $rol;
     }
 }

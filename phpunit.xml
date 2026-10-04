@@ -19,6 +19,10 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- La API responde en español: los tests deben validarlo en el locale real,
+             de lo contrario lang/es/validation.php nunca se ejercita. -->
+        <env name="APP_LOCALE" value="es"/>
+        <env name="APP_FALLBACK_LOCALE" value="es"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
