@@ -4,29 +4,29 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 @Entity('animales')
 export class Animal {
   @PrimaryGeneratedColumn({ name: 'id_animal' })
-  idAnimal: number;
+  id_animal: number;
 
-  @Column({ name: 'numero_arete' })
-  numeroArete: string;
+  @Column({ name: 'numero_arete', unique: true })
+  numero_arete: string;
 
   @Column({ name: 'raza_id' })
-  razaId: number;
+  raza_id: number;
 
   @Column()
   sexo: string;
 
-  @Column({ name: 'fecha_nacimiento', type: 'date' })
-  fechaNacimiento: string;
+  @Column({ name: 'fecha_nacimiento', type: 'date', nullable: true })
+  fecha_nacimiento?: string;
 
-  @Column()
-  estado: string;
+  @Column({ nullable: true })
+  estado?: string;
 
   @Column({ name: 'potrero_id' })
-  potreroId: number;
+  potrero_id: number;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  created_at: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  updated_at: Date;
 }

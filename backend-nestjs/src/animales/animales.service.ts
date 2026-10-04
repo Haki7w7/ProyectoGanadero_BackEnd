@@ -18,12 +18,18 @@ export class AnimalesService {
     return await this.animalRepository.save(nuevoAnimal);
   }
 
-  async findAll(): Promise<Animal[]> {
-    return await this.animalRepository.find();
+  async findAll(query?: any): Promise<Animal[]> {
+    const where: any = {};
+    if (query?.raza_id) where.raza_id = query.raza_id;
+    if (query?.potrero_id) where.potrero_id = query.potrero_id;
+    if (query?.sexo) where.sexo = query.sexo;
+    if (query?.estado) where.estado = query.estado;
+
+    return await this.animalRepository.find({ where });
   }
 
   async findOne(id: number): Promise<Animal> {
-    const animal = await this.animalRepository.findOneBy({ idAnimal: id });
+    const animal = await this.animalRepository.findOneBy({ id_animal: id });
     if (!animal) {
       throw new NotFoundException(`El animal con ID ${id} no fue encontrado`);
     }
@@ -41,11 +47,11 @@ export class AnimalesService {
     await this.animalRepository.remove(animal);
   }
 
-  async findByPotrero(potreroId: number): Promise<Animal[]> {
-    return await this.animalRepository.findBy({ potreroId });
+  async findByPotrero(potrero_id: number): Promise<Animal[]> {
+    return await this.animalRepository.findBy({ potrero_id });
   }
 
-  async findByRaza(razaId: number): Promise<Animal[]> {
-    return await this.animalRepository.findBy({ razaId });
+  async findByRaza(raza_id: number): Promise<Animal[]> {
+    return await this.animalRepository.findBy({ raza_id });
   }
 }
