@@ -4,12 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Models\User;
+use App\Support\Abilities;
+use Dedoc\Scramble\Attributes\Group;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
-
-use Dedoc\Scramble\Attributes\Group;
 
 #[Group('Autenticación')]
 class LoginController extends Controller
@@ -34,11 +34,11 @@ class LoginController extends Controller
      */
     public function __invoke(LoginRequest $request): JsonResponse
     {
-        $clave = Str::lower($request->email) . '|' . $request->ip();
+        $clave = Str::lower($request->email).'|'.$request->ip();
 
         if (RateLimiter::tooManyAttempts($clave, 5)) {
             return response()->json([
-                'error'   => 'Demasiadas solicitudes',
+                'error' => 'Demasiadas solicitudes',
                 'mensaje' => 'Demasiadas solicitudes. Intente nuevamente más tarde.',
             ], 429);
         }
@@ -49,27 +49,21 @@ class LoginController extends Controller
             RateLimiter::hit($clave);
 
             return response()->json([
-                'error'   => 'No autenticado',
+                'error' => 'No autenticado',
                 'mensaje' => 'Las credenciales proporcionadas son incorrectas.',
             ], 401);
         }
 
         RateLimiter::clear($clave);
 
-        // Abilities según rol de Spatie (Persona 1 debe refinar esto)
-        $rol = $usuario->getRoleNames()->first() ?? 'operario';
-        $abilities = match ($rol) {
-            'admin'       => ['*'],
-            'veterinario' => ['animales:read', 'tratamientos:manage', 'pesajes:create'],
-            'operario'    => ['animales:read', 'pesajes:create', 'potreros:read'],
-            default       => [],
-        };
+        // Capacidades derivadas del rol de Spatie (fuente única: App\Support\Abilities).
+        $rol = $usuario->getRoleNames()->first() ?? Abilities::ROL_OPERARIO;
 
-        $token = $usuario->createToken('auth-token', $abilities);
+        $token = $usuario->createToken('auth-token', Abilities::paraRol($rol));
 
         return response()->json([
             'message' => 'Autenticación exitosa.',
-            'token'   => $token->plainTextToken,
+            'token' => $token->plainTextToken,
         ], 200);
     }
 }
