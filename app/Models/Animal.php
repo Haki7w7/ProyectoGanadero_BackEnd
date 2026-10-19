@@ -84,6 +84,18 @@ class Animal extends Model
         return $query->where('sexo', $sexo);
     }
 
+    /**
+     * Búsqueda parcial por número de arete (?search=GG-12).
+     * Se escapan los comodines % y _ (con "!" como carácter de escape, válido en
+     * MySQL, SQLite y PostgreSQL) para que el texto se busque literalmente.
+     */
+    public function scopeBuscar(Builder $query, string $termino): Builder
+    {
+        $termino = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], trim($termino));
+
+        return $query->whereRaw('numero_arete LIKE ? ESCAPE ?', ["%{$termino}%", '!']);
+    }
+
     public function scopeConRelaciones(Builder $query): Builder
     {
         return $query->with(['raza', 'potrero', 'pesajes']);
