@@ -41,6 +41,28 @@ class AnimalControllerTest extends TestCase
     }
 
     /**
+     * Verifica que ?search filtra por coincidencia parcial del número de arete.
+     */
+    public function test_index_filtra_por_search_en_numero_de_arete(): void
+    {
+        Animal::factory()->create(['numero_arete' => 'GG-1234']);
+        Animal::factory()->create(['numero_arete' => 'GG-1299']);
+        Animal::factory()->create(['numero_arete' => 'CR-5678']);
+
+        $response = $this->getJson('/api/v1/animales?search=gg-12');
+
+        $response->assertStatus(200);
+        $this->assertSame(2, $response->json('meta.total'));
+        $this->assertEqualsCanonicalizing(
+            ['GG-1234', 'GG-1299'],
+            collect($response->json('data'))->pluck('numero_arete')->all()
+        );
+
+        // Los comodines se buscan literalmente: "%" no debe devolver todo.
+        $this->getJson('/api/v1/animales?search=%25')->assertJsonPath('meta.total', 0);
+    }
+
+    /**
      * Verifica que la validación declarativa rechaza datos inválidos con 422.
      */
     public function test_store_valida_campos_obligatorios_y_responde_422(): void

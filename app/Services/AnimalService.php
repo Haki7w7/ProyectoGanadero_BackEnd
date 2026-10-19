@@ -32,6 +32,7 @@ class AnimalService
             ->when(!empty($filtros['potrero_id']), fn ($query) => $query->porPotrero((int) $filtros['potrero_id']))
             ->when(!empty($filtros['sexo']), fn ($query) => $query->porSexo($filtros['sexo']))
             ->when(!empty($filtros['estado']), fn ($query) => $query->porEstado($filtros['estado']))
+            ->when(is_string($filtros['search'] ?? null) && trim($filtros['search']) !== '', fn ($query) => $query->buscar($filtros['search']))
             ->with(['raza', 'potrero'])
             ->orderBy($sortBy, $sortOrder)
             ->paginate($perPage);
