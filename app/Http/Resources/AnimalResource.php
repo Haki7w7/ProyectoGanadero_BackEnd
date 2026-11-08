@@ -13,6 +13,8 @@ class AnimalResource extends JsonResource
         return [
             'id_animal'        => $this->id_animal,
             'numero_arete'     => $this->numero_arete,
+            'codigo_qr'        => $this->codigo_qr,
+            'foto'             => $this->foto,
             'sexo'             => $this->sexo,
             'fecha_nacimiento' => $this->fecha_nacimiento?->toDateString(),
             'estado'           => $this->estado,

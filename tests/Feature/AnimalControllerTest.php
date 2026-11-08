@@ -73,8 +73,12 @@ class AnimalControllerTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonPath('message', 'Animal creado correctamente.')
             ->assertJsonPath('data.numero_arete', 'ARETE-TEST-100')
+            ->assertJsonPath('data.codigo_qr', 'VACA-ARETE-TEST-100')
             ->assertHeader('Location', '/api/v1/animales/' . $response->json('data.id_animal'));
 
-        $this->assertDatabaseHas('animales', ['numero_arete' => 'ARETE-TEST-100']);
+        $this->assertDatabaseHas('animales', [
+            'numero_arete' => 'ARETE-TEST-100',
+            'codigo_qr'    => 'VACA-ARETE-TEST-100',
+        ]);
     }
 }

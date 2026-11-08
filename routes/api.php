@@ -15,6 +15,7 @@ use App\Http\Controllers\PesajeController;
 use App\Http\Controllers\TratamientoController;
 use App\Http\Controllers\TratamientoAnimalController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\RondaController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -28,7 +29,7 @@ Route::prefix('v1')->group(function () {
 
     // Los identificadores de todos los recursos son numéricos: un id como /animales/abc
     // no coincide con ninguna ruta y responde 404 JSON (en lugar de un 500 por TypeError).
-    foreach (['categoria', 'unidad_medida', 'raza', 'potrero', 'insumo', 'animal', 'pesaje', 'tratamiento', 'tratamiento_animal'] as $parametro) {
+    foreach (['categoria', 'unidad_medida', 'raza', 'potrero', 'insumo', 'animal', 'pesaje', 'tratamiento', 'tratamiento_animal', 'ronda'] as $parametro) {
         Route::pattern($parametro, '[0-9]+');
     }
 
@@ -46,6 +47,9 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('razas', RazaController::class)->parameters(['razas'=>'raza']);
     Route::apiResource('potreros', PotreroController::class)->parameters(['potreros'=>'potrero']);
     Route::apiResource('insumos', InsumoController::class)->parameters(['insumos'=>'insumo']);
+
+    // Escaneo QR en Animales (antes de apiResource 'animales' para evitar colisiones)
+    Route::get('animales/qr/{codigo_qr}', [AnimalController::class, 'porQr'])->name('animales.por_qr');
     Route::apiResource('animales', AnimalController::class)->parameters(['animales'=>'animal']);
     Route::apiResource('pesajes', PesajeController::class)->parameters(['pesajes'=>'pesaje']);
     Route::apiResource('tratamientos', TratamientoController::class)->parameters(['tratamientos'=>'tratamiento']);
@@ -67,5 +71,12 @@ Route::prefix('v1')->group(function () {
         ->whereNumber('raza')->name('razas.animales.index');
     Route::get('categorias/{categoria}/insumos', [InsumoController::class, 'indexPorCategoria'])
         ->whereNumber('categoria')->name('categorias.insumos.index');
+
+    // Módulo de Rondas de Operario y Auditoría de Admin
+    Route::get('rondas', [RondaController::class, 'index'])->name('rondas.index');
+    Route::post('rondas', [RondaController::class, 'store'])->name('rondas.store');
+    Route::get('rondas/{ronda}', [RondaController::class, 'show'])->name('rondas.show');
+    Route::post('rondas/{ronda}/puntos', [RondaController::class, 'registrarPunto'])->name('rondas.puntos.store');
+    Route::patch('rondas/{ronda}/finalizar', [RondaController::class, 'finalizar'])->name('rondas.finalizar');
     });
 });

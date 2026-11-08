@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('potreros', function (Blueprint $table) {
             $table->id('potrero_id');
             $table->string('nombre', 100);
+            $table->string('codigo_qr', 100)->nullable()->unique();
             $table->decimal('hectareas_de_extension',8,2);
             $table->integer('capacidad_maxima');
             $table->string('estado_pasto', 50)->nullable();

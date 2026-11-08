@@ -47,9 +47,13 @@ class PotreroControllerTest extends TestCase
         $response = $this->postJson('/api/v1/potreros', $payload);
 
         $response->assertStatus(201)
-            ->assertJsonPath('data.nombre', 'Potrero Pruebas Automatizadas');
+            ->assertJsonPath('data.nombre', 'Potrero Pruebas Automatizadas')
+            ->assertJsonPath('data.codigo_qr', 'POTRERO-POTRERO-PRUEBAS-AUTOMATIZADAS');
 
-        $this->assertDatabaseHas('potreros', ['nombre' => 'Potrero Pruebas Automatizadas']);
+        $this->assertDatabaseHas('potreros', [
+            'nombre'    => 'Potrero Pruebas Automatizadas',
+            'codigo_qr' => 'POTRERO-POTRERO-PRUEBAS-AUTOMATIZADAS',
+        ]);
     }
 
     public function test_destroy_potrero_falla_si_tiene_animales_asignados(): void

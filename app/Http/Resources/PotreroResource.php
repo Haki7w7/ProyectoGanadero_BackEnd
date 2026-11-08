@@ -13,6 +13,7 @@ class PotreroResource extends JsonResource
         return [
             'potrero_id'             => $this->potrero_id,
             'nombre'                 => $this->nombre,
+            'codigo_qr'              => $this->codigo_qr,
             'hectareas_de_extension' => $this->hectareas_de_extension,
             'capacidad_maxima'       => $this->capacidad_maxima,
             'estado_pasto'           => $this->estado_pasto,

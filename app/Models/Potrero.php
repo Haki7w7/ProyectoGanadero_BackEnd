@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Potrero extends Model
 {
@@ -16,6 +17,7 @@ class Potrero extends Model
 
     protected $fillable = [
         'nombre',
+        'codigo_qr',
         'hectareas_de_extension',
         'capacidad_maxima',
         'estado_pasto',
@@ -26,9 +28,24 @@ class Potrero extends Model
         'capacidad_maxima'        => 'integer',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function (Potrero $potrero) {
+            if (empty($potrero->codigo_qr)) {
+                $slug = Str::slug($potrero->nombre ?? 'p');
+                $potrero->codigo_qr = 'POTRERO-' . strtoupper($slug ?: Str::random(6));
+            }
+        });
+    }
+
     public function animales(): HasMany
     {
         return $this->hasMany(Animal::class, 'potrero_id');
+    }
+
+    public function puntosRonda(): HasMany
+    {
+        return $this->hasMany(PuntoRonda::class, 'potrero_id', 'potrero_id');
     }
 
     /**
