@@ -23,7 +23,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Esta aplicacion es solo API: no existe una ruta llamada "login".
+        // Sin esto, una peticion sin token que no pida JSON hace que el
+        // middleware Authenticate intente route('login'), lance
+        // RouteNotFoundException y devuelva 500 en lugar de 401.
+        $middleware->redirectGuestsTo(
+            fn (Request $request) => $request->is('api/*') ? null : '/login'
+        );
     })
     ->booting(function () {
         // Registrar policies para modelos que no se auto-descubren
