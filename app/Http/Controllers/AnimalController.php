@@ -64,6 +64,23 @@ class AnimalController extends Controller
     }
 
     /**
+     * Consultar animal por código QR.
+     *
+     * Busca y retorna la ficha técnica completa de un animal mediante su código QR escaneado.
+     *
+     * @param  string  $codigo_qr  Código QR identificador del animal (ej. VACA-001).
+     * @return JsonResponse Recurso AnimalResource con relaciones o 404 si no existe.
+     */
+    public function porQr(string $codigo_qr): JsonResponse
+    {
+        $animal = $this->animalService->obtenerPorCodigoQr($codigo_qr);
+
+        $this->authorize('view', $animal); // CAPA 1
+
+        return $this->respuestaOk(new AnimalResource($animal), 'Animal obtenido correctamente mediante código QR.');
+    }
+
+    /**
      * Registrar un nuevo animal.
      *
      * Valida los datos recibidos y registra un nuevo animal en el sistema.
