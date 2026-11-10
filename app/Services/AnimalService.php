@@ -54,6 +54,23 @@ class AnimalService
     }
 
     /**
+     * Obtiene un animal por su código QR con todas sus relaciones cargadas,
+     * o lanza ReglaNegocioException (404) si no existe.
+     */
+    public function obtenerPorCodigoQr(string $codigoQr): Animal
+    {
+        $animal = Animal::with(['raza', 'potrero', 'pesajes', 'tratamientos'])
+            ->where('codigo_qr', $codigoQr)
+            ->first();
+
+        if (!$animal) {
+            throw new ReglaNegocioException('El animal con el código QR especificado no existe.', 404);
+        }
+
+        return $animal;
+    }
+
+    /**
      * Verifica que el animal exista sin cargar sus relaciones. Se usa en las
      * rutas anidadas (/animales/{animal}/...) para responder 404 cuando el
      * animal de la URL no existe.
@@ -74,6 +91,10 @@ class AnimalService
     {
         Gate::authorize('create', Animal::class); // CAPA 2
 
+        if (empty($datos['codigo_qr'])) {
+            $datos['codigo_qr'] = 'VACA-' . $datos['numero_arete'];
+        }
+
         return DB::transaction(function () use ($datos) {
             $this->validarCapacidadPotrero((int) $datos['potrero_id']);
 
@@ -89,6 +110,11 @@ class AnimalService
         $animal = $this->obtenerPorId($id);
 
         Gate::authorize('update', $animal); // CAPA 2
+
+        if (empty($datos['codigo_qr']) && (array_key_exists('codigo_qr', $datos) || empty($animal->codigo_qr))) {
+            $arete = $datos['numero_arete'] ?? $animal->numero_arete;
+            $datos['codigo_qr'] = 'VACA-' . $arete;
+        }
 
         DB::transaction(function () use ($animal, $datos) {
             if (isset($datos['potrero_id']) && (int) $datos['potrero_id'] !== (int) $animal->potrero_id) {
@@ -124,6 +150,10 @@ class AnimalService
 
     public function registrarAnimalConPesaje(array $datosAnimal, array $datosPesaje): Animal
     {
+        if (empty($datosAnimal['codigo_qr']) && !empty($datosAnimal['numero_arete'])) {
+            $datosAnimal['codigo_qr'] = 'VACA-' . $datosAnimal['numero_arete'];
+        }
+
         return DB::transaction(function () use ($datosAnimal, $datosPesaje) {
             $this->validarCapacidadPotrero((int) $datosAnimal['potrero_id']);
 

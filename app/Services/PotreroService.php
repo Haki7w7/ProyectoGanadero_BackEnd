@@ -7,6 +7,7 @@ use App\Models\Potrero;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 
 class PotreroService
 {
@@ -59,6 +60,10 @@ class PotreroService
     {
         Gate::authorize('create', Potrero::class); // CAPA 2
 
+        if (empty($datos['codigo_qr'])) {
+            $datos['codigo_qr'] = 'POTRERO-' . strtoupper(Str::slug($datos['nombre']));
+        }
+
         return DB::transaction(function () use ($datos) {
             return Potrero::create($datos);
         });
@@ -72,6 +77,11 @@ class PotreroService
         $potrero = $this->obtenerPorId($id);
 
         Gate::authorize('update', $potrero); // CAPA 2
+
+        if (empty($datos['codigo_qr']) && (array_key_exists('codigo_qr', $datos) || empty($potrero->codigo_qr))) {
+            $nombre = $datos['nombre'] ?? $potrero->nombre;
+            $datos['codigo_qr'] = 'POTRERO-' . strtoupper(Str::slug($nombre));
+        }
 
         DB::transaction(function () use ($potrero, $datos) {
             $potrero->update($datos);

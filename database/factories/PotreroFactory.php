@@ -27,8 +27,12 @@ protected $model = Potrero::class;
             'Potrero San Martín', 'Potrero Las Flores', 'Potrero El Coyol',
         ];
 
+        $nombre = $this->faker->unique()->randomElement($nombres);
+        $slug = \Illuminate\Support\Str::slug($nombre);
+
         return [
-            'nombre'                 => $this->faker->unique()->randomElement($nombres),
+            'nombre'                 => $nombre,
+            'codigo_qr'              => 'POTRERO-' . strtoupper($slug ?: $this->faker->unique()->lexify('????')),
             'hectareas_de_extension' => $this->faker->randomFloat(2, 5.0, 50.0),
             'capacidad_maxima'       => $this->faker->numberBetween(10, 50),
             'estado_pasto'           => $this->faker->randomElement(['Excelente', 'Bueno', 'Regular', 'En Descanso']),
