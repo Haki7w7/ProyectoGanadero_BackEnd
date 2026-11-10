@@ -1,4 +1,0 @@
-Para generar la solucion:
-  dotnet new sln -n GuateGanado
-  dotnet sln add GuateGanado.Api/GuateGanado.Api.csproj
-  dotnet sln add GuateGanado.Tests/GuateGanado.Tests.csproj
