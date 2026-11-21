@@ -12,6 +12,7 @@ use App\Models\Tratamiento;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -21,10 +22,12 @@ class DatabaseSeeder extends Seeder
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
+        Schema::disableForeignKeyConstraints();
         Role::truncate();
         User::truncate();
         Permission::truncate();
-
+        Schema::enableForeignKeyConstraints();
+        
         // 1. Crear los 3 roles requeridos por el Lab 6
         $roleAdmin       = Role::create(['name' => 'admin']);
         $roleVeterinario = Role::create(['name' => 'veterinario']);
@@ -124,7 +127,7 @@ class DatabaseSeeder extends Seeder
             Animal::create([
                 'numero_arete'     => "CR-{$num}-LIB",
                 'codigo_qr'        => "VACA-{$num}",
-                'foto'             => 'https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&w=600&q=80',
+                'foto'             => null,
                 'raza_id'          => $razas->random()->raza_id,
                 'potrero_id'       => $todosPotreros->random()->potrero_id,
                 'sexo'             => $i % 2 === 0 ? 'Macho' : 'Hembra',
