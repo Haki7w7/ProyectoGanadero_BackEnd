@@ -23,6 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustProxies(at: '*');
+
         // Esta aplicacion es solo API: no existe una ruta llamada "login".
         // Sin esto, una peticion sin token que no pida JSON hace que el
         // middleware Authenticate intente route('login'), lance
