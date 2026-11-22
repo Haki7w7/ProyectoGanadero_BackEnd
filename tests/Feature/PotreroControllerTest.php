@@ -68,4 +68,67 @@ class PotreroControllerTest extends TestCase
             ->assertJsonPath('error', 'Regla de Negocio');
         $this->assertDatabaseHas('potreros', ['potrero_id' => $potrero->potrero_id]);
     }
+
+    public function test_reducir_capacidad_maxima_por_debajo_de_ocupacion_actual_devuelve_409_conflict(): void
+    {
+        $potrero = Potrero::factory()->create(['capacidad_maxima' => 5]);
+        Animal::factory()->create(['potrero_id' => $potrero->potrero_id, 'estado' => 'Activo']);
+        Animal::factory()->create(['potrero_id' => $potrero->potrero_id, 'estado' => 'Enfermo']);
+        Animal::factory()->create(['potrero_id' => $potrero->potrero_id, 'estado' => 'Vendido']);
+
+        // Ocupación actual real = 2 (Activo + Enfermo). Reducir a 1 debe fallar con 409.
+        $response = $this->putJson('/api/v1/potreros/' . $potrero->potrero_id, [
+            'capacidad_maxima' => 1,
+        ]);
+
+        $response->assertStatus(409)
+            ->assertJsonPath('error', 'Regla de Negocio');
+
+        $this->assertDatabaseHas('potreros', [
+            'potrero_id'       => $potrero->potrero_id,
+            'capacidad_maxima' => 5,
+        ]);
+
+        // Reducir exactamente a la ocupación actual (2) sí debe permitirse.
+        $this->putJson('/api/v1/potreros/' . $potrero->potrero_id, [
+            'capacidad_maxima' => 2,
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.capacidad_maxima', 2)
+            ->assertJsonPath('data.ocupacion_actual', 2)
+            ->assertJsonPath('data.espacios_disponibles', 0);
+    }
+
+    public function test_index_y_show_exponen_ocupacion_actual_y_espacios_disponibles_exactos(): void
+    {
+        $potrero = Potrero::factory()->create(['capacidad_maxima' => 5]);
+        Animal::factory()->count(2)->create(['potrero_id' => $potrero->potrero_id, 'estado' => 'Activo']);
+        Animal::factory()->create(['potrero_id' => $potrero->potrero_id, 'estado' => 'Enfermo']);
+        Animal::factory()->count(2)->create(['potrero_id' => $potrero->potrero_id, 'estado' => 'Vendido']);
+
+        // GET /api/v1/potreros
+        $indexResponse = $this->getJson('/api/v1/potreros');
+        $indexResponse->assertOk();
+
+        $item = collect($indexResponse->json('data'))
+            ->firstWhere('potrero_id', $potrero->potrero_id);
+
+        $this->assertNotNull($item);
+        $this->assertSame(3, $item['ocupacion_actual']);
+        $this->assertSame(2, $item['espacios_disponibles']);
+
+        // GET /api/v1/potreros/{potrero}
+        $this->getJson('/api/v1/potreros/' . $potrero->potrero_id)
+            ->assertOk()
+            ->assertJsonPath('data.ocupacion_actual', 3)
+            ->assertJsonPath('data.espacios_disponibles', 2);
+
+        // scopeDisponibles() excluye animales 'Vendido'
+        $potreroConSoloVendidos = Potrero::factory()->create(['capacidad_maxima' => 1]);
+        Animal::factory()->create(['potrero_id' => $potreroConSoloVendidos->potrero_id, 'estado' => 'Vendido']);
+
+        $this->assertTrue(
+            Potrero::disponibles()->where('potrero_id', $potreroConSoloVendidos->potrero_id)->exists()
+        );
+    }
 }

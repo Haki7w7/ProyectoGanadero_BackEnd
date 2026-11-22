@@ -11,6 +11,7 @@ use App\Models\Ronda;
 use App\Models\Tratamiento;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Permission;
@@ -23,6 +24,9 @@ class DatabaseSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         Schema::disableForeignKeyConstraints();
+        DB::table('role_has_permissions')->truncate();
+        DB::table('model_has_roles')->truncate();
+        DB::table('model_has_permissions')->truncate();
         Role::truncate();
         User::truncate();
         Permission::truncate();
@@ -48,7 +52,7 @@ class DatabaseSeeder extends Seeder
 
         $operario = User::factory()->create([
             'name'     => 'Juan Villareal',
-            'email'    => 'Juan@guateganado.cr',
+            'email'    => 'juan@guateganado.cr',
             'password' => Hash::make('Op@123456!'),
         ]);
 
@@ -127,7 +131,6 @@ class DatabaseSeeder extends Seeder
             Animal::create([
                 'numero_arete'     => "CR-{$num}-LIB",
                 'codigo_qr'        => "VACA-{$num}",
-                'foto'             => null,
                 'raza_id'          => $razas->random()->raza_id,
                 'potrero_id'       => $todosPotreros->random()->potrero_id,
                 'sexo'             => $i % 2 === 0 ? 'Macho' : 'Hembra',

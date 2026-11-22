@@ -16,6 +16,7 @@ use App\Http\Controllers\TratamientoController;
 use App\Http\Controllers\TratamientoAnimalController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\RondaController;
+use App\Http\Controllers\UserController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -35,11 +36,12 @@ Route::prefix('v1')->group(function () {
 
     // Autenticación (rutas públicas)
     Route::post('auth/login', LoginController::class);
-    Route::post('auth/register', RegisterController::class);
     Route::post('auth/logout', LogoutController::class)->middleware('auth:sanctum');
 
     // Autenticación (rutas protegidas)
     Route::middleware('auth:sanctum')->group(function () {
+    Route::post('auth/register', RegisterController::class);
+    Route::get('users', [UserController::class, 'index'])->name('users.index');
 
     // Recursos REST
     Route::apiResource('categorias', CategoriaController::class)->parameters(['categorias'=>'categoria']);

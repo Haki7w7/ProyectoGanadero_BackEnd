@@ -32,6 +32,7 @@ class PotreroService
         $sortOrder = strtolower($filtros['order'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
 
         return Potrero::query()
+            ->withCount(['animales as ocupacion_actual' => fn ($q) => $q->where('estado', '!=', 'Vendido')])
             ->when(!empty($filtros['estado_pasto']), fn ($query) => $query->where('estado_pasto', $filtros['estado_pasto']))
             ->when(!empty($filtros['nombre']), fn ($query) => $query->where('nombre', 'like', '%' . $filtros['nombre'] . '%'))
             ->orderBy($sortBy, $sortOrder)
@@ -44,7 +45,9 @@ class PotreroService
      */
     public function obtenerPorId(int $id): Potrero
     {
-        $potrero = Potrero::find($id);
+        $potrero = Potrero::query()
+            ->withCount(['animales as ocupacion_actual' => fn ($q) => $q->where('estado', '!=', 'Vendido')])
+            ->find($id);
 
         if (!$potrero) {
             throw new ReglaNegocioException('El potrero solicitado no existe.', 404);
@@ -64,9 +67,13 @@ class PotreroService
             $datos['codigo_qr'] = 'POTRERO-' . strtoupper(Str::slug($datos['nombre']));
         }
 
-        return DB::transaction(function () use ($datos) {
+        $potrero = DB::transaction(function () use ($datos) {
             return Potrero::create($datos);
         });
+
+        return $potrero->loadCount([
+            'animales as ocupacion_actual' => fn ($q) => $q->where('estado', '!=', 'Vendido'),
+        ]);
     }
 
     /**
@@ -84,10 +91,33 @@ class PotreroService
         }
 
         DB::transaction(function () use ($potrero, $datos) {
-            $potrero->update($datos);
+            $potreroBloqueado = Potrero::where('potrero_id', $potrero->potrero_id)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$potreroBloqueado) {
+                throw new ReglaNegocioException('El potrero solicitado no existe.', ReglaNegocioException::HTTP_NOT_FOUND);
+            }
+
+            if (array_key_exists('capacidad_maxima', $datos)) {
+                $ocupacionActual = $potreroBloqueado->animales()
+                    ->where('estado', '!=', 'Vendido')
+                    ->count();
+
+                if ((int) $datos['capacidad_maxima'] < $ocupacionActual) {
+                    throw new ReglaNegocioException(
+                        "No se puede reducir la capacidad máxima a {$datos['capacidad_maxima']} porque el potrero tiene actualmente {$ocupacionActual} animales ocupando cupo.",
+                        ReglaNegocioException::HTTP_CONFLICT
+                    );
+                }
+            }
+
+            $potreroBloqueado->update($datos);
         });
 
-        return $potrero->refresh();
+        return $potrero->refresh()->loadCount([
+            'animales as ocupacion_actual' => fn ($q) => $q->where('estado', '!=', 'Vendido'),
+        ]);
     }
 
     /**

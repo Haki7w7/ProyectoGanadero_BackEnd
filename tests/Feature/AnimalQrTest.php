@@ -31,7 +31,6 @@ class AnimalQrTest extends TestCase
         $this->animal = Animal::factory()->create([
             'numero_arete' => 'CR-9999-LIB',
             'codigo_qr'    => 'VACA-TEST-001',
-            'foto'         => 'https://images.example.com/vaca.jpg',
             'raza_id'      => $raza->raza_id,
             'potrero_id'   => $potrero->potrero_id,
         ]);
@@ -46,10 +45,11 @@ class AnimalQrTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonPath('data.numero_arete', 'CR-9999-LIB')
             ->assertJsonPath('data.codigo_qr', 'VACA-TEST-001')
-            ->assertJsonPath('data.foto', 'https://images.example.com/vaca.jpg')
             ->assertJsonPath('data.raza.nombre', 'Brahman')
             ->assertJsonPath('data.potrero.nombre', 'Potrero Norte')
             ->assertJsonPath('data.potrero.codigo_qr', 'POTRERO-NORTE');
+
+        $this->assertArrayNotHasKey('foto', $response->json('data'));
     }
 
     public function test_consultar_animal_por_codigo_qr_inexistente_retorna_404(): void

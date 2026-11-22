@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Support\Abilities;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
@@ -12,10 +13,23 @@ class RegisterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * Solo un usuario autenticado con rol 'admin' puede registrar nuevos usuarios.
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user()?->hasRole('admin') ?? false;
+    }
+
+    /**
+     * Respuesta JSON estándar cuando el usuario autenticado no tiene rol 'admin'.
+     */
+    protected function failedAuthorization(): void
+    {
+        throw new HttpResponseException(response()->json([
+            'error' => 'No autorizado',
+            'mensaje' => 'Solo un administrador puede registrar nuevos usuarios.',
+        ], 403));
     }
 
     /**
@@ -29,8 +43,7 @@ class RegisterRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()->uncompromised()],
-            // Roles permitidos. El registro público sigue aceptan cualquiera de
-            // ellos: la restricción a 'operario' se aplica en el controlador.
+            // Roles válidos del sistema asignables por un administrador autenticado.
             'role' => ['required', 'string', Rule::in(Abilities::rolesValidos())],
         ];
     }

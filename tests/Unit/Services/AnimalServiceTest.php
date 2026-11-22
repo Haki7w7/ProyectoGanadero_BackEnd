@@ -68,7 +68,10 @@ class AnimalServiceTest extends TestCase
     public function test_rn03_rechaza_animal_en_potrero_con_capacidad_llena(): void
     {
         $potrero = Potrero::factory()->create(['capacidad_maxima' => 2]);
-        Animal::factory()->count(2)->create(['potrero_id' => $potrero->potrero_id]);
+        Animal::factory()->count(2)->create([
+            'potrero_id' => $potrero->potrero_id,
+            'estado'     => 'Activo',
+        ]);
 
         try {
             $this->servicio->crearAnimal($this->datosAnimal($potrero, 'ARETE-LLENO'));
@@ -86,7 +89,10 @@ class AnimalServiceTest extends TestCase
     {
         $capacidad = 3;
         $potrero = Potrero::factory()->create(['capacidad_maxima' => $capacidad]);
-        Animal::factory()->count($capacidad - 1)->create(['potrero_id' => $potrero->potrero_id]);
+        Animal::factory()->count($capacidad - 1)->create([
+            'potrero_id' => $potrero->potrero_id,
+            'estado'     => 'Activo',
+        ]);
 
         // Animal N (ocupa el último cupo): se admite.
         $this->servicio->crearAnimal($this->datosAnimal($potrero, 'ARETE-N'));

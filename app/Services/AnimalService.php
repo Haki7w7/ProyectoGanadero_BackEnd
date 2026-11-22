@@ -96,7 +96,11 @@ class AnimalService
         }
 
         return DB::transaction(function () use ($datos) {
-            $this->validarCapacidadPotrero((int) $datos['potrero_id']);
+            $estadoNuevo = $datos['estado'] ?? 'Activo';
+
+            if ($estadoNuevo !== 'Vendido') {
+                $this->validarCapacidadPotrero((int) $datos['potrero_id']);
+            }
 
             return Animal::create($datos);
         });
@@ -117,8 +121,15 @@ class AnimalService
         }
 
         DB::transaction(function () use ($animal, $datos) {
-            if (isset($datos['potrero_id']) && (int) $datos['potrero_id'] !== (int) $animal->potrero_id) {
-                $this->validarCapacidadPotrero((int) $datos['potrero_id']);
+            $potreroDestinoId = (int) ($datos['potrero_id'] ?? $animal->potrero_id);
+            $cambiaPotrero = $potreroDestinoId !== (int) $animal->potrero_id;
+            $estadoFinal = array_key_exists('estado', $datos) && $datos['estado'] !== null
+                ? $datos['estado']
+                : $animal->estado;
+            $reactivaDesdeVendido = $animal->estado === 'Vendido' && $estadoFinal !== 'Vendido';
+
+            if ($estadoFinal !== 'Vendido' && ($cambiaPotrero || $reactivaDesdeVendido)) {
+                $this->validarCapacidadPotrero($potreroDestinoId);
             }
 
             $animal->update($datos);
@@ -155,7 +166,11 @@ class AnimalService
         }
 
         return DB::transaction(function () use ($datosAnimal, $datosPesaje) {
-            $this->validarCapacidadPotrero((int) $datosAnimal['potrero_id']);
+            $estadoNuevo = $datosAnimal['estado'] ?? 'Activo';
+
+            if ($estadoNuevo !== 'Vendido') {
+                $this->validarCapacidadPotrero((int) $datosAnimal['potrero_id']);
+            }
 
             // Crear el animal
             $animal = Animal::create($datosAnimal);
@@ -169,24 +184,25 @@ class AnimalService
     }
 
     /*
-     * El número de animales del potrero no puede superar su
-     * capacidad máxima
+     * El número de animales ocupantes (estado != 'Vendido') del potrero
+     * no puede superar su capacidad máxima.
      */
     private function validarCapacidadPotrero(int $potreroId): void
     {
-        $potrero = Potrero::find($potreroId);
+        $potrero = Potrero::where('potrero_id', $potreroId)->lockForUpdate()->first();
 
         if (!$potrero) {
-            throw new ReglaNegocioException('El potrero seleccionado no existe.', 422);
+            throw new ReglaNegocioException('El potrero seleccionado no existe.', ReglaNegocioException::HTTP_CONFLICT);
         }
 
-
-        $ocupados = $potrero->animales()->count();
+        $ocupados = $potrero->animales()
+            ->where('estado', '!=', 'Vendido')
+            ->count();
 
         if ($ocupados >= (int) $potrero->capacidad_maxima) {
             throw new ReglaNegocioException(
                 'El potrero seleccionado ya alcanzó su capacidad máxima.',
-                422
+                ReglaNegocioException::HTTP_CONFLICT
             );
         }
     }
