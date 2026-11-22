@@ -54,7 +54,7 @@ class Potrero extends Model
     public function scopeDisponibles(Builder $query): Builder
     {
         return $query->whereRaw(
-            '(SELECT COUNT(*) FROM animales WHERE animales.potrero_id = potreros.potrero_id) < potreros.capacidad_maxima'
+            "(SELECT COUNT(*) FROM animales WHERE animales.potrero_id = potreros.potrero_id AND animales.estado != 'Vendido') < potreros.capacidad_maxima"
         );
     }
 }
