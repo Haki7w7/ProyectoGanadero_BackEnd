@@ -11,6 +11,7 @@ use App\Models\Ronda;
 use App\Models\Tratamiento;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Permission;
@@ -23,6 +24,9 @@ class DatabaseSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         Schema::disableForeignKeyConstraints();
+        DB::table('role_has_permissions')->truncate();
+        DB::table('model_has_roles')->truncate();
+        DB::table('model_has_permissions')->truncate();
         Role::truncate();
         User::truncate();
         Permission::truncate();
@@ -48,7 +52,7 @@ class DatabaseSeeder extends Seeder
 
         $operario = User::factory()->create([
             'name'     => 'Juan Villareal',
-            'email'    => 'Juan@guateganado.cr',
+            'email'    => 'juan@guateganado.cr',
             'password' => Hash::make('Op@123456!'),
         ]);
 

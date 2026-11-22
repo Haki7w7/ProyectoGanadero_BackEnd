@@ -4,29 +4,33 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
-use App\Support\Abilities;
 use Dedoc\Scramble\Attributes\Group;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
 #[Group('Autenticación')]
 class RegisterController extends Controller
 {
     /**
-     * Registrar usuario.
+     * Registrar usuario (solo Administrador).
      *
-     * Registra un nuevo usuario con rol asignado (admin, operario, veterinario) y emite un token Bearer.
+     * Registra un nuevo usuario con rol asignado (admin, operario, veterinario).
+     * No emite token de acceso para no interferir con la sesión del administrador autenticado.
      *
      * @response 201 {
      *   "message": "Usuario registrado exitosamente.",
-     *   "token": "2|SDucxGoM2IQbyRKDu6K806lIQVS3CSLxneAljzG8bcd65ed8",
      *   "usuario": {
-     *     "id": 1,
+     *     "id": 2,
      *     "name": "Dra. Laura Gómez",
      *     "email": "laura@guateganado.cr",
      *     "role": "veterinario"
      *   }
+     * }
+     * @response 403 {
+     *   "error": "No autorizado",
+     *   "mensaje": "Solo un administrador puede registrar nuevos usuarios."
      * }
      * @response 422 {
      *   "message": "Los datos proporcionados no son válidos.",
@@ -38,21 +42,25 @@ class RegisterController extends Controller
      */
     public function __invoke(RegisterRequest $request): JsonResponse
     {
+        if (! $request->user()?->hasRole('admin')) {
+            return response()->json([
+                'error' => 'No autorizado',
+                'mensaje' => 'Solo un administrador puede registrar nuevos usuarios.',
+            ], 403);
+        }
+
         $rol = $this->resolverRol($request->role);
 
         $usuario = User::create([
             'name' => $request->name,
-            'email' => $request->email,
+            'email' => Str::lower($request->email),
             'password' => Hash::make($request->password),
         ]);
 
         $usuario->assignRole($rol);
 
-        $token = $usuario->createToken('auth-token', Abilities::paraRol($rol));
-
         return response()->json([
             'message' => 'Usuario registrado exitosamente.',
-            'token' => $token->plainTextToken,
             'usuario' => [
                 'id' => $usuario->id,
                 'name' => $usuario->name,
