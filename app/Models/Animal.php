@@ -19,7 +19,6 @@ class Animal extends Model
     protected $fillable = [
         'numero_arete',
         'codigo_qr',
-        'foto',
         'raza_id',
         'sexo',
         'fecha_nacimiento',

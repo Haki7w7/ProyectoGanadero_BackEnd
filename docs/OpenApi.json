@@ -15,6 +15,9 @@
             "name": "Autenticaci\u00f3n"
         },
         {
+            "name": "Usuarios"
+        },
+        {
             "name": "Rondas de Inspecci\u00f3n"
         }
     ],
@@ -64,8 +67,8 @@
         "/v1/auth/register": {
             "post": {
                 "operationId": "register",
-                "description": "Registra un nuevo usuario con rol asignado (admin, operario, veterinario) y emite un token Bearer.",
-                "summary": "Registrar usuario",
+                "description": "Registra un nuevo usuario con rol asignado (admin, operario, veterinario). Requiere autenticaci\u00f3n Bearer con rol admin (401 sin token, 403 si no es admin). No emite token de acceso para no interferir con la sesi\u00f3n del administrador autenticado.",
+                "summary": "Registrar usuario (solo Administrador)",
                 "tags": [
                     "Autenticaci\u00f3n"
                 ],
@@ -80,13 +83,78 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "",
+                    "201": {
+                        "description": "Usuario registrado exitosamente (sin campo token).",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "integer",
-                                    "const": 201
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Usuario registrado exitosamente."
+                                        },
+                                        "usuario": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email"
+                                                },
+                                                "role": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "admin",
+                                                        "veterinario",
+                                                        "operario"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "email",
+                                                "role"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "usuario"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "description": "Acceso denegado: solo un administrador puede registrar nuevos usuarios.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "const": "No autorizado"
+                                        },
+                                        "mensaje": {
+                                            "type": "string",
+                                            "const": "Solo un administrador puede registrar nuevos usuarios."
+                                        }
+                                    },
+                                    "required": [
+                                        "error",
+                                        "mensaje"
+                                    ]
                                 }
                             }
                         }
@@ -94,8 +162,7 @@
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
                     }
-                },
-                "security": []
+                }
             }
         },
         "/v1/rondas": {
@@ -470,6 +537,66 @@
                 }
             }
         },
+        "/v1/users": {
+            "get": {
+                "operationId": "users.index",
+                "description": "Retorna la lista de usuarios registrados ordenados por ID ascendente con su rol asignado.\nExclusivo para administradores.",
+                "summary": "Listar usuarios",
+                "tags": [
+                    "Usuarios"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `UserResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/UserResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "const": "No autorizado"
+                                        },
+                                        "mensaje": {
+                                            "type": "string",
+                                            "const": "Solo un administrador puede consultar la lista de usuarios."
+                                        }
+                                    },
+                                    "required": [
+                                        "error",
+                                        "mensaje"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/user": {
             "get": {
                 "responses": {
@@ -590,7 +717,7 @@
             },
             "post": {
                 "operationId": "animales.store",
-                "description": "Valida los datos recibidos y registra un nuevo animal en el sistema.\nValida la capacidad m\u00e1xima del potrero asignado antes de completar el registro.",
+                "description": "Valida los datos recibidos y registra un nuevo animal en el sistema.\nValida la capacidad m\u00e1xima del potrero asignado contando animales con estado != 'Vendido' (responde 409 Conflict si se excede el aforo).",
                 "summary": "Registrar un nuevo animal",
                 "tags": [
                     "Animal"
@@ -641,6 +768,30 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "409": {
+                        "description": "Conflicto de regla de negocio: el potrero seleccionado ya alcanz\u00f3 su capacidad m\u00e1xima (criterio estado != 'Vendido').",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "const": "Regla de Negocio"
+                                        },
+                                        "mensaje": {
+                                            "type": "string",
+                                            "const": "El potrero seleccionado ya alcanz\u00f3 su capacidad m\u00e1xima."
+                                        }
+                                    },
+                                    "required": [
+                                        "error",
+                                        "mensaje"
+                                    ]
+                                }
+                            }
+                        }
                     },
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
@@ -708,7 +859,7 @@
             },
             "put": {
                 "operationId": "animales.update",
-                "description": "Actualiza la informaci\u00f3n de un animal existente por su ID.\nSi se modifica la asignaci\u00f3n de potrero, valida que el nuevo potrero tenga capacidad disponible.",
+                "description": "Actualiza la informaci\u00f3n de un animal existente por su ID.\nSi se cambia el potrero o se reactiva un animal desde estado 'Vendido', valida el aforo del potrero destino contando animales con estado != 'Vendido' (responde 409 Conflict si ya alcanz\u00f3 su capacidad m\u00e1xima).",
                 "summary": "Actualizar datos de un animal",
                 "tags": [
                     "Animal"
@@ -769,6 +920,30 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "409": {
+                        "description": "Conflicto de regla de negocio: el potrero destino ya alcanz\u00f3 su capacidad m\u00e1xima (criterio estado != 'Vendido').",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "const": "Regla de Negocio"
+                                        },
+                                        "mensaje": {
+                                            "type": "string",
+                                            "const": "El potrero seleccionado ya alcanz\u00f3 su capacidad m\u00e1xima."
+                                        }
+                                    },
+                                    "required": [
+                                        "error",
+                                        "mensaje"
+                                    ]
+                                }
+                            }
+                        }
                     },
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
@@ -2400,7 +2575,7 @@
             },
             "put": {
                 "operationId": "potreros.update",
-                "description": "Actualiza la informaci\u00f3n de un potrero existente.",
+                "description": "Actualiza la informaci\u00f3n de un potrero existente. Si se intenta reducir capacidad_maxima por debajo de ocupacion_actual (animales con estado != 'Vendido'), responde 409 Conflict.",
                 "summary": "Actualizar datos de un potrero",
                 "tags": [
                     "Potrero"
@@ -2426,12 +2601,24 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Potrero actualizado correctamente.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "integer",
-                                    "const": 200
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Potrero actualizado correctamente."
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/PotreroResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "data"
+                                    ]
                                 }
                             }
                         }
@@ -2441,6 +2628,30 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "409": {
+                        "description": "Conflicto de regla de negocio: no se puede reducir capacidad_maxima por debajo de ocupacion_actual (criterio estado != 'Vendido').",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "const": "Regla de Negocio"
+                                        },
+                                        "mensaje": {
+                                            "type": "string",
+                                            "description": "Detalle indicando la capacidad solicitada y la ocupaci\u00f3n actual del potrero."
+                                        }
+                                    },
+                                    "required": [
+                                        "error",
+                                        "mensaje"
+                                    ]
+                                }
+                            }
+                        }
                     },
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
@@ -3873,12 +4084,6 @@
                             "null"
                         ]
                     },
-                    "foto": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
                     "sexo": {
                         "type": "string"
                     },
@@ -3932,7 +4137,6 @@
                     "id_animal",
                     "numero_arete",
                     "codigo_qr",
-                    "foto",
                     "sexo",
                     "fecha_nacimiento",
                     "estado",
@@ -4144,6 +4348,16 @@
                     "capacidad_maxima": {
                         "type": "integer"
                     },
+                    "ocupacion_actual": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Cantidad de animales actualmente ocupando cupo en el potrero (criterio estado != 'Vendido')."
+                    },
+                    "espacios_disponibles": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Cupos libres calculados como max(0, capacidad_maxima - ocupacion_actual)."
+                    },
                     "estado_pasto": {
                         "type": [
                             "string",
@@ -4169,6 +4383,8 @@
                     "codigo_qr",
                     "hectareas_de_extension",
                     "capacidad_maxima",
+                    "ocupacion_actual",
+                    "espacios_disponibles",
                     "estado_pasto",
                     "created_at",
                     "updated_at"
@@ -4271,7 +4487,7 @@
                     },
                     "role": {
                         "type": "string",
-                        "description": "Roles permitidos. El registro p\u00fablico sigue aceptan cualquiera de\nellos: la restricci\u00f3n a 'operario' se aplica en el controlador.",
+                        "description": "Roles v\u00e1lidos del sistema asignables por un administrador autenticado.",
                         "enum": [
                             "admin",
                             "veterinario",
@@ -4376,6 +4592,13 @@
                     "numero_arete": {
                         "type": "string",
                         "maxLength": 50
+                    },
+                    "codigo_qr": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
                     },
                     "raza_id": {
                         "type": "integer"
@@ -4523,6 +4746,13 @@
                 "properties": {
                     "nombre": {
                         "type": "string",
+                        "maxLength": 100
+                    },
+                    "codigo_qr": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
                         "maxLength": 100
                     },
                     "hectareas_de_extension": {
@@ -4879,6 +5109,13 @@
                         "type": "string",
                         "maxLength": 50
                     },
+                    "codigo_qr": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
                     "raza_id": {
                         "type": "integer"
                     },
@@ -4975,6 +5212,13 @@
                 "properties": {
                     "nombre": {
                         "type": "string",
+                        "maxLength": 100
+                    },
+                    "codigo_qr": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
                         "maxLength": 100
                     },
                     "hectareas_de_extension": {
@@ -5086,29 +5330,25 @@
                         "type": "string"
                     },
                     "role": {
-                        "anyOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "relations": {
-                                        "type": "array",
-                                        "prefixItems": [
-                                            {
-                                                "type": "string",
-                                                "const": "roles"
-                                            }
-                                        ],
-                                        "minItems": 1,
-                                        "maxItems": 1
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "relations": {
+                                "type": "array",
+                                "prefixItems": [
+                                    {
+                                        "type": "string",
+                                        "const": "roles"
                                     }
-                                },
-                                "required": [
-                                    "relations"
-                                ]
-                            },
-                            {
-                                "type": "string"
+                                ],
+                                "minItems": 1,
+                                "maxItems": 1
                             }
+                        },
+                        "required": [
+                            "relations"
                         ]
                     },
                     "created_at": {

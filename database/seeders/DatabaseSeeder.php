@@ -131,7 +131,6 @@ class DatabaseSeeder extends Seeder
             Animal::create([
                 'numero_arete'     => "CR-{$num}-LIB",
                 'codigo_qr'        => "VACA-{$num}",
-                'foto'             => null,
                 'raza_id'          => $razas->random()->raza_id,
                 'potrero_id'       => $todosPotreros->random()->potrero_id,
                 'sexo'             => $i % 2 === 0 ? 'Macho' : 'Hembra',

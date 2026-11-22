@@ -6,6 +6,7 @@ use App\Models\Animal;
 use App\Models\Potrero;
 use App\Models\Raza;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class AnimalControllerTest extends TestCase
@@ -211,5 +212,32 @@ class AnimalControllerTest extends TestCase
             'id_animal' => $animalVendido->id_animal,
             'estado'    => 'Vendido',
         ]);
+    }
+
+    public function test_columna_foto_no_existe_y_respuestas_de_animal_resource_no_incluyen_foto(): void
+    {
+        $this->assertFalse(Schema::hasColumn('animales', 'foto'));
+
+        $animal = Animal::factory()->create([
+            'codigo_qr' => 'VACA-SIN-FOTO-001',
+        ]);
+
+        // GET /api/v1/animales
+        $indexResponse = $this->getJson('/api/v1/animales');
+        $indexResponse->assertOk();
+        $this->assertNotEmpty($indexResponse->json('data'));
+        foreach ($indexResponse->json('data') as $item) {
+            $this->assertArrayNotHasKey('foto', $item);
+        }
+
+        // GET /api/v1/animales/{animal}
+        $showResponse = $this->getJson('/api/v1/animales/' . $animal->id_animal);
+        $showResponse->assertOk();
+        $this->assertArrayNotHasKey('foto', $showResponse->json('data'));
+
+        // GET /api/v1/animales/qr/{codigo_qr}
+        $qrResponse = $this->getJson('/api/v1/animales/qr/' . $animal->codigo_qr);
+        $qrResponse->assertOk();
+        $this->assertArrayNotHasKey('foto', $qrResponse->json('data'));
     }
 }
