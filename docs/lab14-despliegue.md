@@ -160,18 +160,18 @@ curl -i https://<completar>.onrender.com/api/v1/animales
 
 ### 5.2 Evidencia de Ejecución Exitosa (Verde)
 
-- **Workflow run exitoso (Back-End — Tests + Deploy Hook):** `_<pegar URL del run en GitHub Actions>_`
+- **Workflow run exitoso (Back-End — Tests + Deploy Hook):** `https://github.com/Haki7w7/ProyectoGanadero_BackEnd/actions/runs/45072759729`
 - **Workflow run exitoso (Front-End — Tests + Build):** `_<pegar URL del run en GitHub Actions>_`
 - **Captura de pantalla:**  
-  `![CI/CD Ejecución Exitosa](./evidencias-lab14/04-ci-verde-deploy.png)`
+  ![CI/CD Ejecución Exitosa](./evidencias-lab14/04-ci-verde-deploy.png)
 
 ### 5.3 Evidencia de Detención por Prueba Fallida (Rojo)
 
 Para comprobar que el pipeline protege el entorno de producción, se ejecutó un caso con fallo controlado en la suite de pruebas verificando que el job de pruebas falló en rojo y el job `deploy` quedó omitido (`skipped`), manteniendo intacta la versión previa en Render.
 
-- **Workflow run detenido por fallo:** `_<pegar URL del run fallido en GitHub Actions>_`
+- **Workflow run detenido por fallo (Back-End — `deploy` omitido):** `https://github.com/Haki7w7/ProyectoGanadero_BackEnd/actions/runs/45099271836` *(push a `main`; `API Tests (Laravel / PHP 8.4)`: `failure`, `Trigger Render Deploy`: `skipped`)*
 - **Captura de pantalla:**  
-  `![CI/CD Detenido por Prueba Fallida](./evidencias-lab14/05-ci-rojo-bloqueado.png)`
+  ![CI/CD Detenido por Prueba Fallida](./evidencias-lab14/05-ci-rojo-bloqueado.png)
 
 ---
 
