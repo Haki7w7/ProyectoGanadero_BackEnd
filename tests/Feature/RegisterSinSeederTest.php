@@ -9,10 +9,6 @@ use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Pruebas de registro protegido por rol admin, listado de usuarios y
- * asignación de roles mediante Spatie sin columna física users.role.
- */
 class RegisterSinSeederTest extends TestCase
 {
     use RefreshDatabase;
@@ -61,7 +57,6 @@ class RegisterSinSeederTest extends TestCase
         ]);
         $tokenAdmin = $admin->createToken('admin-token', ['*'])->plainTextToken;
 
-        // El rol 'operario' aún no existe en la BD antes del registro.
         $this->assertDatabaseMissing('roles', ['name' => 'operario']);
 
         $r = $this->withHeader('Authorization', "Bearer {$tokenAdmin}")
@@ -84,12 +79,10 @@ class RegisterSinSeederTest extends TestCase
         $u = User::where('email', 'nuevo@guateganado.cr')->firstOrFail();
         $this->assertSame('operario', $u->getRoleNames()->first());
 
-        // El usuario recién creado no debe tener tokens emitidos por el registro.
         $this->assertDatabaseMissing('personal_access_tokens', [
             'tokenable_id' => $u->id,
         ]);
 
-        // El token del admin sigue funcionando en GET /api/user.
         $this->app['auth']->forgetGuards();
         $this->withHeader('Authorization', "Bearer {$tokenAdmin}")
             ->getJson('/api/user')
@@ -176,18 +169,14 @@ class RegisterSinSeederTest extends TestCase
             'role' => 'operario',
         ]);
 
-        // 1. Sin token -> 401
         $this->getJson('/api/v1/users')->assertStatus(401);
 
-        // 2. Como veterinario -> 403
         Sanctum::actingAs($vet, ['*']);
         $this->getJson('/api/v1/users')->assertStatus(403);
 
-        // 3. Como operario -> 403
         Sanctum::actingAs($op, ['*']);
         $this->getJson('/api/v1/users')->assertStatus(403);
 
-        // 4. Como admin -> 200 con lista ordenada por id ascendente y roles
         Sanctum::actingAs($admin, ['*']);
         $response = $this->getJson('/api/v1/users');
 
@@ -226,7 +215,6 @@ class RegisterSinSeederTest extends TestCase
         ])->assertStatus(201);
     }
 
-    /** Columna `abilities` del último token emitido al usuario indicado. */
     private function abilitiesDe(string $email): string
     {
         return (string) DB::table('personal_access_tokens')

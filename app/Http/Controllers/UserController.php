@@ -12,12 +12,6 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 #[Group('Usuarios')]
 class UserController extends Controller
 {
-    /**
-     * Listar usuarios.
-     *
-     * Retorna la lista de usuarios registrados ordenados por ID ascendente con su rol asignado.
-     * Exclusivo para administradores.
-     */
     public function index(Request $request): AnonymousResourceCollection|JsonResponse
     {
         if (! $request->user()?->hasRole('admin')) {

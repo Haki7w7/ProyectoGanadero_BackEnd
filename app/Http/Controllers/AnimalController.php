@@ -15,8 +15,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-
-
 class AnimalController extends Controller
 {
     public function __construct(
@@ -26,112 +24,57 @@ class AnimalController extends Controller
     ) {
     }
 
-    /**
-     * Listar animales.
-     *
-     * Retorna el listado paginado de animales registrados en el sistema con soporte de filtros y ordenamiento.
-     *
-     * @param  Request  $request  Petición HTTP con posibles parámetros de filtro (raza_id, potrero_id, sexo, estado) y paginación.
-     * @return AnimalCollection Colección de animales con datos paginados, meta y links.
-     */
     public function index(Request $request): AnimalCollection
     {
-        $this->authorize('viewAny', Animal::class); // CAPA 1
+        $this->authorize('viewAny', Animal::class);
 
         $animales = $this->animalService->listarAnimales($request->query());
 
-        // AnimalCollection ya entrega data + meta + links; se agrega el mensaje.
         return (new AnimalCollection($animales))
             ->additional(['message' => 'Listado de animales obtenido correctamente.']);
     }
 
-    /**
-     * Obtener detalle de un animal.
-     *
-     * Retorna la información completa de un animal específico por su ID,
-     * incluyendo sus relaciones con raza, potrero, historial de pesajes y tratamientos.
-     *
-     * @param  int  $id  Identificador único del animal.
-     * @return JsonResponse Detalle del animal en formato JSON.
-     */
     public function show(int $id): JsonResponse
     {
         $animal = $this->animalService->obtenerPorId($id);
 
-        $this->authorize('view', $animal); // CAPA 1
+        $this->authorize('view', $animal);
 
         return $this->respuestaOk(new AnimalResource($animal), 'Animal obtenido correctamente.');
     }
 
-    /**
-     * Consultar animal por código QR.
-     *
-     * Busca y retorna la ficha técnica completa de un animal mediante su código QR escaneado.
-     *
-     * @param  string  $codigo_qr  Código QR identificador del animal (ej. VACA-001).
-     * @return JsonResponse Recurso AnimalResource con relaciones o 404 si no existe.
-     */
     public function porQr(string $codigo_qr): JsonResponse
     {
         $animal = $this->animalService->obtenerPorCodigoQr($codigo_qr);
 
-        $this->authorize('view', $animal); // CAPA 1
+        $this->authorize('view', $animal);
 
         return $this->respuestaOk(new AnimalResource($animal), 'Animal obtenido correctamente mediante código QR.');
     }
 
-    /**
-     * Registrar un nuevo animal.
-     *
-     * Valida los datos recibidos y registra un nuevo animal en el sistema.
-     * Valida la capacidad máxima del potrero asignado antes de completar el registro.
-     *
-     * @param  StoreAnimalRequest  $request  Petición con los datos validados del animal.
-     * @return JsonResponse Recurso AnimalResource creado (201 Created) con cabecera Location.
-     */
     public function store(StoreAnimalRequest $request): JsonResponse
     {
-        $this->authorize('create', Animal::class); // CAPA 1
+        $this->authorize('create', Animal::class);
 
         $animal = $this->animalService->crearAnimal($request->validated());
 
         return $this->respuestaCreada($animal, 'Animal creado correctamente.', 'animales', new AnimalResource($animal));
     }
 
-    /**
-     * Actualizar datos de un animal.
-     *
-     * Actualiza la información de un animal existente por su ID.
-     * Si se modifica la asignación de potrero, valida que el nuevo potrero tenga capacidad disponible.
-     *
-     * @param  UpdateAnimalRequest  $request  Petición con los campos validados para la actualización.
-     * @param  int  $id  Identificador único del animal a actualizar.
-     * @return JsonResponse Recurso AnimalResource actualizado (200 OK).
-     */
     public function update(UpdateAnimalRequest $request, int $id): JsonResponse
     {
         $animal = $this->animalService->obtenerPorId($id);
 
-        $this->authorize('update', $animal); // CAPA 1
+        $this->authorize('update', $animal);
 
         $animal = $this->animalService->actualizarAnimal($id, $request->validated());
 
         return $this->respuestaOk(new AnimalResource($animal), 'Animal actualizado correctamente.');
     }
 
-    /**
-     * Listar animales por potrero.
-     *
-     * Retorna el listado paginado de animales asignados a un potrero específico.
-     * Valida previamente la existencia del potrero indicado en la ruta.
-     *
-     * @param  Request  $request  Petición HTTP con parámetros de filtrado y paginación.
-     * @param  int  $potrero  Identificador único del potrero.
-     * @return JsonResponse Listado paginado de animales del potrero (200 OK).
-     */
     public function indexPorPotrero(Request $request, int $potrero): JsonResponse
     {
-        $this->authorize('viewAny', Animal::class); // CAPA 1
+        $this->authorize('viewAny', Animal::class);
 
         $this->potreroService->obtenerPorId($potrero);
 
@@ -140,19 +83,9 @@ class AnimalController extends Controller
         return $this->respuestaPaginada($animales, 'Listado de animales del potrero obtenido correctamente.', AnimalResource::class);
     }
 
-    /**
-     * Listar animales por raza.
-     *
-     * Retorna el listado paginado de animales pertenecientes a una raza específica.
-     * Valida previamente la existencia de la raza indicada en la ruta.
-     *
-     * @param  Request  $request  Petición HTTP con parámetros de filtrado y paginación.
-     * @param  int  $raza  Identificador único de la raza.
-     * @return JsonResponse Listado paginado de animales de la raza (200 OK).
-     */
     public function indexPorRaza(Request $request, int $raza): JsonResponse
     {
-        $this->authorize('viewAny', Animal::class); // CAPA 1
+        $this->authorize('viewAny', Animal::class);
 
         $this->razaService->obtenerPorId($raza);
 
@@ -161,20 +94,11 @@ class AnimalController extends Controller
         return $this->respuestaPaginada($animales, 'Listado de animales de la raza obtenido correctamente.', AnimalResource::class);
     }
 
-    /**
-     * Eliminar un animal.
-     *
-     * Elimina el registro de un animal del sistema por su ID.
-     * Impide la eliminación si el animal posee registros de pesaje en su historial.
-     *
-     * @param  int  $id  Identificador único del animal a eliminar.
-     * @return Response Respuesta HTTP 204 No Content sin cuerpo.
-     */
     public function destroy(int $id): Response
     {
         $animal = $this->animalService->obtenerPorId($id);
 
-        $this->authorize('delete', $animal); // CAPA 1
+        $this->authorize('delete', $animal);
 
         $this->animalService->eliminarAnimal($id);
 

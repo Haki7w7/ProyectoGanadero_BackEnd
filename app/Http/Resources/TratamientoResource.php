@@ -5,15 +5,6 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * Representación pública de un Tratamiento (catálogo sanitario).
- *
- * Cuando el tratamiento llega a través de la relación Animal::tratamientos()
- * se incluye además la aplicación concreta (tabla pivote) bajo la clave
- * "aplicacion".
- *
- * @mixin \App\Models\Tratamiento
- */
 class TratamientoResource extends JsonResource
 {
     public function toArray(Request $request): array

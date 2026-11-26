@@ -3,9 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GuateGanado.Api.Models;
 
-/// <summary>
-/// Entidad del contrato comparativo (Hito 0): 7 atributos y una relacion (Potrero).
-/// </summary>
 [Table("animales")]
 public class Animal
 {

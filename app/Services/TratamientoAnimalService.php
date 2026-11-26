@@ -10,16 +10,10 @@ use Illuminate\Support\Facades\Gate;
 
 class TratamientoAnimalService
 {
-    /**
-     * Lista aplicaciones de tratamiento aplicando filtros combinables, ordenamiento dinámico
-     * y paginación con tope de seguridad.
-     */
     public function listarTratamientoAnimal(array $filtros = []): LengthAwarePaginator
     {
-        // Paginación segura con tope en 100
         $perPage = min(max((int) ($filtros['per_page'] ?? 15), 1), 100);
 
-        // Ordenamiento por al menos dos campos válidos
         $allowedSortFields = ['fecha_aplicacion', 'dosis_ml', 'tratamiento_animal_id', 'id_animal', 'tratamiento_id'];
         $sortBy = in_array($filtros['sort_by'] ?? '', $allowedSortFields, true) ? $filtros['sort_by'] : 'fecha_aplicacion';
         $sortOrder = strtolower($filtros['order'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
@@ -47,7 +41,7 @@ class TratamientoAnimalService
 
     public function crearTratamientoAnimal(array $datos): TratamientoAnimal
     {
-        Gate::authorize('create', TratamientoAnimal::class); // CAPA 2
+        Gate::authorize('create', TratamientoAnimal::class);
 
         return DB::transaction(function () use ($datos) {
             return TratamientoAnimal::create($datos);
@@ -58,7 +52,7 @@ class TratamientoAnimalService
     {
         $registro = $this->obtenerPorId($id);
 
-        Gate::authorize('update', $registro); // CAPA 2
+        Gate::authorize('update', $registro);
 
         DB::transaction(function () use ($registro, $datos) {
             $registro->update($datos);
@@ -71,7 +65,7 @@ class TratamientoAnimalService
     {
         $registro = $this->obtenerPorId($id);
 
-        Gate::authorize('delete', $registro); // CAPA 2
+        Gate::authorize('delete', $registro);
 
         return (bool) $registro->delete();
     }

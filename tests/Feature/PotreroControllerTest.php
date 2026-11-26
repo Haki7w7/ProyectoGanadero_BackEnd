@@ -63,7 +63,6 @@ class PotreroControllerTest extends TestCase
 
         $response = $this->deleteJson('/api/v1/potreros/' . $potrero->potrero_id);
 
-        // Lab 5: las reglas de negocio responden 409 Conflict.
         $response->assertStatus(409)
             ->assertJsonPath('error', 'Regla de Negocio');
         $this->assertDatabaseHas('potreros', ['potrero_id' => $potrero->potrero_id]);
@@ -76,7 +75,6 @@ class PotreroControllerTest extends TestCase
         Animal::factory()->create(['potrero_id' => $potrero->potrero_id, 'estado' => 'Enfermo']);
         Animal::factory()->create(['potrero_id' => $potrero->potrero_id, 'estado' => 'Vendido']);
 
-        // Ocupación actual real = 2 (Activo + Enfermo). Reducir a 1 debe fallar con 409.
         $response = $this->putJson('/api/v1/potreros/' . $potrero->potrero_id, [
             'capacidad_maxima' => 1,
         ]);
@@ -89,7 +87,6 @@ class PotreroControllerTest extends TestCase
             'capacidad_maxima' => 5,
         ]);
 
-        // Reducir exactamente a la ocupación actual (2) sí debe permitirse.
         $this->putJson('/api/v1/potreros/' . $potrero->potrero_id, [
             'capacidad_maxima' => 2,
         ])
@@ -106,7 +103,6 @@ class PotreroControllerTest extends TestCase
         Animal::factory()->create(['potrero_id' => $potrero->potrero_id, 'estado' => 'Enfermo']);
         Animal::factory()->count(2)->create(['potrero_id' => $potrero->potrero_id, 'estado' => 'Vendido']);
 
-        // GET /api/v1/potreros
         $indexResponse = $this->getJson('/api/v1/potreros');
         $indexResponse->assertOk();
 
@@ -117,13 +113,11 @@ class PotreroControllerTest extends TestCase
         $this->assertSame(3, $item['ocupacion_actual']);
         $this->assertSame(2, $item['espacios_disponibles']);
 
-        // GET /api/v1/potreros/{potrero}
         $this->getJson('/api/v1/potreros/' . $potrero->potrero_id)
             ->assertOk()
             ->assertJsonPath('data.ocupacion_actual', 3)
             ->assertJsonPath('data.espacios_disponibles', 2);
 
-        // scopeDisponibles() excluye animales 'Vendido'
         $potreroConSoloVendidos = Potrero::factory()->create(['capacidad_maxima' => 1]);
         Animal::factory()->create(['potrero_id' => $potreroConSoloVendidos->potrero_id, 'estado' => 'Vendido']);
 

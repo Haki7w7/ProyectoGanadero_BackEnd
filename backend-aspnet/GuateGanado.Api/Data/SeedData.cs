@@ -3,10 +3,6 @@ using GuateGanado.Api.Services;
 
 namespace GuateGanado.Api.Data;
 
-/// <summary>
-/// Datos semilla identicos a los del contrato comparativo (docs/contrato-comparativo.md).
-/// Las tres implementaciones deben partir exactamente de estos registros.
-/// </summary>
 public static class SeedData
 {
     public static void Initialize(AppDbContext db)

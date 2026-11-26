@@ -8,5 +8,4 @@ use Tests\CreatesApplication;
 
 abstract class TestCase extends BaseTestCase
 {
-  
 }

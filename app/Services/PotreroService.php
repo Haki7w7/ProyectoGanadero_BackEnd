@@ -11,22 +11,10 @@ use Illuminate\Support\Str;
 
 class PotreroService
 {
-    /**
-     * Lista potreros aplicando filtro opcional por estado_pasto,
-     * delegando en el scope definido en el modelo Potrero.
-     */
-    /**
-     * Lista potreros aplicando filtros combinables, ordenamiento dinámico
-     * y paginación con tope de seguridad de memoria.
-     */
     public function listarPotreros(array $filtros = []): LengthAwarePaginator
     {
-        // Paginación segura con tope en 100
-        // $perPage = min((int) ($filtros['per_page'] ?? 15), 100);
-
         $perPage = min (max((int) ($filtros['per_page'] ?? 15), 1), 100);
 
-        // Ordenamiento por al menos dos campos válidos
         $allowedSortFields = ['nombre', 'hectareas_de_extension', 'capacidad_maxima', 'potrero_id'];
         $sortBy = in_array($filtros['sort_by'] ?? '', $allowedSortFields, true) ? $filtros['sort_by'] : 'potrero_id';
         $sortOrder = strtolower($filtros['order'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
@@ -39,10 +27,6 @@ class PotreroService
             ->paginate($perPage);
     }
 
-    /**
-     * Obtiene un potrero por su potrero_id o lanza una ReglaNegocioException (404)
-     * si no existe.
-     */
     public function obtenerPorId(int $id): Potrero
     {
         $potrero = Potrero::query()
@@ -56,12 +40,9 @@ class PotreroService
         return $potrero;
     }
 
-    /**
-     * Crea un potrero ya validado previamente por StorePotreroRequest.
-     */
     public function crearPotrero(array $datos): Potrero
     {
-        Gate::authorize('create', Potrero::class); // CAPA 2
+        Gate::authorize('create', Potrero::class);
 
         if (empty($datos['codigo_qr'])) {
             $datos['codigo_qr'] = 'POTRERO-' . strtoupper(Str::slug($datos['nombre']));
@@ -76,14 +57,11 @@ class PotreroService
         ]);
     }
 
-    /**
-     * Actualiza un potrero ya validado previamente por UpdatePotreroRequest.
-     */
     public function actualizarPotrero(int $id, array $datos): Potrero
     {
         $potrero = $this->obtenerPorId($id);
 
-        Gate::authorize('update', $potrero); // CAPA 2
+        Gate::authorize('update', $potrero);
 
         if (empty($datos['codigo_qr']) && (array_key_exists('codigo_qr', $datos) || empty($potrero->codigo_qr))) {
             $nombre = $datos['nombre'] ?? $potrero->nombre;
@@ -120,15 +98,11 @@ class PotreroService
         ]);
     }
 
-    /**
-     * Elimina un potrero, aplicando una regla de negocio: no se puede eliminar
-     * un potrero que todavía tiene animales asignados.
-     */
     public function eliminarPotrero(int $id): bool
     {
         $potrero = $this->obtenerPorId($id);
 
-        Gate::authorize('delete', $potrero); // CAPA 2
+        Gate::authorize('delete', $potrero);
 
         if ($potrero->animales()->exists()) {
             throw new ReglaNegocioException(

@@ -11,18 +11,10 @@ use Illuminate\Support\Facades\Gate;
 
 class AnimalService
 {
-    /**
-     * Lista animales aplicando filtros combinables, ordenamiento dinámico
-     * y paginación con tope de seguridad.
-     *
-     * Filtros soportados: raza_id, potrero_id, sexo, estado.
-     */
     public function listarAnimales(array $filtros = []): LengthAwarePaginator
     {
-        // Paginación segura con tope en 100
         $perPage = min(max((int) ($filtros['per_page'] ?? 15), 1), 100);
 
-        // Ordenamiento por al menos dos campos válidos
         $allowedSortFields = ['numero_arete', 'fecha_nacimiento', 'estado', 'id_animal', 'raza_id', 'potrero_id'];
         $sortBy = in_array($filtros['sort_by'] ?? '', $allowedSortFields, true) ? $filtros['sort_by'] : 'id_animal';
         $sortOrder = strtolower($filtros['order'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
@@ -38,10 +30,6 @@ class AnimalService
             ->paginate($perPage);
     }
 
-    /**
-     * Obtiene un animal por su id_animal o lanza una ReglaNegocioException (404)
-     * si no existe.
-     */
     public function obtenerPorId(int $id): Animal
     {
         $animal = Animal::with(['raza', 'potrero', 'pesajes', 'tratamientos'])->find($id);
@@ -53,10 +41,6 @@ class AnimalService
         return $animal;
     }
 
-    /**
-     * Obtiene un animal por su código QR con todas sus relaciones cargadas,
-     * o lanza ReglaNegocioException (404) si no existe.
-     */
     public function obtenerPorCodigoQr(string $codigoQr): Animal
     {
         $animal = Animal::with(['raza', 'potrero', 'pesajes', 'tratamientos'])
@@ -70,11 +54,6 @@ class AnimalService
         return $animal;
     }
 
-    /**
-     * Verifica que el animal exista sin cargar sus relaciones. Se usa en las
-     * rutas anidadas (/animales/{animal}/...) para responder 404 cuando el
-     * animal de la URL no existe.
-     */
     public function verificarExistencia(int $id): void
     {
         if (!Animal::whereKey($id)->exists()) {
@@ -82,14 +61,9 @@ class AnimalService
         }
     }
 
-    /**
-     * Crea un animal ya validado previamente por StoreAnimalRequest.
-     *
-     * No asigna un animal a un potrero que ya alcanzó su capacidad máxima.
-     */
     public function crearAnimal(array $datos): Animal
     {
-        Gate::authorize('create', Animal::class); // CAPA 2
+        Gate::authorize('create', Animal::class);
 
         if (empty($datos['codigo_qr'])) {
             $datos['codigo_qr'] = 'VACA-' . $datos['numero_arete'];
@@ -106,14 +80,11 @@ class AnimalService
         });
     }
 
-    /**
-     * Actualiza un animal ya validado previamente por UpdateAnimalRequest.
-     */
     public function actualizarAnimal(int $id, array $datos): Animal
     {
         $animal = $this->obtenerPorId($id);
 
-        Gate::authorize('update', $animal); // CAPA 2
+        Gate::authorize('update', $animal);
 
         if (empty($datos['codigo_qr']) && (array_key_exists('codigo_qr', $datos) || empty($animal->codigo_qr))) {
             $arete = $datos['numero_arete'] ?? $animal->numero_arete;
@@ -138,16 +109,11 @@ class AnimalService
         return $animal->refresh();
     }
 
-    /**
-     * Elimina un animal, aplicando una regla de negocio: no se puede eliminar
-     * un animal que ya tiene pesajes registrados (se debe conservar el
-     * historial).
-     */
     public function eliminarAnimal(int $id): bool
     {
         $animal = $this->obtenerPorId($id);
 
-        Gate::authorize('delete', $animal); // CAPA 2
+        Gate::authorize('delete', $animal);
 
         if ($animal->pesajes()->exists()) {
             throw new ReglaNegocioException(
@@ -172,21 +138,14 @@ class AnimalService
                 $this->validarCapacidadPotrero((int) $datosAnimal['potrero_id']);
             }
 
-            // Crear el animal
             $animal = Animal::create($datosAnimal);
 
-            // Crear el pesaje asociado al animal recién creado.
-            // Si esto falla, DB::transaction revierte también el animal.
             $animal->pesajes()->create($datosPesaje);
 
             return $animal;
         });
     }
 
-    /*
-     * El número de animales ocupantes (estado != 'Vendido') del potrero
-     * no puede superar su capacidad máxima.
-     */
     private function validarCapacidadPotrero(int $potreroId): void
     {
         $potrero = Potrero::where('potrero_id', $potreroId)->lockForUpdate()->first();

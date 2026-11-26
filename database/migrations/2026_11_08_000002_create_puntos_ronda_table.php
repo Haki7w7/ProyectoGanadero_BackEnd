@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('puntos_ronda', function (Blueprint $table) {
@@ -17,7 +14,7 @@ return new class extends Migration
             $table->foreignId('potrero_id')->constrained('potreros', 'potrero_id')->onDelete('cascade');
             $table->decimal('latitud', 10, 8);
             $table->decimal('longitud', 11, 8);
-            $table->string('estado_potrero', 50); // bueno, regular, requiere_atencion
+            $table->string('estado_potrero', 50);
             $table->text('observacion')->nullable();
             $table->timestamp('registrado_en')->useCurrent();
             $table->timestamps();
@@ -26,9 +23,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('puntos_ronda');

@@ -5,7 +5,6 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** Representación pública de un Insumo. @mixin \App\Models\Insumo */
 class InsumoResource extends JsonResource
 {
     public function toArray(Request $request): array

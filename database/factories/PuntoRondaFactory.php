@@ -7,9 +7,6 @@ use App\Models\PuntoRonda;
 use App\Models\Ronda;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<PuntoRonda>
- */
 class PuntoRondaFactory extends Factory
 {
     protected $model = PuntoRonda::class;

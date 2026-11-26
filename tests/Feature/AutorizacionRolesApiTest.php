@@ -30,10 +30,6 @@ class AutorizacionRolesApiTest extends TestCase
         $this->operario    = User::factory()->create(['role' => 'operario']);
     }
 
-    // ==========================================
-    // ANIMALES: Solo Admin puede crear/eliminar
-    // ==========================================
-
     public function test_admin_puede_eliminar_animal_y_responde_204(): void
     {
         Sanctum::actingAs($this->admin, ['*']);
@@ -83,10 +79,6 @@ class AutorizacionRolesApiTest extends TestCase
             ->assertJsonPath('error', 'Acceso denegado');
     }
 
-    // ==========================================
-    // PESAJES: Operario y Admin pueden crear; solo Admin elimina
-    // ==========================================
-
     public function test_operario_puede_registrar_pesaje_y_responde_201(): void
     {
         Sanctum::actingAs($this->operario, ['*']);
@@ -129,10 +121,6 @@ class AutorizacionRolesApiTest extends TestCase
         $response->assertStatus(204);
         $this->assertDatabaseMissing('pesajes', ['pesaje_id' => $pesaje->pesaje_id]);
     }
-
-    // ==========================================
-    // TRATAMIENTOS: Veterinario y Admin pueden registrar; Operario denegado
-    // ==========================================
 
     public function test_veterinario_puede_registrar_aplicacion_tratamiento_y_responde_201(): void
     {
@@ -181,10 +169,6 @@ class AutorizacionRolesApiTest extends TestCase
                 'mensaje' => 'No tiene permisos para realizar esta acción.',
             ]);
     }
-
-    // ==========================================
-    // POTREROS: Solo Admin crea/modifica/elimina; todos leen
-    // ==========================================
 
     public function test_todos_los_roles_pueden_listar_potreros_200(): void
     {

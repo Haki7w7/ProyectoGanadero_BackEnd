@@ -10,12 +10,6 @@ use App\Services\PesajeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Pruebas unitarias de PesajeService.
- *
- * - Camino feliz: registro de pesaje para un animal existente.
- * - Recurso inexistente: consultar un pesaje que no existe responde 404.
- */
 class PesajeServiceTest extends TestCase
 {
     use RefreshDatabase;
@@ -30,7 +24,6 @@ class PesajeServiceTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'admin']));
     }
 
-    /** Camino feliz: se registra un pesaje ligado al animal existente. */
     public function test_registra_pesaje_para_animal_existente(): void
     {
         $animal = Animal::factory()->create();
@@ -48,7 +41,6 @@ class PesajeServiceTest extends TestCase
         $this->assertSame(1, $animal->pesajes()->count());
     }
 
-    /** Un pesaje inexistente se reporta como 404 (y no como 409). */
     public function test_pesaje_inexistente_lanza_excepcion_404(): void
     {
         try {

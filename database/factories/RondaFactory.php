@@ -6,9 +6,6 @@ use App\Models\Ronda;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<Ronda>
- */
 class RondaFactory extends Factory
 {
     protected $model = Ronda::class;

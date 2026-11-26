@@ -11,19 +11,11 @@ use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * Solo un usuario autenticado con rol 'admin' puede registrar nuevos usuarios.
-     */
     public function authorize(): bool
     {
         return $this->user()?->hasRole('admin') ?? false;
     }
 
-    /**
-     * Respuesta JSON estándar cuando el usuario autenticado no tiene rol 'admin'.
-     */
     protected function failedAuthorization(): void
     {
         throw new HttpResponseException(response()->json([
@@ -32,18 +24,12 @@ class RegisterRequest extends FormRequest
         ], 403));
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()->uncompromised()],
-            // Roles válidos del sistema asignables por un administrador autenticado.
             'role' => ['required', 'string', Rule::in(Abilities::rolesValidos())],
         ];
     }

@@ -5,7 +5,6 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** Representación pública de una Raza. @mixin \App\Models\Raza */
 class RazaResource extends JsonResource
 {
     public function toArray(Request $request): array

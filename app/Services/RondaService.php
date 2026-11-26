@@ -13,14 +13,9 @@ use Illuminate\Support\Facades\Gate;
 
 class RondaService
 {
-    /**
-     * Lista las rondas registradas.
-     * Si el usuario es Operario, retorna únicamente sus propias rondas.
-     * Si es Administrador, retorna el historial global cargando la relación con el operador.
-     */
     public function listarRondas(User $usuario, array $filtros = []): LengthAwarePaginator
     {
-        Gate::forUser($usuario)->authorize('viewAny', Ronda::class); // CAPA 2
+        Gate::forUser($usuario)->authorize('viewAny', Ronda::class);
 
         $perPage = min(max((int) ($filtros['per_page'] ?? 15), 1), 100);
 
@@ -41,9 +36,6 @@ class RondaService
         return $query->orderBy('id', 'desc')->paginate($perPage);
     }
 
-    /**
-     * Obtiene una ronda por su identificador.
-     */
     public function obtenerPorId(int $id, ?User $usuario = null): Ronda
     {
         $ronda = Ronda::with(['user', 'puntosRonda.potrero'])->find($id);
@@ -53,20 +45,16 @@ class RondaService
         }
 
         if ($usuario) {
-            Gate::forUser($usuario)->authorize('view', $ronda); // CAPA 2
+            Gate::forUser($usuario)->authorize('view', $ronda);
         }
 
         return $ronda;
     }
 
-    /**
-     * Inicia una nueva ronda para el operario autenticado.
-     */
     public function iniciarRonda(User $usuario, array $datos = []): Ronda
     {
-        Gate::forUser($usuario)->authorize('create', Ronda::class); // CAPA 2
+        Gate::forUser($usuario)->authorize('create', Ronda::class);
 
-        // Regla de Negocio: No permitir iniciar otra ronda si el operario ya tiene una activa
         $rondaActiva = Ronda::where('user_id', $usuario->id)
             ->where('estado', 'en_progreso')
             ->first();
@@ -88,17 +76,12 @@ class RondaService
         });
     }
 
-    /**
-     * Registra un punto de control en una ronda en progreso.
-     * Valida que la ronda no esté completada y que el potrero no se repita.
-     */
     public function registrarPunto(int $rondaId, array $datos, User $usuario): PuntoRonda
     {
         $ronda = $this->obtenerPorId($rondaId);
 
-        Gate::forUser($usuario)->authorize('update', $ronda); // CAPA 2
+        Gate::forUser($usuario)->authorize('update', $ronda);
 
-        // Regla RN: La ronda no puede estar completada
         if ($ronda->estado === 'completada') {
             throw new ReglaNegocioException(
                 'No se pueden registrar puntos en una ronda que ya ha sido completada.',
@@ -106,14 +89,12 @@ class RondaService
             );
         }
 
-        // Buscar el potrero mediante su código QR
         $potrero = Potrero::where('codigo_qr', $datos['codigo_qr'])->first();
 
         if (!$potrero) {
             throw new ReglaNegocioException('El potrero con el código QR especificado no existe.', 404);
         }
 
-        // Regla RN: El potrero no puede repetirse en la misma ronda
         $yaRegistrado = $ronda->puntosRonda()
             ->where('potrero_id', $potrero->potrero_id)
             ->exists();
@@ -139,14 +120,11 @@ class RondaService
         });
     }
 
-    /**
-     * Finaliza una ronda de inspección activa.
-     */
     public function finalizarRonda(int $rondaId, array $datos, User $usuario): Ronda
     {
         $ronda = $this->obtenerPorId($rondaId);
 
-        Gate::forUser($usuario)->authorize('update', $ronda); // CAPA 2
+        Gate::forUser($usuario)->authorize('update', $ronda);
 
         if ($ronda->estado === 'completada') {
             throw new ReglaNegocioException('La ronda ya se encuentra finalizada.', 409);

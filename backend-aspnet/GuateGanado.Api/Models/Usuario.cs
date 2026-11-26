@@ -13,7 +13,6 @@ public class Usuario
     [Required, MaxLength(120)]
     public string Email { get; set; } = string.Empty;
 
-    /// <summary>Hash BCrypt-compatible no; se usa PBKDF2 de ASP.NET para evitar dependencias extra.</summary>
     [Column("password_hash")]
     [Required]
     public string PasswordHash { get; set; } = string.Empty;

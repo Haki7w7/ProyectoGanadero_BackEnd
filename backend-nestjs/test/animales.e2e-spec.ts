@@ -6,7 +6,7 @@ import { AppModule } from './../src/app.module';
 
 describe('AnimalesController (E2E)', () => {
   let app: INestApplication;
-  let createdAnimalId: number; // Guardará el ID del animal creado dinámicamente
+  let createdAnimalId: number;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -38,7 +38,7 @@ describe('AnimalesController (E2E)', () => {
 
   it('POST /api/v1/animales -> Debe crear un animal exitosamente (201)', async () => {
     const nuevoAnimal = {
-      numero_arete: `ART-TEST-${Date.now()}`, // Arete único en cada ejecución
+      numero_arete: `ART-TEST-${Date.now()}`,
       raza_id: 1,
       sexo: 'Macho',
       fecha_nacimiento: '2024-01-10',
@@ -54,7 +54,6 @@ describe('AnimalesController (E2E)', () => {
     expect(response.body).toHaveProperty('id_animal');
     expect(response.body.sexo).toBe('Macho');
 
-    // Capturamos el ID para usarlo en el DELETE
     createdAnimalId = response.body.id_animal;
   });
 
@@ -91,7 +90,6 @@ describe('AnimalesController (E2E)', () => {
   });
 
   it('DELETE /api/v1/animales/:id -> Debe eliminar un animal existente (204)', async () => {
-    // Eliminamos usando el ID capturado
     await request(app.getHttpServer())
       .delete(`/api/v1/animales/${createdAnimalId}`)
       .expect(204);

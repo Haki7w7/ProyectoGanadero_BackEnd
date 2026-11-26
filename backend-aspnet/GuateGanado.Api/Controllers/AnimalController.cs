@@ -27,7 +27,6 @@ public class AnimalController : ControllerBase
         PotreroNombre = a.Potrero?.Nombre
     };
 
-    /// <summary>GET /api/v1/animal -> 200 con datos y metadatos; 401 sin token.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<AnimalResponseDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Listar(
@@ -69,7 +68,6 @@ public class AnimalController : ControllerBase
         });
     }
 
-    /// <summary>GET /api/v1/animal/{id} -> 200; 404 si no existe.</summary>
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(AnimalResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -85,7 +83,6 @@ public class AnimalController : ControllerBase
         return Ok(ToDto(animal));
     }
 
-    /// <summary>POST /api/v1/animal -> 201 con encabezado Location; 422 datos invalidos.</summary>
     [HttpPost]
     [ProducesResponseType(typeof(AnimalResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
@@ -119,7 +116,6 @@ public class AnimalController : ControllerBase
         return CreatedAtAction(nameof(Detalle), new { id = animal.Id }, ToDto(animal));
     }
 
-    /// <summary>PUT /api/v1/animal/{id} -> 200; 404 si no existe; 422 datos invalidos.</summary>
     [HttpPut("{id:int}")]
     [ProducesResponseType(typeof(AnimalResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -155,7 +151,6 @@ public class AnimalController : ControllerBase
         return Ok(ToDto(animal));
     }
 
-    /// <summary>DELETE /api/v1/animal/{id} -> 204; 404 si no existe; 409 si tiene dependencias.</summary>
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -166,7 +161,6 @@ public class AnimalController : ControllerBase
         if (animal is null)
             return NotFound(new { message = $"No existe un animal con id {id}." });
 
-        // Regla del contrato: un animal vendido conserva trazabilidad y no se elimina.
         if (animal.Estado == "Vendido")
             return Conflict(new { message = "El animal tiene dependencias de trazabilidad y no puede eliminarse." });
 

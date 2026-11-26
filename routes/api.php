@@ -18,47 +18,33 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\RondaController;
 use App\Http\Controllers\UserController;
 
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
-
 Route::get('/user', fn (Request $req) => new \App\Http\Resources\UserResource($req->user()))
     ->middleware('auth:sanctum');
 
-//rutas para las validaciones
 Route::prefix('v1')->group(function () {
-
-    // Los identificadores de todos los recursos son numéricos: un id como /animales/abc
-    // no coincide con ninguna ruta y responde 404 JSON (en lugar de un 500 por TypeError).
     foreach (['categoria', 'unidad_medida', 'raza', 'potrero', 'insumo', 'animal', 'pesaje', 'tratamiento', 'tratamiento_animal', 'ronda'] as $parametro) {
         Route::pattern($parametro, '[0-9]+');
     }
 
-    // Autenticación (rutas públicas)
     Route::post('auth/login', LoginController::class);
     Route::post('auth/logout', LogoutController::class)->middleware('auth:sanctum');
 
-    // Autenticación (rutas protegidas)
     Route::middleware('auth:sanctum')->group(function () {
     Route::post('auth/register', RegisterController::class);
     Route::get('users', [UserController::class, 'index'])->name('users.index');
 
-    // Recursos REST
     Route::apiResource('categorias', CategoriaController::class)->parameters(['categorias'=>'categoria']);
     Route::apiResource('unidades-medida', UnidadMedidaController::class)->parameters(['unidades-medida'=>'unidad_medida']);
     Route::apiResource('razas', RazaController::class)->parameters(['razas'=>'raza']);
     Route::apiResource('potreros', PotreroController::class)->parameters(['potreros'=>'potrero']);
     Route::apiResource('insumos', InsumoController::class)->parameters(['insumos'=>'insumo']);
 
-    // Escaneo QR en Animales (antes de apiResource 'animales' para evitar colisiones)
     Route::get('animales/qr/{codigo_qr}', [AnimalController::class, 'porQr'])->name('animales.por_qr');
     Route::apiResource('animales', AnimalController::class)->parameters(['animales'=>'animal']);
     Route::apiResource('pesajes', PesajeController::class)->parameters(['pesajes'=>'pesaje']);
     Route::apiResource('tratamientos', TratamientoController::class)->parameters(['tratamientos'=>'tratamiento']);
     Route::apiResource('tratamientos-aplicaciones', TratamientoAnimalController::class)->parameters(['tratamientos-aplicaciones'=>'tratamiento_animal']);
 
-    // Rutas anidadas del núcleo ganadero (Lab 5): producción y sanidad de un animal.
-    // whereNumber evita que un {animal} no numérico llegue a los controladores (responde 404).
     Route::get('animales/{animal}/pesajes', [PesajeController::class, 'indexPorAnimal'])
         ->whereNumber('animal')->name('animales.pesajes.index');
     Route::post('animales/{animal}/pesajes', [PesajeController::class, 'storePorAnimal'])
@@ -66,7 +52,6 @@ Route::prefix('v1')->group(function () {
     Route::get('animales/{animal}/tratamientos', [TratamientoAnimalController::class, 'indexPorAnimal'])
         ->whereNumber('animal')->name('animales.tratamientos.index');
 
-    // Rutas anidadas de infraestructura (Lab 5): animales por potrero/raza e insumos por categoría.
     Route::get('potreros/{potrero}/animales', [AnimalController::class, 'indexPorPotrero'])
         ->whereNumber('potrero')->name('potreros.animales.index');
     Route::get('razas/{raza}/animales', [AnimalController::class, 'indexPorRaza'])
@@ -74,7 +59,6 @@ Route::prefix('v1')->group(function () {
     Route::get('categorias/{categoria}/insumos', [InsumoController::class, 'indexPorCategoria'])
         ->whereNumber('categoria')->name('categorias.insumos.index');
 
-    // Módulo de Rondas de Operario y Auditoría de Admin
     Route::get('rondas', [RondaController::class, 'index'])->name('rondas.index');
     Route::post('rondas', [RondaController::class, 'store'])->name('rondas.store');
     Route::get('rondas/{ronda}', [RondaController::class, 'show'])->name('rondas.show');

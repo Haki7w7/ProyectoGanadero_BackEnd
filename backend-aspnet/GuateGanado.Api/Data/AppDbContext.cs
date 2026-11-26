@@ -17,7 +17,6 @@ public class AppDbContext : DbContext
             .HasIndex(a => a.NumeroArete)
             .IsUnique();
 
-        // Restrict => al borrar un potrero con animales se produce el 409 del contrato.
         b.Entity<Animal>()
             .HasOne(a => a.Potrero)
             .WithMany(p => p.Animales)

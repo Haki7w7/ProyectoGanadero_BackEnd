@@ -15,17 +15,10 @@ use Illuminate\Support\Facades\Gate;
 use Mockery;
 use Tests\TestCase;
 
-/**
- * Pruebas unitarias de TratamientoService y TratamientoAnimalService.
- *
- * - Camino feliz: aplicación válida de un tratamiento a un animal.
- * - RN-06: no se elimina un tratamiento que ya fue aplicado (con dobles de prueba).
- */
 class TratamientoServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** Camino feliz: un veterinario registra la aplicación de un tratamiento. */
     public function test_registra_aplicacion_de_tratamiento_valida(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'veterinario']));
@@ -53,7 +46,6 @@ class TratamientoServiceTest extends TestCase
         ]);
     }
 
-    /** RN-06 con dobles: el tratamiento (mock) tiene aplicaciones, delete() nunca se llama. */
     public function test_rn06_no_elimina_tratamiento_ya_aplicado(): void
     {
         Gate::shouldReceive('authorize')->andReturn(RespuestaGate::allow());
