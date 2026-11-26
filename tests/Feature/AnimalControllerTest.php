@@ -20,14 +20,10 @@ class AnimalControllerTest extends TestCase
         \Laravel\Sanctum\Sanctum::actingAs($admin, ['*']);
     }
 
-    /**
-     * Verifica que el index responde 200 y aplica el tope máximo de paginación.
-     */
     public function test_index_responde_200_y_aplica_tope_de_paginacion(): void
     {
         Animal::factory()->count(20)->create();
 
-        // Se solicita per_page=500, pero el backend debe acotarlo a 100
         $response = $this->getJson('/api/v1/animales?per_page=500');
 
         $response->assertStatus(200)
@@ -41,9 +37,6 @@ class AnimalControllerTest extends TestCase
         $this->assertLessThanOrEqual(100, $response->json('meta.per_page'));
     }
 
-    /**
-     * Verifica que ?search filtra por coincidencia parcial del número de arete.
-     */
     public function test_index_filtra_por_search_en_numero_de_arete(): void
     {
         Animal::factory()->create(['numero_arete' => 'GG-1234']);
@@ -59,13 +52,9 @@ class AnimalControllerTest extends TestCase
             collect($response->json('data'))->pluck('numero_arete')->all()
         );
 
-        // Los comodines se buscan literalmente: "%" no debe devolver todo.
         $this->getJson('/api/v1/animales?search=%25')->assertJsonPath('meta.total', 0);
     }
 
-    /**
-     * Verifica que la validación declarativa rechaza datos inválidos con 422.
-     */
     public function test_store_valida_campos_obligatorios_y_responde_422(): void
     {
         $response = $this->postJson('/api/v1/animales', []);
@@ -74,9 +63,6 @@ class AnimalControllerTest extends TestCase
             ->assertJsonValidationErrors(['numero_arete', 'raza_id', 'potrero_id', 'sexo']);
     }
 
-    /**
-     * Verifica la creación exitosa retornando 201 Created.
-     */
     public function test_store_crea_animal_correctamente_con_codigo_201(): void
     {
         $raza = Raza::factory()->create();
@@ -175,7 +161,6 @@ class AnimalControllerTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonPath('data.numero_arete', 'ARETE-CUPO-LIBRE');
 
-        // Crear un animal que ya llega con estado 'Vendido' tampoco se bloquea aunque el potrero esté lleno.
         $responseVendido = $this->postJson('/api/v1/animales', [
             'numero_arete'     => 'ARETE-YA-VENDIDO',
             'raza_id'          => $raza->raza_id,
@@ -222,7 +207,6 @@ class AnimalControllerTest extends TestCase
             'codigo_qr' => 'VACA-SIN-FOTO-001',
         ]);
 
-        // GET /api/v1/animales
         $indexResponse = $this->getJson('/api/v1/animales');
         $indexResponse->assertOk();
         $this->assertNotEmpty($indexResponse->json('data'));
@@ -230,12 +214,10 @@ class AnimalControllerTest extends TestCase
             $this->assertArrayNotHasKey('foto', $item);
         }
 
-        // GET /api/v1/animales/{animal}
         $showResponse = $this->getJson('/api/v1/animales/' . $animal->id_animal);
         $showResponse->assertOk();
         $this->assertArrayNotHasKey('foto', $showResponse->json('data'));
 
-        // GET /api/v1/animales/qr/{codigo_qr}
         $qrResponse = $this->getJson('/api/v1/animales/qr/' . $animal->codigo_qr);
         $qrResponse->assertOk();
         $this->assertArrayNotHasKey('foto', $qrResponse->json('data'));

@@ -14,14 +14,6 @@ use Illuminate\Support\Facades\Gate;
 use Mockery;
 use Tests\TestCase;
 
-/**
- * Pruebas unitarias de AnimalService.
- *
- * - Camino feliz: creación de animal con cupo en el potrero.
- * - RN-01: no se elimina un animal con historial de pesajes (con dobles de prueba).
- * - RN-03: no se asigna un animal a un potrero lleno.
- * - Caso límite 1: el potrero admite el animal N y rechaza el N+1.
- */
 class AnimalServiceTest extends TestCase
 {
     use RefreshDatabase;
@@ -34,12 +26,9 @@ class AnimalServiceTest extends TestCase
 
         $this->servicio = app(AnimalService::class);
 
-        // Admin autenticado: si la Capa 2 (Gate dentro del servicio) está activa,
-        // las operaciones del camino feliz siguen permitidas.
         $this->actingAs(User::factory()->create(['role' => 'admin']));
     }
 
-    /** Datos válidos de un animal para el potrero indicado. */
     private function datosAnimal(Potrero $potrero, string $arete): array
     {
         return [
@@ -52,7 +41,6 @@ class AnimalServiceTest extends TestCase
         ];
     }
 
-    /** Camino feliz: el potrero tiene cupo y el animal se crea. */
     public function test_crea_animal_cuando_el_potrero_tiene_cupo(): void
     {
         $potrero = Potrero::factory()->create(['capacidad_maxima' => 5]);
@@ -64,7 +52,6 @@ class AnimalServiceTest extends TestCase
         $this->assertDatabaseHas('animales', ['numero_arete' => 'ARETE-OK-001']);
     }
 
-    /** RN-03: potrero con capacidad llena rechaza un animal nuevo. */
     public function test_rn03_rechaza_animal_en_potrero_con_capacidad_llena(): void
     {
         $potrero = Potrero::factory()->create(['capacidad_maxima' => 2]);
@@ -84,7 +71,6 @@ class AnimalServiceTest extends TestCase
         $this->assertDatabaseMissing('animales', ['numero_arete' => 'ARETE-LLENO']);
     }
 
-    /** Caso límite 1: capacidad exacta. Se admite el animal N y se rechaza el N+1. */
     public function test_caso_limite_potrero_admite_el_animal_n_y_rechaza_el_n_mas_1(): void
     {
         $capacidad = 3;
@@ -94,21 +80,15 @@ class AnimalServiceTest extends TestCase
             'estado'     => 'Activo',
         ]);
 
-        // Animal N (ocupa el último cupo): se admite.
         $this->servicio->crearAnimal($this->datosAnimal($potrero, 'ARETE-N'));
         $this->assertSame($capacidad, $potrero->animales()->count());
 
-        // Animal N+1: se rechaza.
         $this->expectException(ReglaNegocioException::class);
         $this->expectExceptionMessage('El potrero seleccionado ya alcanzó su capacidad máxima.');
 
         $this->servicio->crearAnimal($this->datosAnimal($potrero, 'ARETE-N-MAS-1'));
     }
 
-    /**
-     * RN-01 con dobles de prueba: el animal (mock) tiene pesajes, por lo que el
-     * servicio lanza la excepción y NUNCA llama a delete().
-     */
     public function test_rn01_no_elimina_animal_con_historial_de_pesajes(): void
     {
         Gate::shouldReceive('authorize')->andReturn(RespuestaGate::allow());
@@ -126,7 +106,6 @@ class AnimalServiceTest extends TestCase
         $servicio->eliminarAnimal(10);
     }
 
-    /** RN-01 (contraparte) con dobles: sin pesajes, delete() se invoca exactamente una vez. */
     public function test_rn01_elimina_animal_sin_pesajes(): void
     {
         Gate::shouldReceive('authorize')->andReturn(RespuestaGate::allow());

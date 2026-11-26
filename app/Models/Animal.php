@@ -30,7 +30,6 @@ class Animal extends Model
         'fecha_nacimiento' => 'date',
     ];
 
-    // Relaciones
     public function raza(): BelongsTo
     {
         return $this->belongsTo(Raza::class, 'raza_id');
@@ -59,7 +58,6 @@ class Animal extends Model
     ->withTimestamps();
 }
 
-    // Scopes Reutilizables
     public function scopeActivos(Builder $query): Builder
     {
         return $query->where('estado', 'Activo');
@@ -85,11 +83,6 @@ class Animal extends Model
         return $query->where('sexo', $sexo);
     }
 
-    /**
-     * Búsqueda parcial por número de arete (?search=GG-12).
-     * Se escapan los comodines % y _ (con "!" como carácter de escape, válido en
-     * MySQL, SQLite y PostgreSQL) para que el texto se busque literalmente.
-     */
     public function scopeBuscar(Builder $query, string $termino): Builder
     {
         $termino = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], trim($termino));

@@ -9,7 +9,7 @@ class StoreAnimalRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Cambiado a true para permitir la petición
+        return true;
     }
 
     public function rules(): array

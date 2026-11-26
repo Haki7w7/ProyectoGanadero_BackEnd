@@ -10,9 +10,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
-/**
- * Lab 5 - Persona 1: semántica HTTP y manejo centralizado de excepciones.
- */
 class ManejoErroresHttpTest extends TestCase
 {
     use RefreshDatabase;
@@ -76,7 +73,6 @@ class ManejoErroresHttpTest extends TestCase
 
     public function test_error_inesperado_responde_500_sin_stack_trace(): void
     {
-        // Aun con APP_DEBUG=true no debe filtrarse ningún detalle interno.
         config(['app.debug' => true]);
 
         Route::get('/api/v1/_prueba/boom', function () {

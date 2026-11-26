@@ -7,10 +7,6 @@ using Xunit;
 
 namespace GuateGanado.Tests;
 
-/// <summary>
-/// Las tres pruebas equivalentes del contrato comparativo (Hito 2).
-/// Son las mismas tres que deben existir en Laravel y en NestJS.
-/// </summary>
 public class ContratoComparativoTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly WebApplicationFactory<Program> _factory;
@@ -36,7 +32,6 @@ public class ContratoComparativoTests : IClassFixture<WebApplicationFactory<Prog
         return client;
     }
 
-    /// <summary>Prueba 1: el listado exige token (401) y responde 200 con metadatos de paginacion.</summary>
     [Fact]
     public async Task Listado_SinToken_Devuelve401_ConToken_Devuelve200Paginado()
     {
@@ -55,7 +50,6 @@ public class ContratoComparativoTests : IClassFixture<WebApplicationFactory<Prog
         Assert.True(pagina.Meta.Total >= 2);
     }
 
-    /// <summary>Prueba 2: la creacion valida devuelve 201 con Location; la invalida devuelve 422 por campo.</summary>
     [Fact]
     public async Task Creacion_Valida_Devuelve201ConLocation_Invalida_Devuelve422()
     {
@@ -91,7 +85,6 @@ public class ContratoComparativoTests : IClassFixture<WebApplicationFactory<Prog
         Assert.NotEmpty(problema!.Errors);
     }
 
-    /// <summary>Prueba 3: detalle y eliminacion devuelven 404 cuando el recurso no existe; el borrado valido devuelve 204.</summary>
     [Fact]
     public async Task Detalle_Y_Eliminacion_RespetanCodigosDelContrato()
     {

@@ -27,9 +27,6 @@ class ReglasNegocioTest extends TestCase
         $this->potreroService = app(PotreroService::class);
     }
 
-    /**
-     * RN-01: Prohibido eliminar animal si tiene historial de pesajes.
-     */
     public function test_regla_1_no_permite_eliminar_animal_con_historial_de_pesajes(): void
     {
         $animal = Animal::factory()->create();
@@ -43,9 +40,6 @@ class ReglasNegocioTest extends TestCase
         $this->assertDatabaseHas('animales', ['id_animal' => $animal->id_animal]);
     }
 
-    /**
-     * RN-01 (Caso de éxito): Sí permite eliminar animal sin historial de pesajes.
-     */
     public function test_regla_1_permite_eliminar_animal_sin_pesajes(): void
     {
         $animal = Animal::factory()->create();
@@ -56,9 +50,6 @@ class ReglasNegocioTest extends TestCase
         $this->assertDatabaseMissing('animales', ['id_animal' => $animal->id_animal]);
     }
 
-    /**
-     * RN-02: Prohibido eliminar potrero si tiene animales asignados.
-     */
     public function test_regla_2_no_permite_eliminar_potrero_con_animales_asignados(): void
     {
         $potrero = Potrero::factory()->create();
@@ -72,9 +63,6 @@ class ReglasNegocioTest extends TestCase
         $this->assertDatabaseHas('potreros', ['potrero_id' => $potrero->potrero_id]);
     }
 
-    /**
-     * RN-02 (Caso de éxito): Sí permite eliminar potrero sin animales.
-     */
     public function test_regla_2_permite_eliminar_potrero_sin_animales(): void
     {
         $potrero = Potrero::factory()->create();
@@ -85,9 +73,6 @@ class ReglasNegocioTest extends TestCase
         $this->assertDatabaseMissing('potreros', ['potrero_id' => $potrero->potrero_id]);
     }
 
-    /**
-     * Reversión Transaccional (ACID): Si falla el pesaje, se cancela la creación del animal.
-     */
     public function test_rollback_transaccional_revierte_animal_si_pesaje_falla(): void
     {
         $raza = Raza::factory()->create();
@@ -102,7 +87,6 @@ class ReglasNegocioTest extends TestCase
             'estado'           => 'Activo',
         ];
 
-        // Datos erróneos de pesaje que provocarán un fallo en el segundo paso
         $datosPesajeErroneos = [
             'peso_kg'      => 'PESO_INVALIDO_TEXTO',
             'fecha_pesaje' => null,
@@ -112,10 +96,8 @@ class ReglasNegocioTest extends TestCase
             $this->animalService->registrarAnimalConPesaje($datosAnimal, $datosPesajeErroneos);
             $this->fail('La transacción debió fallar.');
         } catch (\Throwable $e) {
-            // Se esperaba la excepción
         }
 
-        // Verifica que gracias al rollback el animal NO existe en la base de datos
         $this->assertDatabaseMissing('animales', [
             'numero_arete' => 'ROLLBACK-999',
         ]);

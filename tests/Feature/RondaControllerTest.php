@@ -41,11 +41,9 @@ class RondaControllerTest extends TestCase
 
     public function test_operario_solo_ve_sus_propias_rondas(): void
     {
-        // Rondas de operario 1
         Ronda::factory()->create(['user_id' => $this->operario1->id]);
         Ronda::factory()->create(['user_id' => $this->operario1->id]);
 
-        // Ronda de operario 2
         Ronda::factory()->create(['user_id' => $this->operario2->id]);
 
         Sanctum::actingAs($this->operario1, ['*']);
@@ -125,12 +123,10 @@ class RondaControllerTest extends TestCase
 
         Sanctum::actingAs($this->operario1, ['*']);
 
-        // Ver su propia ronda -> 200 OK
         $response1 = $this->getJson("/api/v1/rondas/{$ronda1->id}");
         $response1->assertStatus(200)
             ->assertJsonPath('data.id', $ronda1->id);
 
-        // Intentar ver ronda de otro operario -> 403 Forbidden
         $response2 = $this->getJson("/api/v1/rondas/{$ronda2->id}");
         $response2->assertStatus(403)
             ->assertJsonPath('error', 'Acceso denegado');
@@ -193,7 +189,6 @@ class RondaControllerTest extends TestCase
             'estado_potrero' => 'bueno',
         ]);
 
-        // Falla validación 422 (exists)
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['codigo_qr']);
     }
@@ -224,7 +219,6 @@ class RondaControllerTest extends TestCase
             'estado'  => 'en_progreso',
         ]);
 
-        // Registrar primer punto en Potrero Norte
         PuntoRonda::factory()->create([
             'ronda_id'   => $ronda->id,
             'potrero_id' => $this->potreroNorte->potrero_id,
@@ -232,7 +226,6 @@ class RondaControllerTest extends TestCase
 
         Sanctum::actingAs($this->operario1, ['*']);
 
-        // Intentar registrar de nuevo Potrero Norte
         $response = $this->postJson("/api/v1/rondas/{$ronda->id}/puntos", [
             'codigo_qr'      => 'POTRERO-NORTE',
             'latitud'        => 10.45900000,

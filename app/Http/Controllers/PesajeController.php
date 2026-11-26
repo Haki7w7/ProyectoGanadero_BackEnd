@@ -22,108 +22,70 @@ class PesajeController extends Controller
     ) {
     }
 
-    /**
-     * Listar pesajes.
-     *
-     * Retorna el listado paginado de registros de pesaje con soporte de filtros.
-     */
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', Pesaje::class); // CAPA 1
+        $this->authorize('viewAny', Pesaje::class);
 
         $pesajes = $this->pesajeService->listarPesajes($request->query());
 
         return $this->respuestaPaginada($pesajes, 'Listado de pesajes obtenido correctamente.', PesajeResource::class);
     }
 
-    /**
-     * Listar pesajes de un animal.
-     *
-     * Retorna el historial cronológico de pesajes asociados a un animal específico.
-     */
     public function indexPorAnimal(Request $request, int $animal): JsonResponse
     {
-        $this->authorize('viewAny', Pesaje::class); // CAPA 1
+        $this->authorize('viewAny', Pesaje::class);
 
         $this->animalService->verificarExistencia($animal);
 
-        // El animal de la URL siempre manda sobre cualquier ?id_animal= de la query.
         $filtros = array_merge($request->query(), ['id_animal' => $animal]);
         $pesajes = $this->pesajeService->listarPesajes($filtros);
 
         return $this->respuestaPaginada($pesajes, 'Listado de pesajes del animal obtenido correctamente.', PesajeResource::class);
     }
 
-    /**
-     * Obtener detalle de un pesaje.
-     *
-     * Retorna la información completa de un registro de pesaje por su ID.
-     */
     public function show(int $id): JsonResponse
     {
         $pesaje = $this->pesajeService->obtenerPorId($id);
 
-        $this->authorize('view', $pesaje); // CAPA 1
+        $this->authorize('view', $pesaje);
 
         return $this->respuestaOk(new PesajeResource($pesaje), 'Pesaje obtenido correctamente.');
     }
 
-    /**
-     * Registrar un nuevo pesaje.
-     *
-     * Valida los datos y registra un nuevo pesaje en el sistema.
-     */
     public function store(StorePesajeRequest $request): JsonResponse
     {
-        $this->authorize('create', Pesaje::class); // CAPA 1
+        $this->authorize('create', Pesaje::class);
 
         $pesaje = $this->pesajeService->crearPesaje($request->validated());
 
         return $this->respuestaCreada($pesaje, 'Pesaje registrado correctamente.', 'pesajes', new PesajeResource($pesaje));
     }
 
-    /**
-     * Registrar pesaje para un animal.
-     *
-     * Registra un nuevo pesaje vinculado directamente al animal indicado en la ruta.
-     */
     public function storePorAnimal(StorePesajeAnimalRequest $request, int $animal): JsonResponse
     {
-        $this->authorize('create', Pesaje::class); // CAPA 1
+        $this->authorize('create', Pesaje::class);
 
-        // StorePesajeAnimalRequest ya inyectó id_animal desde la URL.
         $pesaje = $this->pesajeService->crearPesaje($request->validated());
 
-        // El recurso creado vive en la ruta plana /api/v1/pesajes/{id}.
         return $this->respuestaCreada($pesaje, 'Pesaje registrado correctamente.', 'pesajes', new PesajeResource($pesaje));
     }
 
-    /**
-     * Actualizar un pesaje.
-     *
-     * Actualiza los datos de un registro de pesaje existente por su ID.
-     */
     public function update(UpdatePesajeRequest $request, int $id): JsonResponse
     {
         $pesaje = $this->pesajeService->obtenerPorId($id);
 
-        $this->authorize('update', $pesaje); // CAPA 1
+        $this->authorize('update', $pesaje);
 
         $pesaje = $this->pesajeService->actualizarPesaje($id, $request->validated());
 
         return $this->respuestaOk(new PesajeResource($pesaje), 'Pesaje actualizado correctamente.');
     }
 
-    /**
-     * Eliminar un pesaje.
-     *
-     * Elimina el registro de pesaje indicado del sistema.
-     */
     public function destroy(int $id): Response
     {
         $pesaje = $this->pesajeService->obtenerPorId($id);
 
-        $this->authorize('delete', $pesaje); // CAPA 1
+        $this->authorize('delete', $pesaje);
 
         $this->pesajeService->eliminarPesaje($id);
 

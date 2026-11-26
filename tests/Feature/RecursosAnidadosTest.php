@@ -9,10 +9,6 @@ use App\Models\TratamientoAnimal;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Lab 5 - Persona 2: API Resources y rutas anidadas del módulo
- * Producción y Sanidad (Animales, Pesajes, Tratamientos).
- */
 class RecursosAnidadosTest extends TestCase
 {
     use RefreshDatabase;
@@ -44,10 +40,6 @@ class RecursosAnidadosTest extends TestCase
         ], $extra));
     }
 
-    // ---------------------------------------------------------------
-    // GET /api/v1/animales/{animal}/pesajes
-    // ---------------------------------------------------------------
-
     public function test_lista_solo_los_pesajes_del_animal_con_paginacion_uniforme(): void
     {
         $animal = Animal::factory()->create();
@@ -55,7 +47,6 @@ class RecursosAnidadosTest extends TestCase
         Pesaje::factory()->count(3)->create(['id_animal' => $animal->id_animal]);
         Pesaje::factory()->count(2)->create(['id_animal' => $otro->id_animal]);
 
-        // Aunque se intente filtrar por otro animal en la query, manda el de la URL.
         $response = $this->getJson("/api/v1/animales/{$animal->id_animal}/pesajes?per_page=2&id_animal={$otro->id_animal}");
 
         $response->assertOk()
@@ -93,16 +84,11 @@ class RecursosAnidadosTest extends TestCase
             ->assertJsonPath('error', 'No encontrado');
     }
 
-    // ---------------------------------------------------------------
-    // POST /api/v1/animales/{animal}/pesajes
-    // ---------------------------------------------------------------
-
     public function test_registra_un_pesaje_para_el_animal_de_la_url(): void
     {
         $animal = Animal::factory()->create();
         $otro   = Animal::factory()->create();
 
-        // Se intenta colar otro id_animal en el cuerpo: debe ignorarse.
         $response = $this->postJson("/api/v1/animales/{$animal->id_animal}/pesajes", [
             'id_animal'     => $otro->id_animal,
             'peso_kg'       => 412.5,
@@ -143,10 +129,6 @@ class RecursosAnidadosTest extends TestCase
         ])->assertStatus(404);
     }
 
-    // ---------------------------------------------------------------
-    // GET /api/v1/animales/{animal}/tratamientos  (historial sanitario)
-    // ---------------------------------------------------------------
-
     public function test_historial_sanitario_lista_las_aplicaciones_del_animal(): void
     {
         $animal = Animal::factory()->create();
@@ -185,10 +167,6 @@ class RecursosAnidadosTest extends TestCase
             ->assertStatus(404)
             ->assertJsonPath('error', 'No encontrado');
     }
-
-    // ---------------------------------------------------------------
-    // API Resources: nombres de campo estables y relaciones condicionales
-    // ---------------------------------------------------------------
 
     public function test_detalle_de_animal_expone_relaciones_con_nombres_estables(): void
     {
@@ -246,10 +224,6 @@ class RecursosAnidadosTest extends TestCase
                 ->assertJsonPath('error', 'No encontrado');
         }
     }
-
-    // ---------------------------------------------------------------
-    // 201 + Location y 204 en los controladores refactorizados
-    // ---------------------------------------------------------------
 
     public function test_crear_pesaje_plano_responde_201_con_location(): void
     {

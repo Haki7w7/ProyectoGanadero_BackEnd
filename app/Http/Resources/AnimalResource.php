@@ -5,7 +5,6 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** Representación pública de un Animal; relaciones solo si fueron cargadas. @mixin \App\Models\Animal */
 class AnimalResource extends JsonResource
 {
     public function toArray(Request $request): array

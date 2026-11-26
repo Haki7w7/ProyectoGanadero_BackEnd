@@ -8,6 +8,6 @@ import { Animal } from './entities/animal.entity';
   imports: [TypeOrmModule.forFeature([Animal])],
   controllers: [AnimalesController],
   providers: [AnimalesService],
-  exports: [AnimalesService], // Opcional por si otros módulos necesitan consultar animales
+  exports: [AnimalesService],
 })
 export class AnimalesModule {}

@@ -6,9 +6,6 @@ use App\Models\Animal;
 use App\Models\Pesaje;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<Pesaje>
- */
 class PesajeFactory extends Factory
 {
 protected $model = Pesaje::class;

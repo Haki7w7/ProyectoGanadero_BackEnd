@@ -16,7 +16,6 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 
 builder.Services.AddControllers();
 
-// El 400 por omision de ASP.NET se convierte en 422, como exige el contrato comun.
 builder.Services.Configure<ApiBehaviorOptions>(opt =>
 {
     opt.InvalidModelStateResponseFactory = ctx =>
@@ -100,5 +99,4 @@ app.MapControllers();
 
 app.Run();
 
-// Necesario para WebApplicationFactory en las pruebas de integracion.
 public partial class Program { }

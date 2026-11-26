@@ -10,16 +10,10 @@ use Illuminate\Support\Facades\Gate;
 
 class PesajeService
 {
-    /**
-     * Lista pesajes aplicando filtros combinables, ordenamiento dinámico
-     * y paginación con tope de seguridad.
-     */
     public function listarPesajes(array $filtros = []): LengthAwarePaginator
     {
-        // Paginación segura con tope en 100
         $perPage = min(max((int) ($filtros['per_page'] ?? 15), 1), 100);
 
-        // Ordenamiento por al menos dos campos válidos
         $allowedSortFields = ['fecha_pesaje', 'peso_kg', 'pesaje_id', 'id_animal'];
         $sortBy = in_array($filtros['sort_by'] ?? '', $allowedSortFields, true) ? $filtros['sort_by'] : 'fecha_pesaje';
         $sortOrder = strtolower($filtros['order'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
@@ -48,7 +42,7 @@ class PesajeService
 
     public function crearPesaje(array $datos): Pesaje
     {
-        Gate::authorize('create', Pesaje::class); // CAPA 2
+        Gate::authorize('create', Pesaje::class);
 
         return DB::transaction(function () use ($datos) {
             return Pesaje::create($datos);
@@ -59,7 +53,7 @@ class PesajeService
     {
         $pesaje = $this->obtenerPorId($id);
 
-        Gate::authorize('update', $pesaje); // CAPA 2
+        Gate::authorize('update', $pesaje);
 
         DB::transaction(function () use ($pesaje, $datos) {
             $pesaje->update($datos);
@@ -72,7 +66,7 @@ class PesajeService
     {
         $pesaje = $this->obtenerPorId($id);
 
-        Gate::authorize('delete', $pesaje); // CAPA 2
+        Gate::authorize('delete', $pesaje);
 
         return (bool) $pesaje->delete();
     }

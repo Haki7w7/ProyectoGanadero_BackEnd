@@ -5,9 +5,6 @@ namespace Database\Factories;
 use App\Models\Potrero;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<Potrero>
- */
 class PotreroFactory extends Factory
 {
 protected $model = Potrero::class;

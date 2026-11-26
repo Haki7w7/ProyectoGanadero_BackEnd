@@ -9,16 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 class RazaService
 {
-    /**
-     * Lista razas aplicando filtros combinables, ordenamiento dinámico
-     * y paginación con tope de seguridad.
-     */
     public function listarRazas(array $filtros = []): LengthAwarePaginator
     {
-        // Paginación segura con tope en 100
         $perPage = min(max((int) ($filtros['per_page'] ?? 15), 1), 100);
 
-        // Ordenamiento por al menos dos campos válidos
         $allowedSortFields = ['nombre', 'raza_id', 'created_at'];
         $sortBy = in_array($filtros['sort_by'] ?? '', $allowedSortFields, true) ? $filtros['sort_by'] : 'raza_id';
         $sortOrder = strtolower($filtros['order'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
@@ -61,10 +55,6 @@ class RazaService
         return $raza->refresh();
     }
 
-    /**
-     * Elimina una raza, aplicando una regla de negocio: no se puede
-     * eliminar si tiene animales asociados.
-     */
     public function eliminarRaza(int $id): bool
     {
         $raza = $this->obtenerPorId($id);

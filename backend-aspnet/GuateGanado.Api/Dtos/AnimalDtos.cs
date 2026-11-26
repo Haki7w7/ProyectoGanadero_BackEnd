@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GuateGanado.Api.Dtos;
 
-/// <summary>Carga util de creacion. Las anotaciones producen el 422 por campo.</summary>
 public class AnimalCreateDto
 {
     [Required(ErrorMessage = "El numero de arete es obligatorio.")]
@@ -43,7 +42,6 @@ public class AnimalResponseDto
     public string? PotreroNombre { get; set; }
 }
 
-/// <summary>Sobre de paginacion equivalente al de Laravel y NestJS.</summary>
 public class PagedResult<T>
 {
     public IEnumerable<T> Data { get; set; } = Array.Empty<T>();

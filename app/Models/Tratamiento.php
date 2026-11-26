@@ -20,19 +20,11 @@ class Tratamiento extends Model
         'tipo',
     ];
 
-    /**
-     * Aplicaciones de este tratamiento a animales (registros de la tabla
-     * tratamiento_animal). La usa TratamientoService::eliminarTratamiento()
-     * para impedir borrar un tratamiento con historial.
-     */
     public function aplicaciones(): HasMany
     {
         return $this->hasMany(TratamientoAnimal::class, 'tratamiento_id', 'tratamiento_id');
     }
 
-    /**
-     * Relación muchos a muchos con el modelo Animal.
-     */
     public function animales(): BelongsToMany
     {
         return $this->belongsToMany(

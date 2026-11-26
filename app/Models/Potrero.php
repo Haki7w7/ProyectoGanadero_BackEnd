@@ -48,9 +48,6 @@ class Potrero extends Model
         return $this->hasMany(PuntoRonda::class, 'potrero_id', 'potrero_id');
     }
 
-    /**
-     * Scope para filtrar potreros que no han alcanzado su capacidad máxima.
-     */
     public function scopeDisponibles(Builder $query): Builder
     {
         return $query->whereRaw(

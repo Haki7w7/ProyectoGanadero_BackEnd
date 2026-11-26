@@ -8,14 +8,6 @@ use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * Fase 0: el locale de la API debe ser español.
- *
- * Regresión del defecto por el que la API respondía
- * "The numero arete field must be a string." (APP_LOCALE=en dejaba inerte
- * lang/es/validation.php) y por el que los nombres de campo se mostraban
- * crudos ("El campo numero_arete ...").
- */
 class ValidacionEnEspanolTest extends TestCase
 {
     use RefreshDatabase;
@@ -83,7 +75,6 @@ class ValidacionEnEspanolTest extends TestCase
 
     public function test_el_401_responde_en_espanol_sin_token(): void
     {
-        // Se cierra la sesión simulada en setUp() para probar sin credenciales.
         $this->app['auth']->forgetGuards();
 
         $this->getJson('/api/v1/animales')

@@ -5,12 +5,6 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * Representación pública de una aplicación de tratamiento a un animal
- * (registro del historial sanitario).
- *
- * @mixin \App\Models\TratamientoAnimal
- */
 class TratamientoAnimalResource extends JsonResource
 {
     public function toArray(Request $request): array

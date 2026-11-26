@@ -12,97 +12,55 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-
 class PotreroController extends Controller
 {
     public function __construct(private readonly PotreroService $potreroService)
     {
     }
 
-    /**
-     * Listar potreros.
-     *
-     * Retorna el listado paginado de potreros de la finca con filtros por nombre o estado del pasto.
-     *
-     * @response 200 { "message": "Listado de potreros obtenido correctamente.", "data": {...} }
-     */
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', Potrero::class); // CAPA 1
+        $this->authorize('viewAny', Potrero::class);
 
         $potreros = $this->potreroService->listarPotreros($request->query());
 
         return $this->respuestaPaginada($potreros, 'Listado de potreros obtenido correctamente.', PotreroResource::class);
     }
 
-    /**
-     * Obtener detalle de un potrero.
-     *
-     * Retorna la información de un potrero específico por su ID.
-     *
-     * @response 200 { "message": "Potrero obtenido correctamente.", "data": {...} }
-     * @response 404 { "error": "Recurso no encontrado" }
-     */
     public function show(int $id): JsonResponse
     {
         $potrero = $this->potreroService->obtenerPorId($id);
 
-        $this->authorize('view', $potrero); // CAPA 1
+        $this->authorize('view', $potrero);
 
         return $this->respuestaOk(new PotreroResource($potrero), 'Potrero obtenido correctamente.');
     }
 
-    /**
-     * Registrar un nuevo potrero.
-     *
-     * Crea un potrero en el sistema indicando capacidad, área y estado del pasto.
-     *
-     * @response 201 { "message": "Potrero creado correctamente.", "data": {...} }
-     * @response 422 { "message": "Los datos proporcionados no son válidos." }
-     */
     public function store(StorePotreroRequest $request): JsonResponse
     {
-        $this->authorize('create', Potrero::class); // CAPA 1
+        $this->authorize('create', Potrero::class);
 
         $potrero = $this->potreroService->crearPotrero($request->validated());
 
         return $this->respuestaCreada($potrero, 'Potrero creado correctamente.', 'potreros', new PotreroResource($potrero));
     }
 
-    /**
-     * Actualizar datos de un potrero.
-     *
-     * Actualiza la información de un potrero existente.
-     *
-     * @response 200 { "message": "Potrero actualizado correctamente.", "data": {...} }
-     * @response 404 { "error": "Recurso no encontrado" }
-     * @response 422 { "message": "Los datos proporcionados no son válidos." }
-     */
     public function update(UpdatePotreroRequest $request, int $id): JsonResponse
     {
         $potrero = $this->potreroService->obtenerPorId($id);
 
-        $this->authorize('update', $potrero); // CAPA 1
+        $this->authorize('update', $potrero);
 
         $potrero = $this->potreroService->actualizarPotrero($id, $request->validated());
 
         return $this->respuestaOk(new PotreroResource($potrero), 'Potrero actualizado correctamente.');
     }
 
-    /**
-     * Eliminar un potrero.
-     *
-     * Elimina el potrero indicado. Falla si el potrero tiene animales asignados actualmente (RN-02).
-     *
-     * @response 200 { "message": "Potrero eliminado correctamente." }
-     * @response 404 { "error": "Recurso no encontrado" }
-     * @response 409 { "error": "Regla de Negocio", "mensaje": "No se puede eliminar el potrero porque tiene animales asignados." }
-     */
     public function destroy(int $id): Response
     {
         $potrero = $this->potreroService->obtenerPorId($id);
 
-        $this->authorize('delete', $potrero); // CAPA 1
+        $this->authorize('delete', $potrero);
 
         $this->potreroService->eliminarPotrero($id);
 

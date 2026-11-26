@@ -7,16 +7,14 @@ use App\Models\Potrero;
 use App\Models\Raza;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
-use Illuminate\Foundation\Testing\RefreshDatabase; // 1. Importar el trait
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SemanticaRespuestasApiTest extends TestCase
 {
-    use RefreshDatabase; // 2. Incluir el trait dentro de la clase para resetear/migrar la BD
+    use RefreshDatabase;
 
-    /** Test 3: Estructura uniforme de respuesta */
     public function test_get_animales_returns_canonical_structure()
     {
-        // El usuario necesita un rol válido: AnimalPolicy::viewAny exige admin, veterinario u operario.
         $user = User::factory()->create(['role' => 'admin']);
         Sanctum::actingAs($user, ['*']);
 
@@ -31,17 +29,14 @@ class SemanticaRespuestasApiTest extends TestCase
                  ]);
     }
 
-    /** Test 4: Semántica de creación con Location */
     public function test_post_animales_returns_created_with_location()
     {
-        // Solo el admin puede crear animales (AnimalPolicy::create).
         $user = User::factory()->create(['role' => 'admin']);
         Sanctum::actingAs($user, ['*']);
 
         $raza    = Raza::factory()->create();
         $potrero = Potrero::factory()->create(['capacidad_maxima' => 10]);
 
-        // Payload válido según StoreAnimalRequest.
         $payload = [
             'numero_arete'     => 'ARETE-LOC-001',
             'raza_id'          => $raza->raza_id,

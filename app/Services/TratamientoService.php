@@ -9,16 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 class TratamientoService
 {
-    /**
-     * Lista tratamientos aplicando filtros combinables, ordenamiento dinámico
-     * y paginación con tope de seguridad.
-     */
     public function listarTratamientos(array $filtros = []): LengthAwarePaginator
     {
-        // Paginación segura con tope en 100
         $perPage = min(max((int) ($filtros['per_page'] ?? 15), 1), 100);
 
-        // Ordenamiento por al menos dos campos válidos
         $allowedSortFields = ['nombre', 'tipo', 'tratamiento_id', 'created_at'];
         $sortBy = in_array($filtros['sort_by'] ?? '', $allowedSortFields, true) ? $filtros['sort_by'] : 'tratamiento_id';
         $sortOrder = strtolower($filtros['order'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
@@ -62,10 +56,6 @@ class TratamientoService
         return $tratamiento->refresh();
     }
 
-    /**
-     * Elimina un tratamiento, aplicando una regla de negocio: no se puede
-     * eliminar si ya tiene aplicaciones registradas a algún animal.
-     */
     public function eliminarTratamiento(int $id): bool
     {
         $tratamiento = $this->obtenerPorId($id);

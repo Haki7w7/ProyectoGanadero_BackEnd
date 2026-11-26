@@ -35,7 +35,6 @@ export class AnimalesController {
     return this.animalesService.remove(id);
   }
 
-  // Rutas anidadas mapeadas a 'v1/potreros' y 'v1/razas'
   @Get(':potreroId/animales')
   findByPotrero(@Param('potreroId', ParseIntPipe) potreroId: number) {
     return this.animalesService.findByPotrero(potreroId);

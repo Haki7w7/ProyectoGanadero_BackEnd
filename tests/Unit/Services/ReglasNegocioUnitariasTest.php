@@ -19,18 +19,10 @@ use Illuminate\Support\Facades\Gate;
 use Mockery;
 use Tests\TestCase;
 
-/**
- * Reglas de negocio de catálogos (RN-04, RN-05, RN-07) con dobles de prueba
- * y demostración de la Capa 2 de autorización (Gate dentro del servicio).
- */
 class ReglasNegocioUnitariasTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Verifica que el servicio lance la ReglaNegocioException esperada
-     * (409 Conflict) con el mensaje indicado.
-     */
     private function assertReglaNegocio(callable $accion, string $mensaje): void
     {
         try {
@@ -42,7 +34,6 @@ class ReglasNegocioUnitariasTest extends TestCase
         }
     }
 
-    /** RN-04: no se elimina una categoría con insumos asociados. */
     public function test_rn04_no_elimina_categoria_con_insumos(): void
     {
         Gate::shouldReceive('authorize')->andReturn(RespuestaGate::allow());
@@ -60,7 +51,6 @@ class ReglasNegocioUnitariasTest extends TestCase
         );
     }
 
-    /** RN-05: no se elimina una raza asignada a animales. */
     public function test_rn05_no_elimina_raza_con_animales(): void
     {
         Gate::shouldReceive('authorize')->andReturn(RespuestaGate::allow());
@@ -78,7 +68,6 @@ class ReglasNegocioUnitariasTest extends TestCase
         );
     }
 
-    /** RN-07: no se elimina una unidad de medida en uso por insumos. */
     public function test_rn07_no_elimina_unidad_de_medida_en_uso(): void
     {
         Gate::shouldReceive('authorize')->andReturn(RespuestaGate::allow());
@@ -96,14 +85,6 @@ class ReglasNegocioUnitariasTest extends TestCase
         );
     }
 
-    /**
-     * Capa 2 (demostración): un operario llama DIRECTAMENTE al servicio, sin
-     * pasar por la ruta HTTP ni el controlador, y el servicio lo rechaza.
-     *
-     * Requiere que AnimalService::eliminarAnimal() invoque
-     * Gate::authorize('delete', $animal) y que AnimalPolicy::delete() solo
-     * permita al admin (tareas de la Persona 2).
-     */
     public function test_capa2_servicio_rechaza_eliminacion_de_operario_sin_pasar_por_http(): void
     {
         $operario = User::factory()->create(['role' => 'operario']);
@@ -115,18 +96,11 @@ class ReglasNegocioUnitariasTest extends TestCase
             app(AnimalService::class)->eliminarAnimal($animal->id_animal);
             $this->fail('El servicio debió lanzar AuthorizationException para un operario.');
         } catch (AuthorizationException $e) {
-            // Esperado: la Capa 2 bloqueó la operación.
         }
 
-        // La base de datos no se modificó.
         $this->assertDatabaseHas('animales', ['id_animal' => $animal->id_animal]);
     }
 
-    /**
-     * Capa 2 con doble de prueba: el Gate (mock) debe ser consultado con la
-     * habilidad 'delete' y el animal concreto; si deniega, el servicio propaga
-     * la AuthorizationException y no elimina nada.
-     */
     public function test_capa2_servicio_consulta_el_gate_con_la_habilidad_delete(): void
     {
         $animal = Animal::factory()->create();

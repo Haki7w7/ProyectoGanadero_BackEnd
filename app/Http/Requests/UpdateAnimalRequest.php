@@ -14,7 +14,6 @@ class UpdateAnimalRequest extends FormRequest
 
     public function rules(): array
     {
-        // Obtenemos el ID del animal desde la ruta para la regla de unicidad
         $animalId = $this->route('animal')->id_animal ?? $this->route('animal');
 
         return [

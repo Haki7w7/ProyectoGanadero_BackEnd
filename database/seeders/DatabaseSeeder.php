@@ -14,6 +14,8 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
+use RuntimeException;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -23,6 +25,35 @@ class DatabaseSeeder extends Seeder
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
+        if (app()->environment('production')) {
+            $adminPassword = env('SEED_ADMIN_PASSWORD');
+
+            if (! is_string($adminPassword) || trim($adminPassword) === '') {
+                throw new RuntimeException(
+                    'En producción debe definir SEED_ADMIN_PASSWORD en las variables de entorno para inicializar la cuenta administradora.'
+                );
+            }
+
+            $roleAdmin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+            Role::firstOrCreate(['name' => 'veterinario', 'guard_name' => 'web']);
+            Role::firstOrCreate(['name' => 'operario', 'guard_name' => 'web']);
+
+            $adminEmail = Str::lower(trim((string) env('SEED_ADMIN_EMAIL', 'aaron@guateganado.cr')));
+            $adminName = trim((string) env('SEED_ADMIN_NAME', 'Aarón Rodríguez'));
+
+            $admin = User::updateOrCreate(
+                ['email' => $adminEmail],
+                [
+                    'name'     => $adminName,
+                    'password' => Hash::make($adminPassword),
+                ]
+            );
+
+            $admin->syncRoles([$roleAdmin]);
+
+            return;
+        }
+
         Schema::disableForeignKeyConstraints();
         DB::table('role_has_permissions')->truncate();
         DB::table('model_has_roles')->truncate();
@@ -31,37 +62,48 @@ class DatabaseSeeder extends Seeder
         User::truncate();
         Permission::truncate();
         Schema::enableForeignKeyConstraints();
-        
-        // 1. Crear los 3 roles requeridos por el Lab 6
+
         $roleAdmin       = Role::create(['name' => 'admin']);
         $roleVeterinario = Role::create(['name' => 'veterinario']);
         $roleOperario    = Role::create(['name' => 'operario']);
 
-        // 2. Crear usuarios de prueba (uno por rol)
+        $claveAdmin = (string) (env('SEED_ADMIN_PASSWORD') ?: Str::password(16));
+        $claveVet = (string) (env('SEED_VET_PASSWORD') ?: Str::password(16));
+        $claveOperario = (string) (env('SEED_OPERARIO_PASSWORD') ?: Str::password(16));
+
         $admin = User::factory()->create([
-            'name'     => 'Aarón Rodríguez',
-            'email'    => 'aaron@guateganado.cr',
-            'password' => Hash::make('Admin@1234!'),
+            'name'     => (string) env('SEED_ADMIN_NAME', 'Aarón Rodríguez'),
+            'email'    => Str::lower((string) env('SEED_ADMIN_EMAIL', 'aaron@guateganado.cr')),
+            'password' => Hash::make($claveAdmin),
         ]);
 
         $veterinario = User::factory()->create([
             'name'     => 'María López',
             'email'    => 'maria@guateganado.cr',
-            'password' => Hash::make('Vet@12345!'),
+            'password' => Hash::make($claveVet),
         ]);
 
         $operario = User::factory()->create([
             'name'     => 'Juan Villareal',
             'email'    => 'juan@guateganado.cr',
-            'password' => Hash::make('Op@123456!'),
+            'password' => Hash::make($claveOperario),
         ]);
 
-        // Asignar roles con Spatie (NO con columna 'role' ni Enum)
         $admin->assignRole($roleAdmin);
         $veterinario->assignRole($roleVeterinario);
         $operario->assignRole($roleOperario);
 
-        // 3. Genera Razas y Potreros con Códigos QR reconocidos
+        if ($this->command !== null) {
+            $this->command->table(
+                ['Rol', 'Email', 'Contraseña local (efímera o desde .env)'],
+                [
+                    ['admin', $admin->email, $claveAdmin],
+                    ['veterinario', $veterinario->email, $claveVet],
+                    ['operario', $operario->email, $claveOperario],
+                ]
+            );
+        }
+
         $razas    = Raza::factory()->count(10)->create();
         
         $potreros = collect([
@@ -102,11 +144,9 @@ class DatabaseSeeder extends Seeder
             ]),
         ]);
 
-        // Potreros adicionales generados por factory
         $potrerosExtras = Potrero::factory()->count(5)->create();
         $todosPotreros = $potreros->concat($potrerosExtras);
 
-        // 4. Crea Catálogo de Tratamientos
         $tratamientos = collect([
             Tratamiento::create([
                 'nombre'      => 'Vacuna Contra Aftosa',
@@ -125,7 +165,6 @@ class DatabaseSeeder extends Seeder
             ]),
         ]);
 
-        // 5. Crea 20 Animales (los primeros 5 con QRs estándar VACA-001 a VACA-005)
         for ($i = 1; $i <= 5; $i++) {
             $num = str_pad($i, 3, '0', STR_PAD_LEFT);
             Animal::create([
@@ -145,17 +184,13 @@ class DatabaseSeeder extends Seeder
             ->recycle($todosPotreros)
             ->create();
 
-        // Recargar todos los animales
         $animales = Animal::all();
 
-        // 6. Asigna historial de Pesajes y Tratamientos a cada Animal
         foreach ($animales as $animal) {
-            // Historial de pesajes (2 a 4 por animal)
             Pesaje::factory()->count(rand(2, 4))->create([
                 'id_animal' => $animal->id_animal,
             ]);
 
-            // Asociación con tabla intermedia tratamiento_animal (1 a 2 tratamientos)
             $tratamientosAleatorios = $tratamientos->random(rand(1, 2));
             foreach ($tratamientosAleatorios as $tratamiento) {
                 $animal->tratamientos()->attach($tratamiento->tratamiento_id, [
@@ -166,7 +201,6 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // 7. Genera Rondas de Inspección de Prueba para Operario y Admin
         $rondaCompletada = Ronda::create([
             'user_id'       => $operario->id,
             'fecha_inicio'  => now()->subDays(1)->setTime(8, 0, 0),
@@ -177,7 +211,7 @@ class DatabaseSeeder extends Seeder
 
         PuntoRonda::create([
             'ronda_id'       => $rondaCompletada->id,
-            'potrero_id'     => $potreros[0]->potrero_id, // POTRERO-NORTE
+            'potrero_id'     => $potreros[0]->potrero_id,
             'latitud'        => 10.45678901,
             'longitud'       => -84.12345678,
             'estado_potrero' => 'bueno',
@@ -187,7 +221,7 @@ class DatabaseSeeder extends Seeder
 
         PuntoRonda::create([
             'ronda_id'       => $rondaCompletada->id,
-            'potrero_id'     => $potreros[1]->potrero_id, // POTRERO-SUR
+            'potrero_id'     => $potreros[1]->potrero_id,
             'latitud'        => 10.45123456,
             'longitud'       => -84.12876543,
             'estado_potrero' => 'regular',
@@ -195,7 +229,6 @@ class DatabaseSeeder extends Seeder
             'registrado_en'  => now()->subDays(1)->setTime(9, 10, 0),
         ]);
 
-        // Ronda activa para probar la aplicación móvil inmediatamente
         $rondaActiva = Ronda::create([
             'user_id'       => $operario->id,
             'fecha_inicio'  => now()->subHours(1),
@@ -206,7 +239,7 @@ class DatabaseSeeder extends Seeder
 
         PuntoRonda::create([
             'ronda_id'       => $rondaActiva->id,
-            'potrero_id'     => $potreros[0]->potrero_id, // POTRERO-NORTE
+            'potrero_id'     => $potreros[0]->potrero_id,
             'latitud'        => 10.45781200,
             'longitud'       => -84.12210000,
             'estado_potrero' => 'bueno',

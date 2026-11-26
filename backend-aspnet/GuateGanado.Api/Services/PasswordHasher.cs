@@ -2,10 +2,6 @@ using System.Security.Cryptography;
 
 namespace GuateGanado.Api.Services;
 
-/// <summary>
-/// PBKDF2 con la implementacion del framework: sin dependencias externas.
-/// Relevante para el criterio "esfuerzo de autenticacion" del comparativo.
-/// </summary>
 public static class PasswordHasher
 {
     private const int SaltSize = 16;

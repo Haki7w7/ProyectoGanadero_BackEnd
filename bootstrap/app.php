@@ -25,28 +25,18 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
 
-        // Esta aplicacion es solo API: no existe una ruta llamada "login".
-        // Sin esto, una peticion sin token que no pida JSON hace que el
-        // middleware Authenticate intente route('login'), lance
-        // RouteNotFoundException y devuelva 500 en lugar de 401.
         $middleware->redirectGuestsTo(
             fn (Request $request) => $request->is('api/*') ? null : '/login'
         );
     })
     ->booting(function () {
-        // Registrar policies para modelos que no se auto-descubren
-        // (TratamientoAnimal extiende Pivot en lugar de Model).
         Gate::policy(\App\Models\TratamientoAnimal::class, \App\Policies\TratamientoAnimalPolicy::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // ¿La petición espera JSON? Solo entonces se aplican los formatos de abajo.
         $esApi = fn (Request $request): bool => $request->is('api/*') || $request->expectsJson();
 
         $exceptions->shouldRenderJsonWhen(fn (Request $request) => $esApi($request));
 
-        // Formato único de error para toda la API:
-        //   { "error": "<tipo>", "mensaje": "<texto legible>", ["errors": {...}] }
-        // Nunca incluye trazas de pila, rutas de archivos ni consultas SQL.
         $error = static function (string $tipo, string $mensaje, int $estado, array $extra = [], array $cabeceras = []): JsonResponse {
             return response()->json(
                 array_merge(['error' => $tipo, 'mensaje' => $mensaje], $extra),
@@ -55,7 +45,6 @@ return Application::configure(basePath: dirname(__DIR__))
             );
         };
 
-        // 1) Regla de negocio -> 409 Conflict (o 404 si el servicio indicó "no existe").
         $exceptions->render(function (ReglaNegocioException $e, Request $request) use ($esApi, $error) {
             if (! $esApi($request)) {
                 return null;
@@ -66,11 +55,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 : $error('Regla de Negocio', $e->getMessage(), 409);
         });
 
-        // 2) Validación -> 422 con el detalle de errores por campo.
-        //    Se mantiene la clave "errors" (mismo nombre que usa Laravel) para
-        //    que assertJsonValidationErrors() y los clientes actuales sigan funcionando.
-        //    Cuerpo JSON corrupto -> 400: si el Content-Type es JSON pero el
-        //    contenido crudo no parsea, no fue un error de validación sino de sintaxis.
         $exceptions->render(function (ValidationException $e, Request $request) use ($esApi, $error) {
             if (! $esApi($request)) {
                 return null;
@@ -89,9 +73,6 @@ return Application::configure(basePath: dirname(__DIR__))
             );
         });
 
-        // 3) Modelo / ruta inexistente -> 404 en JSON limpio.
-        //    Laravel convierte ModelNotFoundException en NotFoundHttpException antes
-        //    de llegar aquí; la excepción original queda en getPrevious().
         $exceptions->render(function (ModelNotFoundException|NotFoundHttpException $e, Request $request) use ($esApi, $error) {
             if (! $esApi($request)) {
                 return null;
@@ -107,7 +88,6 @@ return Application::configure(basePath: dirname(__DIR__))
             );
         });
 
-        // 4) No autenticado -> 401.
         $exceptions->render(function (AuthenticationException $e, Request $request) use ($esApi, $error) {
             if (! $esApi($request)) {
                 return null;
@@ -116,7 +96,6 @@ return Application::configure(basePath: dirname(__DIR__))
             return $error('No autenticado', 'Debe autenticarse para acceder a este recurso.', 401);
         });
 
-        // 4a) No autorizado -> 403 (AuthorizationException o AccessDeniedHttpException).
         $exceptions->render(function (AuthorizationException|\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException $e, Request $request) use ($esApi, $error) {
             if (! $esApi($request)) {
                 return null;
@@ -125,7 +104,6 @@ return Application::configure(basePath: dirname(__DIR__))
             return $error('Acceso denegado', 'No tiene permisos para realizar esta acción.', 403);
         });
 
-        // 4b) JSON malformado -> 400 (antes del capturador genérico).
         $exceptions->render(function (JsonException $e, Request $request) use ($esApi, $error) {
             if (! $esApi($request)) {
                 return null;
@@ -134,16 +112,11 @@ return Application::configure(basePath: dirname(__DIR__))
             return $error('Solicitud inválida', 'El cuerpo JSON enviado no es válido.', 400);
         });
 
-        // 5) Cualquier otra cosa (debe registrarse al final: captura Throwable).
-        //    - Excepciones HTTP (403, 405, 429, ...) conservan su código.
-        //    - Errores imprevistos -> 500 sin stack trace. El detalle real
-        //      queda registrado en storage/logs/laravel.log (report() se ejecuta antes).
         $exceptions->render(function (Throwable $e, Request $request) use ($esApi, $error) {
             if (! $esApi($request)) {
                 return null;
             }
 
-            // Respuestas ya construidas (p. ej. FormRequest::failedAuthorization) se respetan.
             if ($e instanceof HttpResponseException) {
                 return null;
             }

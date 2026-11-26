@@ -61,8 +61,6 @@ class User extends Authenticatable
         ];
     }
 
-    // Helpers de Rol — usan Spatie (hasRole) en lugar del Enum eliminado
-
     public function isAdmin(): bool
     {
         return $this->hasRole('admin');

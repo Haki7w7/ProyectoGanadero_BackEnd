@@ -9,16 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 class CategoriaService
 {
-    /**
-     * Lista categorías aplicando filtros combinables, ordenamiento dinámico
-     * y paginación con tope de seguridad.
-     */
     public function listarCategorias(array $filtros = []): LengthAwarePaginator
     {
-        // Paginación segura con tope en 100
         $perPage = min(max((int) ($filtros['per_page'] ?? 15), 1), 100);
 
-        // Ordenamiento por al menos dos campos válidos
         $allowedSortFields = ['nombre', 'tipo', 'categoria_id'];
         $sortBy = in_array($filtros['sort_by'] ?? '', $allowedSortFields, true) ? $filtros['sort_by'] : 'categoria_id';
         $sortOrder = strtolower($filtros['order'] ?? 'asc') === 'desc' ? 'desc' : 'asc';
@@ -62,10 +56,6 @@ class CategoriaService
         return $categoria->refresh();
     }
 
-    /**
-     * Elimina una categoría, aplicando una regla de negocio: no se puede
-     * eliminar una categoría que tiene insumos asociados.
-     */
     public function eliminarCategoria(int $id): bool
     {
         $categoria = $this->obtenerPorId($id);
