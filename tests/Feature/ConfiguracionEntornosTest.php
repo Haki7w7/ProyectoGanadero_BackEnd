@@ -6,6 +6,7 @@ use App\Models\Animal;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Hash;
 use RuntimeException;
 use Tests\TestCase;
@@ -14,11 +15,20 @@ class ConfiguracionEntornosTest extends TestCase
 {
     use RefreshDatabase;
 
+    private function limpiarVariablesSeeder(): void
+    {
+        $repo = Env::getRepository();
+        foreach (['SEED_ADMIN_EMAIL', 'SEED_ADMIN_NAME', 'SEED_ADMIN_PASSWORD', 'SEED_VET_PASSWORD', 'SEED_OPERARIO_PASSWORD'] as $clave) {
+            $repo->clear($clave);
+            putenv($clave);
+            unset($_ENV[$clave], $_SERVER[$clave]);
+        }
+    }
+
     public function test_database_seeder_en_produccion_falla_sin_seed_admin_password(): void
     {
         $entornoOriginal = $this->app['env'];
-        putenv('SEED_ADMIN_PASSWORD');
-        unset($_ENV['SEED_ADMIN_PASSWORD'], $_SERVER['SEED_ADMIN_PASSWORD']);
+        $this->limpiarVariablesSeeder();
 
         try {
             $this->app['env'] = 'production';
@@ -29,6 +39,7 @@ class ConfiguracionEntornosTest extends TestCase
             (new DatabaseSeeder())->run();
         } finally {
             $this->app['env'] = $entornoOriginal;
+            $this->limpiarVariablesSeeder();
         }
     }
 
@@ -36,13 +47,11 @@ class ConfiguracionEntornosTest extends TestCase
     {
         $entornoOriginal = $this->app['env'];
         $claveSegura = 'Pr0d#Adm1n$2026!Segura';
+        $repo = Env::getRepository();
 
-        putenv("SEED_ADMIN_EMAIL=admin.prod@guateganado.cr");
-        putenv("SEED_ADMIN_NAME=Admin Produccion");
-        putenv("SEED_ADMIN_PASSWORD={$claveSegura}");
-        $_ENV['SEED_ADMIN_EMAIL'] = 'admin.prod@guateganado.cr';
-        $_ENV['SEED_ADMIN_NAME'] = 'Admin Produccion';
-        $_ENV['SEED_ADMIN_PASSWORD'] = $claveSegura;
+        $repo->set('SEED_ADMIN_EMAIL', 'admin.prod@guateganado.cr');
+        $repo->set('SEED_ADMIN_NAME', 'Admin Produccion');
+        $repo->set('SEED_ADMIN_PASSWORD', $claveSegura);
 
         try {
             $this->app['env'] = 'production';
@@ -59,33 +68,13 @@ class ConfiguracionEntornosTest extends TestCase
             $this->assertTrue(Hash::check($claveSegura, $admin->password));
         } finally {
             $this->app['env'] = $entornoOriginal;
-            putenv('SEED_ADMIN_EMAIL');
-            putenv('SEED_ADMIN_NAME');
-            putenv('SEED_ADMIN_PASSWORD');
-            unset(
-                $_ENV['SEED_ADMIN_EMAIL'],
-                $_ENV['SEED_ADMIN_NAME'],
-                $_ENV['SEED_ADMIN_PASSWORD'],
-                $_SERVER['SEED_ADMIN_EMAIL'],
-                $_SERVER['SEED_ADMIN_NAME'],
-                $_SERVER['SEED_ADMIN_PASSWORD']
-            );
+            $this->limpiarVariablesSeeder();
         }
     }
 
     public function test_database_seeder_en_desarrollo_genera_claves_dinamicas_sin_credenciales_fijas(): void
     {
-        putenv('SEED_ADMIN_PASSWORD');
-        putenv('SEED_VET_PASSWORD');
-        putenv('SEED_OPERARIO_PASSWORD');
-        unset(
-            $_ENV['SEED_ADMIN_PASSWORD'],
-            $_ENV['SEED_VET_PASSWORD'],
-            $_ENV['SEED_OPERARIO_PASSWORD'],
-            $_SERVER['SEED_ADMIN_PASSWORD'],
-            $_SERVER['SEED_VET_PASSWORD'],
-            $_SERVER['SEED_OPERARIO_PASSWORD']
-        );
+        $this->limpiarVariablesSeeder();
 
         (new DatabaseSeeder())->run();
 
